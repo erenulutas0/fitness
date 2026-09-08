@@ -49,6 +49,17 @@ Evde ya da salonda **tek başına** antrenman yapan başlangıç-orta seviye ki�
 
 Neden bunlar: hepsi vücut ağırlığı, tek kişi, ekipman yok, kamera formu bu sınıfta güvenilir; birlikte tam vücut başlangıç programı oluşturuyorlar.
 
+**Bugün gerçekten açık olanlar** (9 Eylül 2026 — tablo hedefi gösterir, bu paragraf durumu; ilke 2 "dürüst
+kapsam" gereği ikisini ayrı tutuyoruz): squat'ta valgus, yetersiz derinlik (ön ve yan) ve gövde eğilmesi;
+push-up'ta bel çökmesi, kalça yükselmesi ve yetersiz derinlik; plank'ta kalça çökmesi/yükselmesi ve baş
+sarkması; glute bridge'de yetersiz kalça ekstansiyonu.
+Ölçüp **kapattıklarımız**: squat'ta topuk kalkması — özellik topuk kalkmasından değil squat'a inmekten
+büyüyor, dünya koordinatlarında da aynı (D17); glute bridge'de bel hiperekstansiyonu — 2D'de ayırt edilemiyor,
+kural hiç yazılmadı. **Henüz yazılmadı**: push-up'ta dirsek aşırı açılması (ön açı gerçekçi mi, keşifte
+sorulacak) ve reverse lunge kuralları (sentetik iskelet yok, gerçek kayıt şart).
+Kapatılan kural silinmiyor: `content/exercises/*.json` içinde `enabled: false` ve gerekçesiyle duruyor,
+ölçüm değişirse geri açılıyor.
+
 **MVP'de olan:** Onboarding (≤60 sn) → kamera yerleşim asistanı → antrenman HUD'u (sayaç + sesli cue + haptik) → set özeti (form skoru, hata listesi) → basit 3 gün/hafta program → ilerleme.
 
 **MVP'de olmayan:** 3D anatomi (v0.2), kaynaklı öneri motoru (v0.3), beslenme, sosyal, wearable, barbell, yoga, PT modu, sohbet asistanı.

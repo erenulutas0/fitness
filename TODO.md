@@ -136,7 +136,9 @@
       **öneri vermeyi reddediyor** — aksi halde "en yüksek F1" sadece "hiç uyarmayan eşik" olurdu. 17 test.
 - [ ] `reverse_lunge` kuralları: adım uzunluğu, ön diz ilerlemesi, gövde eğimi — sentetik lunge iskeleti yok, gerçek kayıt şart.
 - [ ] `push_up` ön açı (dirsek açılması `shoulder_angle`) — kamera yerde ön açı gerçekçi mi, keşifte sor.
-- [ ] Glute bridge bel hiperekstansiyonu: 2D'de güvenilir değil; şimdilik kural yok (docs/01 tablosundaki hata listesi güncellenmeli).
+- [x] 2026-09-09 — docs/01'deki hata tablosu ile gerçekte açık olan kurallar ayrıştırıldı: glute bridge bel
+      hiperekstansiyonu (2D'de ayırt edilemiyor) ve squat topuk kalkması (D17) kapalı, push-up ön açı ve
+      reverse lunge kuralları henüz yazılmadı — tablo hedefi, altındaki paragraf durumu gösteriyor.
 
 ## Hafta 3-4 — 5 egzersiz + HUD (Kapı 2)
 
