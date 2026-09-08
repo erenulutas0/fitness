@@ -53,8 +53,10 @@ android {
 }
 
 // Licences: CameraX (Apache 2.0), MediaPipe Tasks Vision (Apache 2.0), AndroidX (Apache 2.0).
+// Versions are pinned for 16 KB page-size support, which Google Play requires
+// for apps targeting Android 15+ (verified on a Galaxy S23 / Android 16).
 dependencies {
-    val cameraxVersion = "1.4.2"
+    val cameraxVersion = "1.6.2"
     implementation("androidx.camera:camera-core:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:$cameraxVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
@@ -62,5 +64,5 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-common:2.8.7")
     // MediaPipe Pose Landmarker (BlazePose GHUM): 33 landmarks + world landmarks.
-    implementation("com.google.mediapipe:tasks-vision:0.10.21")
+    implementation("com.google.mediapipe:tasks-vision:1.0.0")
 }
