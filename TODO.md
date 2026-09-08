@@ -7,7 +7,7 @@
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 116 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
+- Yeşil: `forma_rules` 116 test · `forma_eval` 17 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
   `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
@@ -36,7 +36,9 @@
 - [ ] **Gerçek senaryo testi:** telefon 2-3 m uzakta, tripod/masa, tam vücut kadrajda, 10 tekrar squat (ön + yan).
       İlk koşuda kamera aynadaki yansımayı gördü; kadraj/mesafe gerçek değildi.
 - [ ] Gerçek kayıtlarla **eşik ayarı**: squat FSM eşikleri (rest 155 / peak 125) ve One Euro parametreleri
-      (`minCutoff 1.5, beta 0.1`) sentetik veriye göre seçildi; elle değil `tools/eval` ile ayarla.
+      (`minCutoff 1.5, beta 0.1`) sentetik veriye göre seçildi. Araç hazır (`bin/sweep.dart`); mevcut korpusta
+      rep MAE zaten 0 olduğu için tarama "değiştirme" diyor, `shallow_depth` için ise etiket olmadığından
+      öneri vermeyi reddediyor. Etiketli kayıt gelince ilk iş bu taramayı koşmak.
 - [ ] `tools/tts_gen` ile ilk TR/EN klipleri üret (**kurucu:** Google TTS hesabı + `ffmpeg`),
       `assets/audio/cues/` pubspec'e ekle. Oynatıcı hazır: klip varsa klibi, yoksa cihaz TTS'ini kullanıyor.
 - [ ] D15 kararını onayla/ret: el-serbest jest kontrolü (`GestureDetector` motorda hazır, HUD'a bağlanmadı) +
@@ -127,7 +129,11 @@
       paylaşıyor); parlaklık her 15 frame'de bir örnekleniyor; preview platform view geç oluşursa yeniden bağlanıyor.
 - [x] 2026-09-09 — Android plugin çalışma zamanı doğrulandı (izin, CameraX bind, GPU delegate, EventChannel
       throughput) ve CI'daki build adımı yeşil: debug APK + release APK + release AAB üretiliyor.
-- [ ] Eşik taraması (grid search önerisi) `tools/eval`'a ekle (docs/10 Prompt 9).
+- [x] 2026-09-09 — **Eşik taraması** (docs/10 Prompt 9): `tools/eval/bin/sweep.dart` bir parametreyi aralıkta
+      tarayıp her değer için korpusu yeniden oynatıyor ve en iyi değeri **öneriyor** (yazmıyor). Tekrar FSM'i,
+      kural ifadesindeki sayı, One Euro ve oturum eşikleri taranabiliyor; birden fazla `--sweep` kartezyen
+      çarpım. Korpus soruyu cevaplayamıyorsa (hiç hata etiketi yok, ya da kural için 10'dan az etiketli tekrar)
+      **öneri vermeyi reddediyor** — aksi halde "en yüksek F1" sadece "hiç uyarmayan eşik" olurdu. 17 test.
 - [ ] `reverse_lunge` kuralları: adım uzunluğu, ön diz ilerlemesi, gövde eğimi — sentetik lunge iskeleti yok, gerçek kayıt şart.
 - [ ] `push_up` ön açı (dirsek açılması `shoulder_angle`) — kamera yerde ön açı gerçekçi mi, keşifte sor.
 - [ ] Glute bridge bel hiperekstansiyonu: 2D'de güvenilir değil; şimdilik kural yok (docs/01 tablosundaki hata listesi güncellenmeli).
@@ -233,5 +239,8 @@
   kalan imkansız açılar anatomik makullük kontrolüyle kapatıldı, `minSignalConfidence` kural eşiğine hizalandı.
   Uygulama adı FORMA oldu + iOS kamera izni metni, CI'a `custom_lint` ve release AAB eklendi (74,9 MB ölçüldü),
   MediaPipe modeli main thread'den çıkarıldı, plugin example overlay'i uygulamayla hizalandı, docs/05 + docs/08 +
-  fixtures-schema güncellendi. Testler: **116 + 3 + 3 yeşil**, analiz + custom_lint + format temiz.
+  fixtures-schema güncellendi. Son iş: **eşik taraması** (`tools/eval/bin/sweep.dart`, docs/10 Prompt 9) —
+  parametreyi tarayıp öneriyor, `content/`'e yazmıyor ve korpus soruyu cevaplayamıyorsa öneri vermeyi
+  reddediyor; eval harness'ı artık CI'da analiz ediliyor ve test ediliyor.
+  Testler: **116 + 17 + 3 + 3 yeşil**, analiz + custom_lint + format temiz.
   Kalan tek blokaj: kasten hatalı kayıt (kurucu yarın çekecek).

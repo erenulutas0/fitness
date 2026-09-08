@@ -141,86 +141,131 @@ class EvalReport {
   static String _pct(double v) => '${(v * 100).toStringAsFixed(1)}%';
 }
 
+/// Definitions, cues and fixtures parsed once, so a threshold sweep can replay
+/// the same corpus hundreds of times without going back to disk.
+class EvalCorpus {
+  EvalCorpus({
+    required this.definitions,
+    required this.catalog,
+    required this.fixtures,
+    List<String> warnings = const [],
+  }) : warnings = List.unmodifiable(warnings);
+
+  /// Reads `<contentRoot>/exercises/*.json`, `<contentRoot>/cues/cues.json`
+  /// and every fixture JSON under [fixtureDirs]. Unreadable fixtures become
+  /// warnings rather than failures: one bad recording should not hide a run.
+  factory EvalCorpus.load({
+    required List<Directory> fixtureDirs,
+    required Directory contentRoot,
+  }) {
+    final warnings = <String>[];
+    final definitions = <String, ExerciseDefinition>{};
+    final exDir = Directory('${contentRoot.path}/exercises');
+    for (final f in exDir.listSync().whereType<File>().where(
+      (f) => f.path.endsWith('.json'),
+    )) {
+      final def = ExerciseDefinition.parse(f.readAsStringSync());
+      definitions[def.id] = def;
+    }
+    final cuesFile = File('${contentRoot.path}/cues/cues.json');
+    final catalog = cuesFile.existsSync()
+        ? CueCatalog.parse(cuesFile.readAsStringSync())
+        : const CueCatalog({});
+
+    final fixtures = <LandmarkFixture>[];
+    for (final dir in fixtureDirs) {
+      if (!dir.existsSync()) {
+        warnings.add('fixture dir not found: ${dir.path}');
+        continue;
+      }
+      final files =
+          dir
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((f) => f.path.endsWith('.json'))
+              .toList()
+            ..sort((a, b) => a.path.compareTo(b.path));
+      for (final file in files) {
+        LandmarkFixture fx;
+        try {
+          fx = LandmarkFixture.parse(file.readAsStringSync());
+        } on Object catch (e) {
+          warnings.add('${file.path}: $e');
+          continue;
+        }
+        if (!definitions.containsKey(fx.exerciseId)) {
+          warnings.add('${fx.id}: unknown exercise ${fx.exerciseId}');
+          continue;
+        }
+        fixtures.add(fx);
+      }
+    }
+    return EvalCorpus(
+      definitions: definitions,
+      catalog: catalog,
+      fixtures: fixtures,
+      warnings: warnings,
+    );
+  }
+
+  final Map<String, ExerciseDefinition> definitions;
+  final CueCatalog catalog;
+  final List<LandmarkFixture> fixtures;
+  final List<String> warnings;
+
+  /// Runs the whole corpus. [overrides] replaces a definition by exercise id,
+  /// which is how the sweep tries a candidate threshold without touching
+  /// `content/`.
+  EvalReport evaluate({
+    Map<String, ExerciseDefinition> overrides = const {},
+    SessionConfig config = const SessionConfig(),
+  }) {
+    final exercises = <String, ExerciseStats>{};
+    for (final fx in fixtures) {
+      final def = overrides[fx.exerciseId] ?? definitions[fx.exerciseId]!;
+      final stats = exercises.putIfAbsent(def.id, () => ExerciseStats(def.id));
+      stats.fixtures++;
+      _evaluateFixture(fx, def, catalog, stats, config: config);
+    }
+    return EvalReport(
+      exercises: exercises,
+      fixtureCount: fixtures.length,
+      smoothing: !config.smoothing.isDisabled,
+      generatedAt: DateTime.now(),
+    )..warnings.addAll(warnings);
+  }
+}
+
 Future<EvalReport> runEvaluation({
   required List<Directory> fixtureDirs,
   required Directory contentRoot,
   bool smoothing = true,
-}) async {
-  final definitions = <String, ExerciseDefinition>{};
-  final exDir = Directory('${contentRoot.path}/exercises');
-  for (final f in exDir.listSync().whereType<File>().where(
-    (f) => f.path.endsWith('.json'),
-  )) {
-    final def = ExerciseDefinition.parse(f.readAsStringSync());
-    definitions[def.id] = def;
-  }
-  final cuesFile = File('${contentRoot.path}/cues/cues.json');
-  final catalog = cuesFile.existsSync()
-      ? CueCatalog.parse(cuesFile.readAsStringSync())
-      : const CueCatalog({});
+}) async => EvalCorpus.load(
+  fixtureDirs: fixtureDirs,
+  contentRoot: contentRoot,
+).evaluate(config: sessionConfigWith(smoothing: smoothing));
 
-  final report = EvalReport(
-    exercises: {},
-    fixtureCount: 0,
-    smoothing: smoothing,
-    generatedAt: DateTime.now(),
-  );
-  var count = 0;
-  for (final dir in fixtureDirs) {
-    if (!dir.existsSync()) {
-      report.warnings.add('fixture dir not found: ${dir.path}');
-      continue;
-    }
-    final files =
-        dir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .where((f) => f.path.endsWith('.json'))
-            .toList()
-          ..sort((a, b) => a.path.compareTo(b.path));
-    for (final file in files) {
-      LandmarkFixture fx;
-      try {
-        fx = LandmarkFixture.parse(file.readAsStringSync());
-      } on Object catch (e) {
-        report.warnings.add('${file.path}: $e');
-        continue;
-      }
-      final def = definitions[fx.exerciseId];
-      if (def == null) {
-        report.warnings.add('${fx.id}: unknown exercise ${fx.exerciseId}');
-        continue;
-      }
-      count++;
-      final stats = report.exercises.putIfAbsent(
-        def.id,
-        () => ExerciseStats(def.id),
-      );
-      stats.fixtures++;
-      _evaluateFixture(fx, def, catalog, stats, smoothing: smoothing);
-    }
-  }
-  return EvalReport(
-    exercises: report.exercises,
-    fixtureCount: count,
-    smoothing: smoothing,
-    generatedAt: report.generatedAt,
-  )..warnings.addAll(report.warnings);
-}
+/// The production session config with the smoother optionally switched off.
+SessionConfig sessionConfigWith({
+  bool smoothing = true,
+  SmoothingConfig? tuned,
+}) => SessionConfig(
+  smoothing: smoothing
+      ? (tuned ?? const SmoothingConfig())
+      : SmoothingConfig.none,
+);
 
 void _evaluateFixture(
   LandmarkFixture fx,
   ExerciseDefinition def,
   CueCatalog catalog,
   ExerciseStats stats, {
-  required bool smoothing,
+  required SessionConfig config,
 }) {
   final session = ExerciseSession(
     definition: def,
     view: fx.view,
-    config: SessionConfig(
-      smoothing: smoothing ? const SmoothingConfig() : SmoothingConfig.none,
-    ),
+    config: config,
   );
   final scheduler = FeedbackScheduler(catalog: catalog);
   var cues = 0;

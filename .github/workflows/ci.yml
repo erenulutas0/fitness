@@ -28,6 +28,11 @@ jobs:
       - name: Test forma_rules
         working-directory: packages/forma_rules
         run: dart test --reporter expanded
+      - name: Analyze eval harness
+        run: dart analyze tools/eval
+      - name: Test eval harness
+        working-directory: tools/eval
+        run: dart test --reporter expanded
       - name: Eval report (synthetic fixtures)
         working-directory: tools/eval
         run: dart run bin/eval.dart --out ../../docs/eval/latest.md --json ../../docs/eval/latest.json
