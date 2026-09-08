@@ -94,6 +94,7 @@ class PoseEngine(
                         "gpu" to usingGpu,
                         "width" to opts.targetWidth,
                         "height" to opts.targetHeight,
+                        "device" to "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}",
                     ),
                 )
             } catch (t: Throwable) {

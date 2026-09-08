@@ -71,6 +71,7 @@ class _EngineDemoState extends State<EngineDemo> {
           if (f != null) CustomPaint(painter: _DotsPainter(f)),
           Positioned(
             left: 12,
+            right: 12,
             top: 40,
             child: DefaultTextStyle(
               style: const TextStyle(

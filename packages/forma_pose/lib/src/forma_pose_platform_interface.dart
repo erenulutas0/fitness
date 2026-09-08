@@ -54,6 +54,7 @@ class PoseEngineInfo {
     required this.width,
     required this.height,
     this.lens = CameraLens.back,
+    this.device,
   });
 
   /// `mediapipe` | `vision` (Apple fallback) | `fake`.
@@ -64,9 +65,12 @@ class PoseEngineInfo {
   final int height;
   final CameraLens lens;
 
+  /// Human-readable device model; eval reports slice accuracy by hardware.
+  final String? device;
+
   @override
   String toString() =>
-      'PoseEngineInfo($engine ${model.name} gpu=$gpu ${width}x$height ${lens.name})';
+      'PoseEngineInfo($engine ${model.name} gpu=$gpu ${width}x$height ${lens.name}${device == null ? '' : ' on $device'})';
 }
 
 /// Options for [FormaPosePlatform.start].

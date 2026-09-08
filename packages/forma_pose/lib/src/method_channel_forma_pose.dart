@@ -50,6 +50,7 @@ class MethodChannelFormaPose extends FormaPosePlatform {
         width: (m['width'] as num?)?.toInt() ?? options.targetWidth,
         height: (m['height'] as num?)?.toInt() ?? options.targetHeight,
         lens: options.lens,
+        device: m['device'] as String?,
       );
     } on PlatformException catch (e) {
       throw PoseEngineException(
