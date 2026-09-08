@@ -116,7 +116,6 @@ class FeedbackScheduler {
   int _cleanStreak = 0;
   int _nextPositiveAt = 3;
   int _lastLowConfCueMs = -1 << 30;
-  int _currentRep = 0;
 
   /// Rules that were muted because the error persisted; show them on the
   /// set-summary card instead.
@@ -168,7 +167,6 @@ class FeedbackScheduler {
 
     // 1. Rep count (always, first in the queue).
     if (completedRep != null) {
-      _currentRep = completedRep.index;
       _updateConsecutive(completedRep.failedRules);
       if (policy.countReps) {
         final n = math.min(completedRep.index, policy.maxCountCue);
@@ -307,7 +305,6 @@ class FeedbackScheduler {
     _ruleConsecutive.clear();
     _muted.clear();
     _cleanStreak = 0;
-    _currentRep = 0;
     _lastLowConfCueMs = -1 << 30;
   }
 }

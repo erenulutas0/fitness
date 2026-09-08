@@ -218,6 +218,19 @@ class RepDetector {
     }
   }
 
+  /// Drop a repetition that is in progress without counting it, keeping the
+  /// rep count so far. Used when tracking is lost mid-rep: finishing it later
+  /// would count a movement nobody saw.
+  ///
+  /// Returns true when a rep was actually discarded.
+  bool abort() {
+    final wasActive = _phase != RepPhase.rest;
+    _phase = RepPhase.rest;
+    _startMs = null;
+    _peakMs = null;
+    return wasActive;
+  }
+
   void reset() {
     _phase = RepPhase.rest;
     _count = 0;

@@ -140,6 +140,54 @@ void main() {
     );
   });
 
+  group('tracking loss', () {
+    test('a rep interrupted mid-way is not counted when tracking returns', () {
+      // Device bug (2026-09-08): the FSM stayed in `peak` while the user was
+      // out of frame and completed the rep on their return.
+      final frames = syn.squat(view: CameraView.side, reps: 2);
+      // Blank the frames around the first bottom position.
+      final withGap = <PoseFrame>[
+        for (var i = 0; i < frames.length; i++)
+          if (i >= 40 && i < 70)
+            PoseFrame.empty(frames[i].timestampMs)
+          else
+            frames[i],
+      ];
+      final r = run(squat, CameraView.side, withGap);
+      expect(r.reps.length, 1, reason: 'only the untouched second rep counts');
+      expect(r.reps.single.index, 1);
+      final snap = r.session.snapshot;
+      expect(snap.signalValue, isNotNull);
+    });
+
+    test('snapshot hides stale signal and tempo while out of frame', () {
+      final frames = syn.squat(view: CameraView.side, reps: 1);
+      final withTail = <PoseFrame>[
+        ...frames,
+        for (var i = 1; i <= 20; i++)
+          PoseFrame.empty(frames.last.timestampMs + 33 * i),
+      ];
+      final r = run(squat, CameraView.side, withTail);
+      final snap = r.session.snapshot;
+      expect(snap.tracking, isFalse);
+      expect(snap.signalValue, isNull);
+      expect(snap.currentRepElapsedMs, isNull);
+      expect(snap.repCount, 1);
+    });
+
+    test('a hold stops accruing time once the person leaves the frame', () {
+      final frames = syn.plank(durationMs: 10000);
+      final withTail = <PoseFrame>[
+        ...frames,
+        for (var i = 1; i <= 90; i++)
+          PoseFrame.empty(frames.last.timestampMs + 33 * i),
+      ];
+      final r = run(plank, CameraView.side, withTail);
+      expect(r.result.holds.length, 1);
+      expect(r.result.holds.single.heldMs, closeTo(10000, 150));
+    });
+  });
+
   group('bw_squat front view', () {
     test('clean reps count via 3D knee angle', () {
       final r = run(

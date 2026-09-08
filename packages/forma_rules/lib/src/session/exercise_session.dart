@@ -351,8 +351,8 @@ class ExerciseSession {
       averageScore: scores.isEmpty
           ? null
           : scores.reduce((a, b) => a + b) / scores.length,
-      signalValue: _signalValue,
-      currentRepElapsedMs: rep?.elapsedMs(_lastTs),
+      signalValue: _tracking ? _signalValue : null,
+      currentRepElapsedMs: _tracking ? rep?.elapsedMs(_lastTs) : null,
       gestureCandidate: _gestures?.candidate,
       gestureProgress: _gestures?.progress(_lastTs) ?? 0,
     );
@@ -385,7 +385,18 @@ class ExerciseSession {
       if (g != null) events.add(SessionGesture(t, g));
     }
 
-    if (!tracking) return events;
+    if (!tracking) {
+      // Out of frame: a rep in progress must not be completed later as if
+      // nothing happened, and a hold must stop accruing time (docs/06 §7).
+      if (definition.countMode == CountMode.reps) {
+        if (_rep!.abort()) _rules.discardRep();
+      } else {
+        for (final e in _hold!.update(false, t)) {
+          if (e is HoldEnded) _closeHold(t, e.heldMs, events);
+        }
+      }
+      return events;
+    }
 
     if (definition.countMode == CountMode.reps) {
       _processReps(fs, t, events);
