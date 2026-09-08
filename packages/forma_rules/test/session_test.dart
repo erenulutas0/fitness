@@ -221,6 +221,27 @@ void main() {
       expect(r.session.snapshot.bodyInFrame, isTrue);
     });
 
+    test('an anatomically impossible skeleton is not counted', () {
+      // A close-up can keep every joint inside the picture while the model
+      // invents the body: measured over the corpus, real recordings never
+      // exceeded a shin/thigh ratio of 1.21, invented ones reached 1.6-25.
+      const impossible = SkeletonBuilder(BodyModel(shin: 0.95));
+      final frames = [
+        for (final (t, angle) in SyntheticPose.repProfile(
+          reps: 4,
+          restValue: 172,
+          peakValue: 90,
+        ))
+          SkeletonProjector(
+            view: CameraView.side,
+            metresPerImageHeight: 3,
+          ).project(impossible.squat(kneeAngleDeg: angle), tMs: t),
+      ];
+      final r = run(squat, CameraView.side, frames);
+      expect(r.reps, isEmpty);
+      expect(r.session.snapshot.bodyInFrame, isFalse);
+    });
+
     test('the guard can be switched off', () {
       final cropped = SkeletonProjector(
         view: CameraView.side,

@@ -52,3 +52,25 @@ final fx = LandmarkFixture(id: 'syn_squat_front_valgus', exerciseId: 'bw_squat',
   frames: frames);
 File('test/fixtures/syn_squat_front_valgus.json').writeAsStringSync(fx.toJsonString());
 ```
+
+## Video'dan fixture üretme
+
+Telefonda kayıt almak yerine sıradan bir video da kullanılabilir; aynı MediaPipe modeli masaüstünde koşar:
+
+```bash
+python tools/video_to_fixture/video_to_fixture.py squat.mp4 \
+    --exercise bw_squat --view side --person p01 --environment living_room \
+    --reps 5 --label 2:shallow_depth --preview
+```
+
+`--preview` iskeleti videonun üzerine çizer; bir kuralı açmadan önce modelin gerçekten ne gördüğünü doğrulamanın
+en hızlı yolu (bkz. docs/00 D17). Ayrıntı: `tools/video_to_fixture/README.md`.
+
+## Ölçüm notları (8 Eylül 2026, 26 kayıt)
+
+- **Görünürlük tek başına yetmez.** MediaPipe kadraj dışına çıkan eklemi tahmin etmeye devam edip yüksek
+  `visibility` raporluyor. Güvenilir ayırt edici: koordinatın normalize 0-1 aralığının dışına yazılması
+  (imkansız açı üreten her klipte %59-100 frame, doğru kadrajlı kayıtlarda %0) — bkz. D18.
+- **Anatomik makullük.** Baldır/uyluk oranı gerçek kayıtlarda hiç 1,21'i geçmedi; uydurma iskeletlerde 1,6-25
+  arasına çıktı. `SessionConfig.maxShinThighRatio` bu sınıra dayanıyor.
+- **Ayak noktaları en zayıf halka** (güven 0,37-0,64); topuk kalkması kuralının kapatılma nedeni (D17).

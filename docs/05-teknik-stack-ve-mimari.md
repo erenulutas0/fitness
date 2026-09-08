@@ -96,6 +96,11 @@ SessionRecorder → yerel DB (Drift) → isteğe bağlı sync (Supabase)
 }
 ```
 
+**Taraf seçimi (küçük ama bilinmesi gereken tutarsızlık):** `angle(hip, knee, ankle)` gibi taraf belirtilmemiş
+nokta adları **baskın tarafı** (görünürlüğü yüksek olan) kullanır; `knee_angle` gibi hazır özellikler ise iki taraf
+da güvenilirse **ortalamayı**, değilse iyi olanı verir. Yan görüşte ikisi aynı sonucu verir, ön görüşte farklı
+olabilir — bir kuralda tek taraf lazımsa `_l` / `_r` ekiyle açıkça yaz.
+
 İfade dili: küçük, güvenli bir expression evaluator (Dart'ta `expressions` paketi ya da kendi parser'ımız; `eval` yok). Kurallar `phase` ve `view` ile kapılanır; `evaluateAt` "anlık" ya da "tekrar sonu".
 
 ## 5. FeedbackScheduler spesifikasyonu

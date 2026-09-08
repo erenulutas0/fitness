@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import '../features/feature_extractor.dart';
 import '../filters/one_euro_filter.dart';
+import '../geometry.dart';
 import '../gestures/gesture_detector.dart';
 import '../landmarks.dart';
 import '../pose_frame.dart';
@@ -15,11 +18,12 @@ class SessionConfig {
   const SessionConfig({
     this.smoothing = const SmoothingConfig(),
     this.minTrackingConfidence = 0.5,
-    this.minSignalConfidence = 0.4,
+    this.minSignalConfidence = 0.5,
     this.extractorMinVisibility = 0.5,
     this.requireBodyInFrame = true,
     this.frameEdgeMargin = 0,
     this.maxBodyHeightFraction = 0.97,
+    this.maxShinThighRatio = 1.6,
     this.detectGestures = false,
     this.gestures = const GestureConfig(),
   });
@@ -31,6 +35,10 @@ class SessionConfig {
   final double minTrackingConfidence;
 
   /// Rep signal / hold condition confidence below which the frame is ignored.
+  ///
+  /// Kept equal to the rules' own `minConfidence` on purpose: with a lower
+  /// value the coach counts reps it will never comment on, which reads as
+  /// "it sees me but has nothing to say".
   final double minSignalConfidence;
   final double extractorMinVisibility;
 
@@ -53,6 +61,15 @@ class SessionConfig {
   /// Body taller than this share of the picture means the camera is too
   /// close for the whole body to fit, even when nothing has left the frame.
   final double maxBodyHeightFraction;
+
+  /// Anatomical sanity check: a shin is never much longer than a thigh.
+  ///
+  /// Foreshortening can stretch the ratio a little, but not past ~1.5.
+  /// Measured over the corpus: properly framed recordings never exceeded
+  /// 1.21, while clips where the model invented a skeleton reached 1.6-25 in
+  /// 3-73% of their frames. Catches the case the frame-edge check cannot: a
+  /// close-up where the joints stay inside the picture but the body does not.
+  final double maxShinThighRatio;
   final bool detectGestures;
   final GestureConfig gestures;
 }
@@ -412,7 +429,24 @@ class ExerciseSession {
     // Nothing has left the shot, but the body may still fill it completely,
     // which means the camera is too close to see the whole movement.
     final height = fs.value('bbox_height') ?? 0;
-    return height <= config.maxBodyHeightFraction;
+    if (height > config.maxBodyHeightFraction) return false;
+    return _isSkeletonPlausible(fs);
+  }
+
+  /// Reject frames whose skeleton cannot belong to a human body.
+  bool _isSkeletonPlausible(FeatureSet fs) {
+    final hip = fs.point('hip_mid');
+    final knee = fs.point('knee_mid');
+    final ankle = fs.point('ankle_mid');
+    if (hip == null || knee == null || ankle == null) return true;
+    if (math.min(hip.confidence, math.min(knee.confidence, ankle.confidence)) <
+        config.extractorMinVisibility) {
+      return true;
+    }
+    final thigh = Vec2.distance(hip.p, knee.p);
+    final shin = Vec2.distance(knee.p, ankle.p);
+    if (thigh < 1e-4) return true;
+    return shin / thigh <= config.maxShinThighRatio;
   }
 
   /// Process one raw frame. Returns the events produced by this frame.
