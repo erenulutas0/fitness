@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_pose/forma_pose.dart';
@@ -88,6 +89,12 @@ class _HudScreenState extends ConsumerState<HudScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 children: [
+                  if (kDebugMode && frame != null)
+                    _DebugMetrics(
+                      frame: frame,
+                      snapshot: snap,
+                      engine: state.engine,
+                    ),
                   _TopStrip(
                     exerciseName: def?.name.text(l10n.localeName) ?? '',
                     setLabel: l10n.setOf(state.setIndex, state.setTotal),
@@ -351,6 +358,44 @@ class _TempoLabel extends StatelessWidget {
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(color: FormaColors.textMuted)),
       ],
+    );
+  }
+}
+
+/// Debug-only engine readout (fps, latency, tracking confidence). Never shown
+/// in release builds; docs/05 §10 budgets are checked against this.
+class _DebugMetrics extends StatelessWidget {
+  const _DebugMetrics({
+    required this.frame,
+    required this.snapshot,
+    required this.engine,
+  });
+
+  final PoseFrame frame;
+  final SessionSnapshot? snapshot;
+  final String? engine;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = snapshot;
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ColoredBox(
+        color: Colors.black54,
+        child: Text(
+          '$engine ${frame.width}x${frame.height} | '
+          'fps ${frame.fps?.toStringAsFixed(1) ?? '-'} | '
+          'lat ${frame.inferenceMs?.toStringAsFixed(0) ?? '-'}ms | '
+          'vis ${s?.confidence.toStringAsFixed(2) ?? '-'} | '
+          'sig ${s?.signalValue?.toStringAsFixed(0) ?? '-'} | '
+          '${s?.phase.name ?? '-'}',
+          style: const TextStyle(
+            fontSize: 10,
+            fontFamily: 'monospace',
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 }
