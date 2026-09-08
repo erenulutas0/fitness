@@ -38,5 +38,20 @@
   "@errorTimes": { "placeholders": { "count": { "type": "int" } } },
   "engineError": "Camera could not start: {message}",
   "@engineError": { "placeholders": { "message": { "type": "String" } } },
-  "healthDisclaimer": "Stop if you feel pain. If you have a health condition, check with your doctor first."
+  "healthDisclaimer": "Stop if you feel pain. If you have a health condition, check with your doctor first.",
+  "setupTitle": "Place your phone",
+  "setupHintSide": "Side view: your whole body in frame, phone level.",
+  "setupHintFront": "Front view: your whole body in frame, face the camera.",
+  "framingOk": "Framing looks good",
+  "framingNoPose": "Step into the frame",
+  "framingLowConfidence": "I can't see you clearly",
+  "framingTooClose": "Step back a bit",
+  "framingTooFar": "Come a bit closer",
+  "framingMoveRight": "Move a bit right",
+  "framingMoveLeft": "Move a bit left",
+  "framingLowLight": "Not enough light",
+  "setupReady": "Ready when you are",
+  "setupStartNow": "Start now",
+  "setupCancel": "Cancel",
+  "outOfFrame": "Step back a bit"
 }

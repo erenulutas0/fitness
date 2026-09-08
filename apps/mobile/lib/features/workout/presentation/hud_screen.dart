@@ -117,67 +117,95 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                       style: const TextStyle(color: FormaColors.warning),
                       textAlign: TextAlign.center,
                     ),
-                  _RepCounter(
-                    text: counterText,
-                    unit: isHold ? l10n.seconds : l10n.reps,
-                    tracking: tracking,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _ScoreRing(score: lastScore, label: l10n.form),
-                      const SizedBox(width: 28),
-                      if (!isHold) _TempoLabel(rep: snap, label: l10n.tempo),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 40,
-                    child: AnimatedOpacity(
-                      opacity: state.showCue ? 1 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Text(
-                        state.lastCue?.text ?? '',
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          color: FormaColors.warning,
+                  if (state.isSetup)
+                    _SetupPanel(state: state, view: widget.view)
+                  else ...[
+                    _RepCounter(
+                      text: counterText,
+                      unit: isHold ? l10n.seconds : l10n.reps,
+                      tracking: tracking,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _ScoreRing(score: lastScore, label: l10n.form),
+                        const SizedBox(width: 28),
+                        if (!isHold) _TempoLabel(rep: snap, label: l10n.tempo),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 40,
+                      child: AnimatedOpacity(
+                        opacity: state.showCue ? 1 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Text(
+                          state.lastCue?.text ?? '',
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: FormaColors.warning,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                  if (!tracking && state.status == HudStatus.running)
-                    Text(
-                      l10n.cantSeeYou,
-                      style: const TextStyle(color: FormaColors.textMuted),
-                    ),
+                    if (!tracking && state.status == HudStatus.running)
+                      Text(
+                        (snap?.bodyInFrame ?? true)
+                            ? l10n.cantSeeYou
+                            : l10n.outOfFrame,
+                        style: const TextStyle(color: FormaColors.textMuted),
+                      ),
+                  ],
+                  const Spacer(),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton(
-                          key: const Key('hud_finish'),
-                          onPressed: state.status == HudStatus.running
-                              ? _finish
-                              : null,
-                          child: Text(l10n.finish),
+                  if (state.isSetup)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton(
+                            key: const Key('hud_start_now'),
+                            onPressed: ref.read(_provider.notifier).startNow,
+                            child: Text(l10n.setupStartNow),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton(
-                          key: const Key('hud_skip'),
-                          onPressed: () async {
-                            await ref.read(_provider.notifier).finish();
-                            if (context.mounted) context.go(Routes.today);
-                          },
-                          child: Text(l10n.skip),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            key: const Key('hud_setup_cancel'),
+                            onPressed: () => context.go(Routes.today),
+                            child: Text(l10n.setupCancel),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton(
+                            key: const Key('hud_finish'),
+                            onPressed: state.status == HudStatus.running
+                                ? _finish
+                                : null,
+                            child: Text(l10n.finish),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            key: const Key('hud_skip'),
+                            onPressed: () async {
+                              await ref.read(_provider.notifier).finish();
+                              if (context.mounted) context.go(Routes.today);
+                            },
+                            child: Text(l10n.skip),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -396,6 +424,77 @@ class _DebugMetrics extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The framing step: one clear instruction at a time, big enough to read from
+/// two metres away, plus the countdown once the shot is good (docs/06 §4.2).
+class _SetupPanel extends StatelessWidget {
+  const _SetupPanel({required this.state, required this.view});
+
+  final HudState state;
+  final CameraView view;
+
+  String _message(AppLocalizations l10n) {
+    final f = state.framing;
+    if (f == null) return l10n.framingNoPose;
+    if (!f.brightnessOk) return l10n.framingLowLight;
+    return switch (f.status) {
+      FramingStatus.ok => l10n.framingOk,
+      FramingStatus.noPose => l10n.framingNoPose,
+      FramingStatus.lowConfidence => l10n.framingLowConfidence,
+      FramingStatus.tooClose => l10n.framingTooClose,
+      FramingStatus.tooFar => l10n.framingTooFar,
+      FramingStatus.moveTowardImageRight => l10n.framingMoveRight,
+      FramingStatus.moveTowardImageLeft => l10n.framingMoveLeft,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final ready = state.framing?.isReady ?? false;
+    final counting = state.status == HudStatus.countdown;
+    return Column(
+      children: [
+        Text(
+          l10n.setupTitle,
+          style: const TextStyle(color: FormaColors.textMuted, fontSize: 16),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          view == CameraView.front ? l10n.setupHintFront : l10n.setupHintSide,
+          style: const TextStyle(color: FormaColors.textMuted, fontSize: 13),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        if (counting)
+          Text(
+            '${state.countdownSeconds}',
+            key: const Key('hud_countdown'),
+            style: Theme.of(
+              context,
+            ).textTheme.displayLarge?.copyWith(color: FormaColors.secondary),
+          )
+        else
+          Icon(
+            ready ? Icons.check_circle : Icons.center_focus_weak,
+            size: 72,
+            color: ready ? FormaColors.success : FormaColors.warning,
+          ),
+        const SizedBox(height: 12),
+        Text(
+          counting ? l10n.setupReady : _message(l10n),
+          key: const Key('hud_framing_message'),
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: ready ? FormaColors.success : FormaColors.warning,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }

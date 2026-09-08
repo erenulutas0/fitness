@@ -1,14 +1,18 @@
+import 'dart:async';
+
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:forma_rules/forma_rules.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../../../core/locale/locale_controller.dart';
 
 part 'cue_player.g.dart';
 
-/// Plays [CueCommand]s: audio clip + haptic. The audio implementation
-/// (just_audio + audio_session ducking, docs/10 Prompt 5) is not wired yet;
-/// this default plays the haptic and logs the text so the HUD subtitle and
-/// the scheduler logic can be exercised end to end.
+/// Speaks [CueCommand]s and fires the matching haptic.
 abstract class CuePlayer {
   Future<void> play(CueCommand cue);
 
@@ -17,9 +21,16 @@ abstract class CuePlayer {
       await play(c);
     }
   }
+
+  /// Warm the audio path up so the first cue of a set is not the slow one.
+  Future<void> prepare() async {}
+
+  Future<void> dispose() async {}
 }
 
-class HapticLogCuePlayer extends CuePlayer {
+/// Haptics only, plus a debug log. Used by tests and by any build without a
+/// working audio path.
+class HapticCuePlayer extends CuePlayer {
   final List<CueCommand> history = [];
 
   @override
@@ -29,7 +40,11 @@ class HapticLogCuePlayer extends CuePlayer {
     if (kDebugMode) {
       debugPrint('[cue] ${cue.clipId}#${cue.variant} "${cue.text}"');
     }
-    switch (cue.haptic) {
+    await playHaptic(cue.haptic);
+  }
+
+  static Future<void> playHaptic(HapticKind haptic) async {
+    switch (haptic) {
       case HapticKind.tick:
         await HapticFeedback.selectionClick();
       case HapticKind.pulse:
@@ -44,5 +59,132 @@ class HapticLogCuePlayer extends CuePlayer {
   }
 }
 
+/// The real coach voice (docs/10 Prompt 5).
+///
+/// Pre-rendered clips are the product (D5): they start in a few milliseconds
+/// and cost nothing at runtime. Until `tools/tts_gen` has produced them the
+/// player falls back to the device's own speech engine, which keeps the coach
+/// audible today at the cost of a slower, more robotic first word.
+///
+/// One channel only: a higher-priority cue cuts whatever is playing, a
+/// lower-priority one is dropped rather than queued, because a correction two
+/// reps late is worse than no correction.
+class VoiceCuePlayer extends CuePlayer {
+  VoiceCuePlayer({required this.locale, AudioPlayer? player, FlutterTts? tts})
+    : _player = player ?? AudioPlayer(),
+      _tts = tts ?? FlutterTts();
+
+  /// `tr` or `en`; picks both the clip folder and the speech voice.
+  final String locale;
+  final AudioPlayer _player;
+  final FlutterTts _tts;
+
+  final List<CueCommand> history = [];
+  bool _ready = false;
+  int _playingPriority = 0;
+  final Set<String> _missingClips = {};
+
+  static const _basePath = 'assets/audio/cues';
+
+  @override
+  Future<void> prepare() async {
+    if (_ready) return;
+    _ready = true;
+    try {
+      final session = await AudioSession.instance;
+      // Duck the user's music instead of stopping it: people train to music.
+      await session.configure(
+        const AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.duckOthers,
+          avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+          androidAudioAttributes: AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.speech,
+            usage: AndroidAudioUsage.assistanceAccessibility,
+          ),
+          androidAudioFocusGainType:
+              AndroidAudioFocusGainType.gainTransientMayDuck,
+        ),
+      );
+      await session.setActive(true);
+    } on Object catch (e) {
+      debugPrint('[cue] audio session unavailable: $e');
+    }
+    try {
+      await _tts.setLanguage(locale == 'en' ? 'en-US' : 'tr-TR');
+      await _tts.setSpeechRate(locale == 'en' ? 0.55 : 0.6);
+      await _tts.awaitSpeakCompletion(true);
+      // First utterance on Android costs a few hundred ms; spend it now.
+      await _tts.speak(' ');
+    } on Object catch (e) {
+      debugPrint('[cue] tts unavailable: $e');
+    }
+  }
+
+  @override
+  Future<void> play(CueCommand cue) async {
+    history.add(cue);
+    if (history.length > 200) history.removeAt(0);
+    unawaited(HapticCuePlayer.playHaptic(cue.haptic));
+
+    if (!cue.interrupts && cue.priority < _playingPriority && _isBusy) {
+      return; // something more important is already speaking
+    }
+    _playingPriority = cue.priority;
+    final asset = '$_basePath/$locale/${cue.clipId}_${cue.variant}.opus';
+    if (!_missingClips.contains(asset)) {
+      try {
+        await _player.stop();
+        await _player.setAsset(asset);
+        unawaited(
+          _player.play().whenComplete(() => _playingPriority = 0),
+        );
+        return;
+      } on Object {
+        // Asset not bundled yet: remember it and never retry this one.
+        _missingClips.add(asset);
+      }
+    }
+    final text = cue.text;
+    if (text == null || text.isEmpty) {
+      _playingPriority = 0;
+      return;
+    }
+    try {
+      await _tts.stop();
+      unawaited(_tts.speak(text).whenComplete(() => _playingPriority = 0));
+    } on Object catch (e) {
+      _playingPriority = 0;
+      debugPrint('[cue] speak failed: $e');
+    }
+  }
+
+  bool get _isBusy => _player.playing;
+
+  /// Clip ids that were requested but are not bundled; drives the TODO for
+  /// `tools/tts_gen`.
+  Set<String> get missingClips => Set.unmodifiable(_missingClips);
+
+  @override
+  Future<void> dispose() async {
+    await _player.dispose();
+    await _tts.stop();
+  }
+}
+
 @Riverpod(keepAlive: true)
-CuePlayer cuePlayer(Ref ref) => HapticLogCuePlayer();
+CuePlayer cuePlayer(Ref ref) {
+  // Widget tests drive the pipeline without a platform audio channel.
+  if (kIsWeb || _isTest) return HapticCuePlayer();
+  final player = VoiceCuePlayer(
+    locale: ref.watch(localeControllerProvider).languageCode,
+  );
+  unawaited(player.prepare());
+  ref.onDispose(() => unawaited(player.dispose()));
+  return player;
+}
+
+bool get _isTest =>
+    const bool.fromEnvironment('FLUTTER_TEST') ||
+    Zone.current[#test.declarer] != null;

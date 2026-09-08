@@ -48,12 +48,22 @@ void main() {
     await tester.tap(find.byKey(const Key('view_front')));
     await tester.pumpAndSettle();
 
+    // The set now opens on the framing step: the camera is already streaming,
+    // the coach waits until the shot is good and counts down.
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 33));
+    }
+    expect(find.byKey(const Key('hud_framing_message')), findsOneWidget);
+
+    // Skip the wait the way an impatient user would.
+    await tester.tap(find.byKey(const Key('hud_start_now')));
+    await tester.pump();
+
     // Let the fake engine stream ~9 s of frames (3 reps + pauses).
     for (var i = 0; i < 270; i++) {
       await tester.pump(const Duration(milliseconds: 33));
     }
     expect(find.text('3'), findsWidgets);
-    // The valgus cue cycles through its phrasing variants; any of them counts.
     expect(
       find.byWidgetPredicate(
         (w) => w is Text && (w.data ?? '').contains('dışa'),

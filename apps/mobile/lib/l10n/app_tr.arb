@@ -38,5 +38,20 @@
   "@errorTimes": { "placeholders": { "count": { "type": "int" } } },
   "engineError": "Kamera başlatılamadı: {message}",
   "@engineError": { "placeholders": { "message": { "type": "String" } } },
-  "healthDisclaimer": "Ağrı hissedersen dur. Sağlık sorunun varsa önce doktoruna danış."
+  "healthDisclaimer": "Ağrı hissedersen dur. Sağlık sorunun varsa önce doktoruna danış.",
+  "setupTitle": "Kamerayı yerleştir",
+  "setupHintSide": "Yandan çekim: tüm vücudun görünsün, telefonu yere paralel tut.",
+  "setupHintFront": "Önden çekim: tüm vücudun görünsün, kameraya dön.",
+  "framingOk": "Kadraj tamam",
+  "framingNoPose": "Kadraja gir",
+  "framingLowConfidence": "Seni net göremiyorum",
+  "framingTooClose": "Biraz geri git",
+  "framingTooFar": "Biraz yaklaş",
+  "framingMoveRight": "Biraz sağa kay",
+  "framingMoveLeft": "Biraz sola kay",
+  "framingLowLight": "Işık az",
+  "setupReady": "Hazırsan başlıyoruz",
+  "setupStartNow": "Şimdi başla",
+  "setupCancel": "Vazgeç",
+  "outOfFrame": "Biraz geri git"
 }

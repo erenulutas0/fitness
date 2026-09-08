@@ -8,11 +8,13 @@ environment:
   sdk: ^3.11.0
 
 dependencies:
+  audio_session: ^0.2.4
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.1.0
+  flutter_tts: ^4.2.5
   forma_content:
     path: ../../content
   forma_pose:
@@ -23,6 +25,7 @@ dependencies:
   go_router: ^17.5.0
   intl: ^0.20.2
   json_annotation: ^4.9.0
+  just_audio: ^0.10.6
   path_provider: ^2.1.6
   riverpod_annotation: ^4.0.0
   share_plus: ^13.3.0
