@@ -2,7 +2,7 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 4** (Claude, ilk gerçek kayıtlar + heel_rise kapatıldı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-08, oturum 5** (Claude, video→fixture aracı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
@@ -16,6 +16,8 @@
 
 ## Şimdi (sıradaki oturum bunlarla başlar)
 
+- [ ] **Topuk kalkması kararı**: yan açıdan tek bir video çek (5 tekrar yeter), `--preview` ile iskeleti izle.
+      Model ayağı doğru görüyorsa kuralı taban çizgisiyle yeniden yazarız; göremiyorsa kapalı kalır (D17).
 - [ ] **Kasten hatalı kayıtlar** (recall ölçmek için): her hata tipi için 1-2 kayıt — bilerek topuk kaldır,
       bilerek sığ in, bilerek dizleri içe ver, bilerek gövdeyi öne eğ. Şu an sadece temiz kayıt var; temiz veriyle
       yalnızca yanlış alarmı ölçebiliyoruz, kaçırmayı ölçemiyoruz.
@@ -45,6 +47,11 @@
 - [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
+
+- [x] 2026-09-08 — **`tools/video_to_fixture`**: sıradan video → fixture JSON (aynı MediaPipe modeli, masaüstü).
+      Kayıt ekranından çok daha az iş: telefonla normal video çek, dönüştür. `--preview` iskeleti videonun üzerine
+      çizer (ayak noktaları turuncu), böylece bir kuralı açmadan önce modelin gerçekten ne gördüğü gözle
+      doğrulanır. `--label REP:kural` ile etiket, `--rotate/--start/--end/--max-width` ile çekim düzeltmeleri.
 
 - [x] 2026-09-08 — **İlk gerçek kayıtlar analiz edildi** (2 kayıt, Galaxy S23, yan açı, 5'er tekrar):
       tekrar sayımı 5/5 doğru (MAE 0), derinlik 78-85° ve 97-109°, gövde eğimi temiz, takip kaybı ~%0-2.
