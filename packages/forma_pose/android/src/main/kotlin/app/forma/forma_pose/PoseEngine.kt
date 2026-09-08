@@ -79,10 +79,14 @@ class PoseEngine(
     fun start(opts: Options, onReady: (Map<String, Any?>) -> Unit) {
         options = opts
         mirror = opts.lens == "front"
-        landmarker = createLandmarker(opts.model, opts)
+        // Reading a 6 MB model blocks for a few hundred ms; do it while the
+        // camera provider is still starting up rather than on the main thread.
+        val landmarkerFuture = java.util.concurrent.FutureTask { createLandmarker(opts.model, opts) }
+        analysisExecutor.execute(landmarkerFuture)
         val future = ProcessCameraProvider.getInstance(context)
         future.addListener({
             try {
+                landmarker = landmarkerFuture.get()
                 val provider = future.get()
                 cameraProvider = provider
                 bind(provider, opts)
@@ -98,8 +102,10 @@ class PoseEngine(
                     ),
                 )
             } catch (t: Throwable) {
-                Log.e(TAG, "camera bind failed", t)
-                listener.onError("CAMERA_UNAVAILABLE", t.message ?: t.toString())
+                val cause = (t as? java.util.concurrent.ExecutionException)?.cause ?: t
+                Log.e(TAG, "start failed", cause)
+                val code = if (cause is ModelException) "MODEL_LOAD_FAILED" else "CAMERA_UNAVAILABLE"
+                listener.onError(code, cause.message ?: cause.toString())
             }
         }, ContextCompat.getMainExecutor(context))
     }
