@@ -1,0 +1,85 @@
+# --- Claude Code (local permissions) ---
+.claude/settings.local.json
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+*.iml
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+
+# --- Generated code (recreated by build_runner / gen-l10n; CI runs both) ---
+apps/mobile/lib/**/*.g.dart
+apps/mobile/lib/**/*.freezed.dart
+apps/mobile/lib/l10n/app_localizations*.dart
+
+# --- Dart / Flutter ---
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+pubspec_overrides.yaml
+*.g.dart.bak
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata.bak
+coverage/
+doc/api/
+**/*.freezed.dart.bak
+
+# --- Android ---
+**/android/.gradle/
+**/android/local.properties
+**/android/.cxx/
+**/android/app/.cxx/
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+*.keystore
+
+# --- iOS ---
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/**/xcuserdata/
+**/ios/**/*.xcworkspace/xcshareddata/
+**/ios/**/DerivedData/
+**/ios/ServiceDefinitions.json
+
+# --- ML model binaries (download with tools/fetch_models.ps1 / .sh) ---
+**/assets/models/*.task
+**/assets/models/*.tflite
+
+# --- Generated audio cues (tools/tts_gen output is committed selectively) ---
+tools/tts_gen/.cache/
+tools/tts_gen/*.json.key
+*.credentials.json
+service-account*.json
+
+# --- Recorded landmark fixtures with real people (moat; keep private) ---
+data/
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Node (web demo) ---
+node_modules/
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example

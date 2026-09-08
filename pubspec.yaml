@@ -1,0 +1,17 @@
+# FORMA monorepo root — Dart pub workspace.
+# `dart pub get` here resolves every member package with a single lockfile.
+# Members declare `resolution: workspace` in their own pubspec.yaml.
+name: forma_workspace
+description: FORMA — camera-based real-time strength-training form coach (monorepo root).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+workspace:
+  - packages/forma_rules
+  - content
+  - packages/forma_pose
+  - packages/forma_pose/example
+  - apps/mobile
+  - tools/eval
