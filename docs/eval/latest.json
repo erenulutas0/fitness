@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T14:55:36.110716",
+  "generatedAt": "2026-09-09T02:11:08.944172",
   "fixtures": 12,
   "smoothing": true,
   "meetsGate2": true,
@@ -112,9 +112,9 @@
       "exerciseId": "bw_squat",
       "fixtures": 6,
       "repMae": 0.0,
-      "cuesPerRep": 0.3076923076923077,
+      "cuesPerRep": 0.23076923076923078,
       "overall": {
-        "tp": 14,
+        "tp": 11,
         "fp": 0,
         "fn": 0,
         "precision": 1.0,
@@ -147,14 +147,6 @@
           "f1": 1.0
         },
         "torso_lean": {
-          "tp": 3,
-          "fp": 0,
-          "fn": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0
-        },
-        "heel_rise": {
           "tp": 3,
           "fp": 0,
           "fn": 0,
