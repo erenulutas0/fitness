@@ -2,7 +2,7 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 5** (Claude, video→fixture aracı + ilk doğruluk incelemesi). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-08, oturum 6** (Claude, 26 kayıtlık doğruluk taraması + kadraj koruması). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
@@ -18,6 +18,8 @@
 
 - [ ] **Topuk kalkması kararı**: yan açıdan tek bir video çek (5 tekrar yeter), `--preview` ile iskeleti izle.
       Model ayağı doğru görüyorsa kuralı taban çizgisiyle yeniden yazarız; göremiyorsa kapalı kalır (D17).
+- [ ] Kalan uç durum: yalnızca bacakları gösteren yakın çekimde (stok px_6326821) eklemler kadraj içinde kaldığı
+      için koruma tetiklenmiyor ve motor 9° gibi bir açı üretebiliyor. Vücut oranı kontrolü (gövde/bacak) gerekebilir.
 - [ ] **Ayak görünürlüğü sorunu**: dört kayıtta da ayak landmark güveni 0.37-0.64. Kamera yüksekliği/mesafesi
       ve ayakkabı etkisini test et; gerekirse kurulum asistanı "ayakların kadrajda olsun" desin.
 - [ ] `minSignalConfidence` (0.4) ile kural `minConfidence` (0.5) boşluğu: tekrar sayılıp hiç kural
@@ -51,6 +53,14 @@
 - [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
+
+- [x] 2026-09-08 — **26 kayıtlık tarama** (4 cihaz kaydı + kurucunun 2 videosu + 20 ücretsiz stok video):
+      tekrar sayımı doğru kadrajlı her kayıtta tutarlı; kesik kadrajlı stok videolarda motor **imkansız diz açıları**
+      (3-12°) üretiyordu. Kök neden ölçüldü: MediaPipe kadraj dışındaki eklemi tahmin edip yüksek `visibility`
+      veriyor ama koordinatı 0-1 aralığının dışına yazıyor.
+- [x] 2026-09-08 — **Kadraj koruması (D18)**: kritik eklem görüntü dışına çıkarsa ya da vücut kadrajın %97'sinden
+      fazlasını kaplarsa oturum donuyor; kadraj kaybı için ayrı cue ("Biraz geri git"). Etki: kesik stok
+      videolarda sahte tekrarlar sıfırlandı (5→0, 3→0, 1→0), kurucunun cihaz kayıtları hiç etkilenmedi.
 
 - [x] 2026-09-08 — **İlk doğruluk incelemesi** (kurucunun 2 videosu + 2 Pexels örneği + 4 cihaz kaydı = 8 fixture):
       tekrar sayımı **MAE 0** (her kayıtta doğru sayı), derinlik tespiti iskelet önizlemesiyle gözle doğrulandı
@@ -193,3 +203,7 @@
   analiz `heel_rise` kuralının her tekrarda yanlış alarm verdiğini gösterdi ve nedeni ölçümle bulundu (özellik
   squat derinliğiyle artıyor, 3B'de de). Kural kapatıldı (D17), kurallara `enabled`/`disabledNote` eklendi,
   golden replay testi kapalı kuralları hesaba katacak şekilde sağlamlaştırıldı. Testler: 111 yeşil.
+- **2026-09-08 / oturum 6 (Claude):** Kurucunun iki videosu ve 20 ücretsiz stok video işlendi (`video_to_fixture`),
+  26 kayıt tarandı. Topuk sorusu iskelet önizlemesiyle gözle kapatıldı (topuklar yerde, model dipte ayağı eğik
+  görüyor). Kesik kadrajın imkansız açılar ürettiği ölçüldü ve kadraj koruması eklendi (D18) + ayrı kadraj cue'su.
+  Testler: 115 + 3 + 3 yeşil.

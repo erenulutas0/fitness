@@ -269,6 +269,29 @@ void main() {
     expect(c, isNotEmpty);
   });
 
+  test('out of frame says "step back", not "I cannot see you"', () {
+    final s = make();
+    final cropped = s.handle(
+      [
+        const SessionTrackingChanged(
+          0,
+          tracking: false,
+          confidence: 0.9,
+          bodyInFrame: false,
+        ),
+      ],
+      nowMs: 0,
+    );
+    expect(cropped.single.clipId, 'step_back');
+    expect(cropped.single.text, 'Biraz geri git');
+
+    final lost = s.handle(
+      [const SessionTrackingChanged(20000, tracking: false, confidence: 0.2)],
+      nowMs: 20000,
+    );
+    expect(lost.single.clipId, 'cant_see_you');
+  });
+
   test('end-to-end: session events → cues for a valgus set', () {
     final def = ExerciseDefinition.parse(
       File('../../content/exercises/bw_squat.json').readAsStringSync(),

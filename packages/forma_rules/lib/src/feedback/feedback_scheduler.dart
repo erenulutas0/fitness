@@ -54,6 +54,7 @@ class FeedbackPolicy {
     this.quietMode = false,
     this.positiveCueId = 'nice',
     this.lowConfidenceCueId = 'cant_see_you',
+    this.outOfFrameCueId = 'step_back',
     this.countCuePrefix = 'count_',
     this.maxCountCue = 20,
   });
@@ -82,6 +83,9 @@ class FeedbackPolicy {
   final bool quietMode;
   final String positiveCueId;
   final String lowConfidenceCueId;
+
+  /// Played instead of [lowConfidenceCueId] when the body left the picture.
+  final String outOfFrameCueId;
   final String countCuePrefix;
   final int maxCountCue;
 }
@@ -136,11 +140,11 @@ class FeedbackScheduler {
 
     for (final e in events) {
       switch (e) {
-        case SessionTrackingChanged(:final tracking):
+        case SessionTrackingChanged(:final tracking, :final bodyInFrame):
           if (!tracking &&
               nowMs - _lastLowConfCueMs >= policy.lowConfidenceCueEveryMs) {
             final cmd = _make(
-              policy.lowConfidenceCueId,
+              bodyInFrame ? policy.lowConfidenceCueId : policy.outOfFrameCueId,
               nowMs,
               priority: 4,
               interrupts: true,

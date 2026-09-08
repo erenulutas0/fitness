@@ -1,6 +1,7 @@
 import '../features/feature_extractor.dart';
 import '../filters/one_euro_filter.dart';
 import '../gestures/gesture_detector.dart';
+import '../landmarks.dart';
 import '../pose_frame.dart';
 import '../rep/rep_detector.dart';
 import '../rules/exercise_definition.dart';
@@ -16,6 +17,9 @@ class SessionConfig {
     this.minTrackingConfidence = 0.5,
     this.minSignalConfidence = 0.4,
     this.extractorMinVisibility = 0.5,
+    this.requireBodyInFrame = true,
+    this.frameEdgeMargin = 0,
+    this.maxBodyHeightFraction = 0.97,
     this.detectGestures = false,
     this.gestures = const GestureConfig(),
   });
@@ -29,6 +33,26 @@ class SessionConfig {
   /// Rep signal / hold condition confidence below which the frame is ignored.
   final double minSignalConfidence;
   final double extractorMinVisibility;
+
+  /// Freeze while a joint the rules depend on is outside the picture.
+  ///
+  /// The model keeps predicting joints that have left the shot and still
+  /// reports high visibility for them, so visibility alone cannot catch a
+  /// cropped frame. It does place them outside the normalized 0..1 range,
+  /// which is a clean signal: measured over 26 recordings, every clip that
+  /// produced impossible knee angles (3-12 degrees) had joints out of range
+  /// in 59-100% of frames, while none of the properly framed phone
+  /// recordings had a single one.
+  final bool requireBodyInFrame;
+
+  /// Extra tolerance around the edge. 0 means "only reject what is actually
+  /// outside", which is what real recordings want: at the bottom of a squat
+  /// the hips legitimately come close to the lower edge.
+  final double frameEdgeMargin;
+
+  /// Body taller than this share of the picture means the camera is too
+  /// close for the whole body to fit, even when nothing has left the frame.
+  final double maxBodyHeightFraction;
   final bool detectGestures;
   final GestureConfig gestures;
 }
@@ -74,10 +98,16 @@ class SessionTrackingChanged extends SessionEvent {
     super.tMs, {
     required this.tracking,
     required this.confidence,
+    this.bodyInFrame = true,
   });
 
   final bool tracking;
   final double confidence;
+
+  /// False when tracking stopped because a joint left the picture rather than
+  /// because the model lost confidence: the coach should say "step back",
+  /// not "I cannot see you".
+  final bool bodyInFrame;
 }
 
 class SessionHoldStarted extends SessionEvent {
@@ -237,6 +267,7 @@ class SessionSnapshot {
     required this.confidence,
     required this.holdMs,
     required this.isHolding,
+    this.bodyInFrame = true,
     this.lastRepScore,
     this.averageScore,
     this.signalValue,
@@ -249,6 +280,10 @@ class SessionSnapshot {
   final int repCount;
   final bool tracking;
   final double confidence;
+
+  /// False when the body is cut off by the edge of the picture; the HUD can
+  /// then say "step back" instead of the generic "I cannot see you".
+  final bool bodyInFrame;
   final int holdMs;
   final bool isHolding;
   final double? lastRepScore;
@@ -319,6 +354,7 @@ class ExerciseSession {
   int? _startedAtMs;
   int _lastTs = 0;
   bool _tracking = false;
+  bool _bodyInFrame = true;
   double _confidence = 0;
   double? _signalValue;
   FeatureSet? _lastFeatures;
@@ -343,6 +379,7 @@ class ExerciseSession {
       repCount: rep?.count ?? 0,
       tracking: _tracking,
       confidence: _confidence,
+      bodyInFrame: _bodyInFrame,
       holdMs: hold?.heldMs(_lastTs) ?? 0,
       isHolding: hold?.isHolding ?? false,
       lastRepScore: _reps.isEmpty
@@ -358,6 +395,26 @@ class ExerciseSession {
     );
   }
 
+  /// True while the joints the rules depend on sit inside the picture.
+  ///
+  /// Only the core chain is checked (shoulders, hips, knees, ankles): an arm
+  /// swinging out of shot is harmless, a knee outside it is not, and requiring
+  /// the whole bounding box threw away valid reps in real recordings.
+  bool _isBodyInFrame(FeatureSet fs) {
+    final m = config.frameEdgeMargin;
+    for (final l in coreLandmarks) {
+      final lm = fs.frame[l];
+      if (lm.visibility < config.extractorMinVisibility) continue;
+      if (lm.x < m || lm.x > 1 - m || lm.y < m || lm.y > 1 - m) {
+        return false;
+      }
+    }
+    // Nothing has left the shot, but the body may still fill it completely,
+    // which means the camera is too close to see the whole movement.
+    final height = fs.value('bbox_height') ?? 0;
+    return height <= config.maxBodyHeightFraction;
+  }
+
   /// Process one raw frame. Returns the events produced by this frame.
   List<SessionEvent> process(PoseFrame raw) {
     final t = raw.timestampMs;
@@ -371,11 +428,18 @@ class ExerciseSession {
 
     final conf = raw.hasPose ? (fs.value('vis_core') ?? 0) : 0.0;
     _confidence = conf;
-    final tracking = raw.hasPose && conf >= config.minTrackingConfidence;
+    _bodyInFrame = !config.requireBodyInFrame || _isBodyInFrame(fs);
+    final tracking =
+        raw.hasPose && conf >= config.minTrackingConfidence && _bodyInFrame;
     if (tracking != _tracking) {
       _tracking = tracking;
       events.add(
-        SessionTrackingChanged(t, tracking: tracking, confidence: conf),
+        SessionTrackingChanged(
+          t,
+          tracking: tracking,
+          confidence: conf,
+          bodyInFrame: _bodyInFrame,
+        ),
       );
     }
 

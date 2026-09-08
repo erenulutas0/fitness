@@ -188,6 +188,66 @@ void main() {
     });
   });
 
+  group('framing', () {
+    // Stock clips where the body touches the edge produced impossible knee
+    // angles (3-12 degrees) while the model still reported visibility above
+    // 0.85, so visibility alone cannot gate a cropped shot.
+    test('a body cut off by the frame edge is not counted', () {
+      final cropped = SkeletonProjector(
+        view: CameraView.side,
+        metresPerImageHeight: 1.2, // person taller than the picture
+      );
+      const builder = SkeletonBuilder();
+      final frames = <PoseFrame>[];
+      for (final (t, angle) in SyntheticPose.repProfile(
+        reps: 4,
+        restValue: 172,
+        peakValue: 90,
+      )) {
+        frames.add(cropped.project(builder.squat(kneeAngleDeg: angle), tMs: t));
+      }
+      final r = run(squat, CameraView.side, frames);
+      expect(r.reps, isEmpty, reason: 'cropped frames must not produce reps');
+      expect(r.session.snapshot.bodyInFrame, isFalse);
+    });
+
+    test('the same movement counts once it fits in the picture', () {
+      final r = run(
+        squat,
+        CameraView.side,
+        syn.squat(view: CameraView.side, reps: 4),
+      );
+      expect(r.reps.length, 4);
+      expect(r.session.snapshot.bodyInFrame, isTrue);
+    });
+
+    test('the guard can be switched off', () {
+      final cropped = SkeletonProjector(
+        view: CameraView.side,
+        metresPerImageHeight: 1.2,
+      );
+      const builder = SkeletonBuilder();
+      final frames = [
+        for (final (t, angle) in SyntheticPose.repProfile(
+          reps: 4,
+          restValue: 172,
+          peakValue: 90,
+        ))
+          cropped.project(builder.squat(kneeAngleDeg: angle), tMs: t),
+      ];
+      final r = run(
+        squat,
+        CameraView.side,
+        frames,
+        config: const SessionConfig(
+          smoothing: SmoothingConfig.none,
+          requireBodyInFrame: false,
+        ),
+      );
+      expect(r.reps, isNotEmpty);
+    });
+  });
+
   group('bw_squat front view', () {
     test('clean reps count via 3D knee angle', () {
       final r = run(
