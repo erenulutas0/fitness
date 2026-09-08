@@ -90,6 +90,39 @@ class LandmarkFixture {
   int get durationMs =>
       frames.isEmpty ? 0 : frames.last.timestampMs - frames.first.timestampMs;
 
+  /// Rebase every timestamp so the recording starts at zero; keeps files
+  /// small and comparable regardless of when they were captured.
+  LandmarkFixture rebased() {
+    if (frames.isEmpty) return this;
+    final delta = -frames.first.timestampMs;
+    if (delta == 0) return this;
+    return copyWith(frames: [for (final f in frames) f.shifted(delta)]);
+  }
+
+  LandmarkFixture copyWith({
+    List<PoseFrame>? frames,
+    List<FixtureLabel>? errorLabels,
+    int? expectedReps,
+    int? expectedHoldMs,
+    String? notes,
+  }) => LandmarkFixture(
+    id: id,
+    schemaVersion: schemaVersion,
+    exerciseId: exerciseId,
+    view: view,
+    person: person,
+    environment: environment,
+    device: device,
+    modelVariant: modelVariant,
+    recordedAt: recordedAt,
+    synthetic: synthetic,
+    expectedReps: expectedReps ?? this.expectedReps,
+    expectedHoldMs: expectedHoldMs ?? this.expectedHoldMs,
+    errorLabels: errorLabels ?? this.errorLabels,
+    notes: notes ?? this.notes,
+    frames: frames ?? this.frames,
+  );
+
   Set<String> labeledRulesForRep(int rep) => {
     for (final l in errorLabels)
       if (l.rep == rep) ...l.rules,

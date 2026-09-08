@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'geometry.dart';
 import 'landmarks.dart';
 
@@ -166,17 +168,45 @@ class PoseFrame {
         brightness: brightness,
       );
 
-  Map<String, dynamic> toJson() => {
-    't': timestampMs,
-    'w': width,
-    'h': height,
-    'lm': [for (final l in landmarks) ...l.toList()],
-    if (worldLandmarks != null)
-      'world': [
-        for (final w in worldLandmarks!) ...[w.x, w.y, w.z],
+  /// Compact JSON. [fractionDigits] rounds every coordinate: 6 digits is
+  /// ~0.0006 px of a 640 px frame and ~1 µm of a world landmark, well below
+  /// the model's own noise, and it roughly halves a recorded fixture on disk.
+  Map<String, dynamic> toJson({int fractionDigits = 6}) {
+    final scale = math.pow(10, fractionDigits).toDouble();
+    double r(double v) => (v * scale).roundToDouble() / scale;
+    return {
+      't': timestampMs,
+      'w': width,
+      'h': height,
+      'lm': [
+        for (final l in landmarks) ...[
+          r(l.x),
+          r(l.y),
+          r(l.z),
+          r(l.visibility),
+          r(l.presence),
+        ],
       ],
-    if (fps != null) 'fps': fps,
-    if (inferenceMs != null) 'inf': inferenceMs,
-    if (brightness != null) 'br': brightness,
-  };
+      if (worldLandmarks != null)
+        'world': [
+          for (final w in worldLandmarks!) ...[r(w.x), r(w.y), r(w.z)],
+        ],
+      if (fps != null) 'fps': r(fps!),
+      if (inferenceMs != null) 'inf': r(inferenceMs!),
+      if (brightness != null) 'br': r(brightness!),
+    };
+  }
+
+  /// A copy whose timestamp is shifted, used to rebase a recording so its
+  /// first frame starts at zero.
+  PoseFrame shifted(int deltaMs) => PoseFrame(
+    timestampMs: timestampMs + deltaMs,
+    landmarks: landmarks,
+    worldLandmarks: worldLandmarks,
+    width: width,
+    height: height,
+    fps: fps,
+    inferenceMs: inferenceMs,
+    brightness: brightness,
+  );
 }

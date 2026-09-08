@@ -8,7 +8,7 @@ ExerciseDefinition load(String id) => ExerciseDefinition.parse(
 );
 
 void main() {
-  test('fixture JSON round-trips', () {
+  test('fixture JSON round-trips (coordinates rounded to 6 digits)', () {
     final frames = const SyntheticPose().squat(view: CameraView.side, reps: 2);
     final fx = LandmarkFixture(
       id: 'rt',
@@ -25,15 +25,29 @@ void main() {
     expect(back.frames.length, frames.length);
     expect(
       back.frames[5][PoseLandmark.leftKnee].x,
-      closeTo(frames[5][PoseLandmark.leftKnee].x, 1e-9),
+      closeTo(frames[5][PoseLandmark.leftKnee].x, 1e-6),
     );
     expect(
       back.frames[5].world(PoseLandmark.leftKnee)!.y,
-      closeTo(frames[5].world(PoseLandmark.leftKnee)!.y, 1e-9),
+      closeTo(frames[5].world(PoseLandmark.leftKnee)!.y, 1e-6),
     );
     expect(back.labeledRulesForRep(2), {'shallow_depth'});
     expect(back.labeledRuleCounts, {'shallow_depth': 1});
     expect(back.durationMs, fx.durationMs);
+  });
+
+  test('rebased() starts the recording at zero and keeps spacing', () {
+    final frames = const SyntheticPose().squat(view: CameraView.side, reps: 1);
+    final shifted = [for (final f in frames) f.shifted(1788870000000)];
+    final fx = LandmarkFixture(
+      id: 'rebase',
+      exerciseId: 'bw_squat',
+      view: CameraView.side,
+      frames: shifted,
+    ).rebased();
+    expect(fx.frames.first.timestampMs, 0);
+    expect(fx.durationMs, frames.last.timestampMs - frames.first.timestampMs);
+    expect(fx.frames[3].timestampMs, frames[3].timestampMs);
   });
 
   test('PoseFrame.empty is serialisable and has no pose', () {
