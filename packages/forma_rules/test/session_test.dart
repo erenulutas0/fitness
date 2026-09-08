@@ -413,6 +413,124 @@ void main() {
     expect((json['errorCounts'] as Map)['knee_valgus'], 2);
   });
 
+  test('a hold too short to count does not poison the next one', () {
+    // The rules accumulate frames for as long as the hold runs. A first
+    // attempt that collapses before minHoldMs used to end with no event at
+    // all, so its sagging frames were still on the board when the real hold
+    // started and hip_sag fired on a clean plank.
+    final sagging = syn.plank(durationMs: 900, hipSag: 0.09);
+    final clean = syn.plank(durationMs: 1500);
+    final offset = sagging.last.timestampMs + 1500; // longer than exitGraceMs
+    final frames = <PoseFrame>[
+      ...sagging,
+      for (var i = 1; i <= 30; i++)
+        PoseFrame.empty(sagging.last.timestampMs + 33 * i),
+      for (final f in clean)
+        PoseFrame(
+          timestampMs: f.timestampMs + offset,
+          landmarks: f.landmarks,
+          worldLandmarks: f.worldLandmarks,
+          width: f.width,
+          height: f.height,
+        ),
+    ];
+
+    final r = run(plank, CameraView.side, frames);
+    expect(r.result.holds.length, 1, reason: 'only the long hold counts');
+    expect(r.result.holds.single.failedRules, isEmpty);
+    expect(r.result.holds.single.score.rounded, 100);
+  });
+
+  test('the signal going blind mid-rep abandons the rep, it is not paused', () {
+    // Overall tracking is a mean over the core landmarks, the rep signal is
+    // the worst of hip/knee/ankle. Losing both ankles keeps the mean above the
+    // tracking gate but takes knee_angle below the signal gate, so the session
+    // used to simply skip those frames — leaving the rep open and folding the
+    // blind stretch into its duration.
+    const blindFrom = 4600;
+    const blindTo = 7200;
+    final frames = [
+      for (final f in syn.squat(view: CameraView.side, reps: 3))
+        if (f.timestampMs < blindFrom || f.timestampMs > blindTo)
+          f
+        else
+          PoseFrame(
+            timestampMs: f.timestampMs,
+            landmarks: [
+              for (var i = 0; i < f.landmarks.length; i++)
+                if (i == PoseLandmark.leftAnkle.index ||
+                    i == PoseLandmark.rightAnkle.index)
+                  Landmark(
+                    x: f.landmarks[i].x,
+                    y: f.landmarks[i].y,
+                    z: f.landmarks[i].z,
+                    visibility: 0.3,
+                    presence: 0.3,
+                  )
+                else
+                  f.landmarks[i],
+            ],
+            worldLandmarks: f.worldLandmarks,
+            width: f.width,
+            height: f.height,
+          ),
+    ];
+
+    final r = run(squat, CameraView.side, frames);
+    // The rep that was under way when the signal went is lost, which is the
+    // honest outcome. What must never happen is the one that used to: the rep
+    // stayed open across the blind stretch and closed on the NEXT descent,
+    // merging two squats into one 4.7 s rep and losing a count.
+    for (final rep in r.reps) {
+      expect(
+        rep.summary.endMs - rep.summary.startMs,
+        lessThan(2500),
+        reason: 'rep ${rep.index} swallowed the blind stretch',
+      );
+      expect(
+        rep.summary.startMs < blindFrom && rep.summary.endMs > blindTo,
+        isFalse,
+      );
+    }
+    expect(
+      r.events.whereType<SessionTrackingChanged>().where((e) => !e.tracking),
+      isEmpty,
+      reason: 'the body was visible the whole time; only the signal was not',
+    );
+  });
+
+  test('a long stand before the first rep does not make it look shallow', () {
+    // Rep-end rules aggregate over the frames buffered during the rep. If
+    // standing frames go into that buffer, a long lead-in fills it and the
+    // rep's own frames never get in: `min(knee_angle) > 105` would then be
+    // measured on someone standing upright and flag a clean deep squat.
+    // A recording that starts while the person walks into shot does exactly
+    // this, so it has to survive more than the 900-frame buffer.
+    const builder = SkeletonBuilder();
+    final proj = SkeletonProjector(view: CameraView.side);
+    final standing = builder.squat(kneeAngleDeg: 172);
+    final frames = <PoseFrame>[
+      for (var t = 0; t < 35000; t += 33) proj.project(standing, tMs: t),
+    ];
+    final offset = frames.last.timestampMs + 33;
+    for (final f in syn.squat(view: CameraView.side, reps: 1)) {
+      frames.add(
+        PoseFrame(
+          timestampMs: f.timestampMs + offset,
+          landmarks: f.landmarks,
+          worldLandmarks: f.worldLandmarks,
+          width: f.width,
+          height: f.height,
+        ),
+      );
+    }
+
+    final r = run(squat, CameraView.side, frames);
+    expect(r.reps.length, 1);
+    expect(r.reps.single.failedRules, isEmpty);
+    expect(r.ruleIds(), isEmpty);
+  });
+
   test('gestures: hands up fires after the hold time', () {
     final def = squat;
     final s = ExerciseSession(

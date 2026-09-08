@@ -77,6 +77,59 @@ void main() {
     );
   });
 
+  test('a rep that never comes back up is ended at the deadline', () {
+    // Someone sinks into the bottom and stays there (or simply stops). The
+    // deadline used to be checked only on the way back to rest, so the machine
+    // stayed open: the counter froze and nothing said why.
+    final d = RepDetector(
+      const RepConfig(
+        restThreshold: 155,
+        peakThreshold: 125,
+        hysteresis: 8,
+        minDurationMs: 700,
+        maxDurationMs: 3000,
+      ),
+    );
+    final events = run(d, [
+      for (var t = 0; t <= 12000; t += 33) (t, t < 600 ? 172.0 : 95.0),
+    ]);
+    final rejected = events.whereType<RepRejected>().toList();
+    expect(rejected, hasLength(1), reason: 'exactly once, not every frame');
+    expect(rejected.single.reason, RepRejectReason.tooSlow);
+    expect(rejected.single.tMs, lessThan(4000));
+    expect(d.phase, RepPhase.rest);
+    expect(d.count, 0);
+  });
+
+  test('after a deadline the next rep needs a real return to rest', () {
+    // Ending the abandoned rep at the deadline must not turn the second half
+    // of the same movement into a rep of its own.
+    final d = RepDetector(
+      const RepConfig(
+        restThreshold: 155,
+        peakThreshold: 125,
+        hysteresis: 8,
+        minDurationMs: 700,
+        maxDurationMs: 3000,
+      ),
+    );
+    // Down, stuck past the deadline, then back up and one clean rep.
+    final signal = <(int, double)>[
+      for (var t = 0; t <= 600; t += 33) (t, 172.0),
+      for (var t = 633; t <= 5000; t += 33) (t, 95.0),
+      for (var t = 5033; t <= 6000; t += 33) (t, 172.0),
+      for (final (t, v) in SyntheticPose.repProfile(
+        reps: 1,
+        restValue: 172,
+        peakValue: 90,
+      ))
+        (t + 6033, v),
+    ];
+    final events = run(d, signal);
+    expect(d.count, 1, reason: 'only the clean rep after standing up');
+    expect(events.whereType<RepRejected>(), hasLength(1));
+  });
+
   test('too-slow reps are rejected when maxDurationMs is set', () {
     final d = RepDetector(
       const RepConfig(

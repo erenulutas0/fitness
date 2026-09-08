@@ -193,6 +193,28 @@ void main() {
         FramingStatus.noPose,
       );
     });
+
+    test('a pose nobody can see says so instead of "step back"', () {
+      // A detected pose whose landmarks are all below the visibility
+      // threshold collapses the bounding box to (0,0). Reading the edges then
+      // says "touching the top" and the coach told someone standing three
+      // metres away in a dark room to step back, forever.
+      final visible = SkeletonProjector(
+        view: CameraView.front,
+      ).project(builder.squat(kneeAngleDeg: 175), tMs: 0);
+      final invisible = PoseFrame(
+        timestampMs: 0,
+        landmarks: [
+          for (final l in visible.landmarks)
+            Landmark(x: l.x, y: l.y, z: l.z, visibility: 0.1, presence: 0.1),
+        ],
+        width: visible.width,
+        height: visible.height,
+      );
+      const checker = FramingChecker();
+      final r = checker.check(extractor.extract(invisible));
+      expect(r.status, FramingStatus.lowConfidence);
+    });
   });
 
   test('point() resolves raw, mid and side-agnostic names', () {

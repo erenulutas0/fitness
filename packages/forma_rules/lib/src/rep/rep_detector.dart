@@ -121,6 +121,7 @@ class RepDetector {
   int _count = 0;
   int? _startMs;
   int? _peakMs;
+  bool _timedOut = false;
   int _extremeMs = 0;
   double _startValue = 0;
   double _extreme = 0;
@@ -149,9 +150,29 @@ class RepDetector {
       _phase = to;
     }
 
+    // A rep that never comes back up — someone rests at the bottom, or stops
+    // mid-set — used to keep the machine open indefinitely: the counter froze
+    // and nothing said why. Checking the deadline every frame ends it at the
+    // moment it goes over instead of whenever the person happens to stand up.
+    final started = _startMs;
+    final limit = config.maxDurationMs;
+    if (started != null && limit != null && tMs - started > limit) {
+      events.add(RepRejected(tMs, RepRejectReason.tooSlow, tMs - started));
+      _startMs = null;
+      _peakMs = null;
+      // Do not let the second half of the abandoned movement become a rep of
+      // its own: nothing starts again until the signal has actually come back
+      // to the rest zone.
+      _timedOut = true;
+      go(RepPhase.rest);
+      return events;
+    }
+
     switch (_phase) {
       case RepPhase.rest:
-        if (s > rest + h) {
+        if (_timedOut) {
+          if (s <= rest) _timedOut = false;
+        } else if (s > rest + h) {
           _startMs = tMs;
           _peakMs = null;
           _startValue = signal;
@@ -236,6 +257,7 @@ class RepDetector {
     _count = 0;
     _startMs = null;
     _peakMs = null;
+    _timedOut = false;
   }
 }
 
@@ -268,6 +290,17 @@ class HoldProgress extends HoldEvent {
 
 class HoldEnded extends HoldEvent {
   const HoldEnded(super.tMs, this.heldMs);
+
+  final int heldMs;
+}
+
+/// A hold that ended before [HoldConfig.minHoldMs] and so does not count.
+///
+/// It still has to be announced: the rules accumulated frames while it was
+/// running, and without this the next hold starts with the previous attempt's
+/// hits already on the board.
+class HoldAborted extends HoldEvent {
+  const HoldAborted(super.tMs, this.heldMs);
 
   final int heldMs;
 }
@@ -307,7 +340,11 @@ class HoldDetector {
       final held = (_lastTrueMs ?? tMs) - _startMs!;
       _holding = false;
       _startMs = null;
-      if (held >= config.minHoldMs) events.add(HoldEnded(tMs, held));
+      events.add(
+        held >= config.minHoldMs
+            ? HoldEnded(tMs, held)
+            : HoldAborted(tMs, held),
+      );
     }
     return events;
   }

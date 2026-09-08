@@ -132,7 +132,12 @@ class RuleEvaluator {
   /// Returns live rule events (cues to play now).
   List<RuleEvent> onFrame(FeatureSet fs, RepPhase phase, int tMs) {
     final events = <RuleEvent>[];
-    if (_buffer.length < maxBufferedFrames) {
+    // Only frames that belong to a rep are worth keeping for the rep-end
+    // series. Standing between reps would otherwise fill the buffer, and once
+    // it is full the rep's own frames never get in: `min(knee_angle) > 105`
+    // would then be measured on someone standing upright and fire on every
+    // rep. Holds are unaffected — they always report `peak`.
+    if (phase != RepPhase.rest && _buffer.length < maxBufferedFrames) {
       _buffer.add(fs);
       _bufferPhases.add(phase);
     }

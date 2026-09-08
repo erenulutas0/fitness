@@ -97,8 +97,12 @@ class FramingChecker {
 
     FramingStatus status;
     if (conf < minConfidence) {
-      // Often the body is partly cut off; edges tell which way to go.
-      if (yMin <= edgeMargin || yMax >= 1 - edgeMargin) {
+      // Often the body is partly cut off; edges tell which way to go. But when
+      // nothing is visible at all the bounding box collapses to (0,0), which
+      // reads as "touching the top edge" — telling someone standing three
+      // metres away in a dark room to step back is worse than admitting we
+      // cannot see them.
+      if (height > 0 && (yMin <= edgeMargin || yMax >= 1 - edgeMargin)) {
         status = FramingStatus.tooClose;
       } else {
         status = FramingStatus.lowConfidence;

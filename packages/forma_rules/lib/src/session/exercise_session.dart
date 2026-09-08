@@ -24,6 +24,7 @@ class SessionConfig {
     this.frameEdgeMargin = 0,
     this.maxBodyHeightFraction = 0.97,
     this.maxShinThighRatio = 1.6,
+    this.signalLossGraceMs = 300,
     this.detectGestures = false,
     this.gestures = const GestureConfig(),
   });
@@ -70,6 +71,11 @@ class SessionConfig {
   /// 3-73% of their frames. Catches the case the frame-edge check cannot: a
   /// close-up where the joints stay inside the picture but the body does not.
   final double maxShinThighRatio;
+
+  /// How long the rep signal may stay below [minSignalConfidence] before the
+  /// rep in progress is abandoned. Long enough to ride out a noisy frame,
+  /// short enough that the blind stretch never lands inside a counted rep.
+  final int signalLossGraceMs;
   final bool detectGestures;
   final GestureConfig gestures;
 }
@@ -374,6 +380,7 @@ class ExerciseSession {
   bool _bodyInFrame = true;
   double _confidence = 0;
   double? _signalValue;
+  int? _signalLostSinceMs;
   FeatureSet? _lastFeatures;
 
   /// Features of the most recent frame (for overlays / debugging).
@@ -490,7 +497,11 @@ class ExerciseSession {
         if (_rep!.abort()) _rules.discardRep();
       } else {
         for (final e in _hold!.update(false, t)) {
-          if (e is HoldEnded) _closeHold(t, e.heldMs, events);
+          if (e is HoldEnded) {
+            _closeHold(t, e.heldMs, events);
+          } else if (e is HoldAborted) {
+            _rules.discardRep();
+          }
         }
       }
       return events;
@@ -512,7 +523,21 @@ class ExerciseSession {
     } on ExpressionException {
       return;
     }
-    if (sig.confidence < config.minSignalConfidence) return;
+    if (sig.confidence < config.minSignalConfidence) {
+      // The signal can go blind while overall tracking still looks fine: both
+      // ankles at 0.3 with the rest of the body clear keeps mean visibility
+      // above the tracking gate but takes knee_angle below the signal gate.
+      // Skipping frames leaves the rep open, so the blind stretch lands inside
+      // its duration — wrong tempo, and past maxDurationMs the rep is rejected
+      // and never counted. Give it a moment for a noisy frame, then abandon
+      // the rep the same way losing the body does.
+      _signalLostSinceMs ??= t;
+      if (t - _signalLostSinceMs! > config.signalLossGraceMs && _rep!.abort()) {
+        _rules.discardRep();
+      }
+      return;
+    }
+    _signalLostSinceMs = null;
     final value = sig.asDouble;
     _signalValue = value;
 
@@ -563,6 +588,10 @@ class ExerciseSession {
           events.add(SessionHoldProgress(t, heldMs));
         case HoldEnded(:final heldMs):
           _closeHold(t, heldMs, events);
+        case HoldAborted():
+          // Too short to count, but the rules were accumulating: drop them so
+          // the next attempt starts clean.
+          _rules.discardRep();
       }
     }
     if (hold.isHolding) {
