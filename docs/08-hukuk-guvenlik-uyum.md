@@ -44,6 +44,11 @@
 |---|---|---|
 | MediaPipe (kod + modeller) | Apache 2.0 | Uygulama içi "Lisanslar" ekranında NOTICE/atıf; değişiklik varsa belirt |
 | Flutter, paketler | BSD/MIT çoğunlukla | Lisans ekranı (flutter `LicenseRegistry` otomatik) |
+| CameraX (AndroidX) | Apache 2.0 | Lisans ekranı |
+| `just_audio`, `audio_session`, `flutter_tts` | MIT / BSD | Lisans ekranı; cihaz TTS'i yalnızca yedek (D5) |
+| `share_plus`, `path_provider` | BSD-3 | Lisans ekranı |
+| Cihaz TTS sesi (Android/iOS) | Platform bileşeni | Üretilen ses uygulama içinde kalır; klip olarak dağıtılmaz |
+| Google Cloud TTS ile üretilen klipler | Hizmet şartları | Uygulama içi dağıtım standart kullanım; "gerçek insan sesi" iddiası yok |
 | Z-Anatomy / BodyParts3D / AnatomyTOOL | CC BY-SA 4.0 / 2.1 JP | Atıf (metin + link); **türev 3D model dosyalarını aynı lisansla yayınla** (repo linki); NC lisanslı alt parçaları çıkar |
 | Fontlar (Manrope, Inter) | SIL OFL | Atıf, yeniden satma yok |
 | İkonlar (Lucide) | ISC | Atıf |

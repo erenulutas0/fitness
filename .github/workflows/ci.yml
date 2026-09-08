@@ -63,15 +63,25 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
       - name: Analyze app
         run: flutter analyze apps/mobile
+      - name: Riverpod lints
+        working-directory: apps/mobile
+        run: dart run custom_lint
       - name: Test app
         working-directory: apps/mobile
         run: flutter test
       - name: Build Android debug APK
         working-directory: apps/mobile
         run: flutter build apk --debug
+      - name: Build release App Bundle
+        working-directory: apps/mobile
+        # AAB is the release format: Play splits it per ABI, so a phone
+        # downloads ~40 MB instead of the 92 MB of a three-ABI APK.
+        run: flutter build appbundle --release
       - name: Check 16 KB page-size alignment of native libraries
         run: python3 tools/check_so_alignment.py apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
       - uses: actions/upload-artifact@v5
         with:
-          name: forma-debug-apk
-          path: apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+          name: forma-builds
+          path: |
+            apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+            apps/mobile/build/app/outputs/bundle/release/app-release.aab
