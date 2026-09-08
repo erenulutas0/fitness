@@ -1,0 +1,15 @@
+name: forma_rules
+description: >-
+  Pure-Dart exercise form engine for FORMA: landmark smoothing, feature
+  extraction, rep-detection state machine, JSON rule DSL, scoring and feedback
+  scheduling. Zero Flutter dependency so it runs in tests, CLI tools and web.
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.11.0
+
+dependencies: {collection: ^1.19.1, meta: ^1.17.0}
+
+dev_dependencies: {test: ^1.30.0, very_good_analysis: ^10.2.0}

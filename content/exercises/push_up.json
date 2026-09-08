@@ -1,0 +1,72 @@
+{
+  "id": "push_up",
+  "version": 1,
+  "status": "beta",
+  "name": { "tr": "Şınav", "en": "Push-up" },
+  "description": {
+    "tr": "Eller omuz altında, vücut baştan topuğa düz bir çizgi; göğsü yere yaklaştır, it.",
+    "en": "Hands under the shoulders, body in one straight line from head to heels; lower the chest, press up."
+  },
+  "cameraViews": ["side"],
+  "countMode": "reps",
+  "primaryMuscles": ["FMA:9627", "FMA:37688", "FMA:32521"],
+  "secondaryMuscles": ["FMA:9628", "FMA:13335"],
+  "tags": ["upper", "push", "bodyweight", "beginner", "mvp"],
+  "rep": {
+    "signal": "elbow_angle",
+    "restThreshold": 150,
+    "peakThreshold": 115,
+    "hysteresis": 6,
+    "minDurationMs": 600,
+    "maxDurationMs": 10000
+  },
+  "rules": [
+    {
+      "id": "hip_sag",
+      "expr": "hip_line_deviation > 0.045",
+      "minConfidence": 0.5,
+      "severity": 3,
+      "cue": "hips_up",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 5,
+      "explain": {
+        "tr": "Kalça çökünce bel hiperekstansiyona gider ve karın kasları devreden çıkar. Karnı sıkıp kalçayı omuz–topuk çizgisine getir.",
+        "en": "When the hips sag the lower back hyperextends and the core switches off. Brace the abs and bring the hips into the shoulder–heel line.",
+        "source": "src_pushup_01"
+      }
+    },
+    {
+      "id": "hip_pike",
+      "expr": "hip_line_deviation < -0.06",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "hips_down",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 5,
+      "explain": {
+        "tr": "Kalça havaya kalkınca hareket kısalır ve göğüs yerine omuz çalışır. Kalçayı indir, düz bir çizgi ol.",
+        "en": "Piking the hips shortens the movement and shifts work from the chest to the shoulders. Lower the hips into one straight line.",
+        "source": "src_pushup_01"
+      }
+    },
+    {
+      "id": "shallow_depth",
+      "expr": "min(elbow_angle) > 100",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "lower_more",
+      "evaluateAt": "rep_end",
+      "explain": {
+        "tr": "Dirsek yaklaşık 90 dereceye inmeden göğüs kasları tam hareket açıklığında çalışmaz.",
+        "en": "Unless the elbow reaches about 90 degrees the chest does not work through its full range.",
+        "source": "src_rom_01"
+      }
+    }
+  ],
+  "score": {
+    "weights": { "hip_sag": 0.4, "hip_pike": 0.3, "shallow_depth": 0.3 },
+    "cleanThreshold": 85
+  }
+}

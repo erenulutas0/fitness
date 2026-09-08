@@ -1,0 +1,122 @@
+{
+  "id": "bw_squat",
+  "version": 1,
+  "status": "beta",
+  "name": { "tr": "Squat (vücut ağırlığı)", "en": "Bodyweight squat" },
+  "description": {
+    "tr": "Ayaklar omuz genişliğinde, kalçayı geri ve aşağı it; dizler ayak parmakları hizasında, göğüs dik.",
+    "en": "Feet shoulder-width apart, push the hips back and down; knees track over the toes, chest up."
+  },
+  "cameraViews": ["front", "side"],
+  "countMode": "reps",
+  "primaryMuscles": ["FMA:22428", "FMA:22314"],
+  "secondaryMuscles": ["FMA:81022", "FMA:22541", "FMA:71302"],
+  "tags": ["lower", "bodyweight", "beginner", "mvp"],
+  "rep": {
+    "side": {
+      "signal": "knee_angle",
+      "restThreshold": 155,
+      "peakThreshold": 125,
+      "hysteresis": 8,
+      "minDurationMs": 700,
+      "maxDurationMs": 10000
+    },
+    "front": {
+      "signal": "knee_angle_3d",
+      "restThreshold": 155,
+      "peakThreshold": 125,
+      "hysteresis": 8,
+      "minDurationMs": 700,
+      "maxDurationMs": 10000
+    }
+  },
+  "rules": [
+    {
+      "id": "knee_valgus",
+      "views": ["front"],
+      "phases": ["toPeak", "peak", "toRest"],
+      "expr": "knee_ankle_ratio_l < 0.85 || knee_ankle_ratio_r < 0.85",
+      "minConfidence": 0.6,
+      "severity": 3,
+      "cue": "knees_out",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 4,
+      "explain": {
+        "tr": "Diz içe çökünce diz bağları ve kıkırdak fazla yük alır. Kalçayı dışa iterek dizi ayak parmağı hizasında tut.",
+        "en": "When the knee caves in, the ligaments and cartilage take extra load. Push the hips out so the knee tracks over the toes.",
+        "source": "src_valgus_01"
+      }
+    },
+    {
+      "id": "shallow_depth",
+      "views": ["side"],
+      "expr": "min(knee_angle) > 105",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "go_deeper",
+      "evaluateAt": "rep_end",
+      "explain": {
+        "tr": "Uyluk yere paralele yaklaşınca kalça ve quadriceps daha büyük hareket açıklığında çalışır.",
+        "en": "Getting the thigh near parallel works the glutes and quads through a fuller range of motion.",
+        "source": "src_rom_01"
+      }
+    },
+    {
+      "id": "shallow_depth_front",
+      "views": ["front"],
+      "expr": "min(knee_angle_3d) > 105",
+      "minConfidence": 0.4,
+      "severity": 2,
+      "cue": "go_deeper",
+      "evaluateAt": "rep_end",
+      "explain": {
+        "tr": "Uyluk yere paralele yaklaşınca kalça ve quadriceps daha büyük hareket açıklığında çalışır.",
+        "en": "Getting the thigh near parallel works the glutes and quads through a fuller range of motion.",
+        "source": "src_rom_01"
+      }
+    },
+    {
+      "id": "torso_lean",
+      "views": ["side"],
+      "phases": ["peak"],
+      "expr": "max(torso_angle) > 55",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "chest_up",
+      "evaluateAt": "rep_end",
+      "explain": {
+        "tr": "Gövde çok öne eğilince yük bele kayar. Göğsü dik tutup kalçayı geri it.",
+        "en": "Leaning far forward shifts the load to the lower back. Keep the chest up and push the hips back.",
+        "source": "src_squat_mech_01"
+      }
+    },
+    {
+      "id": "heel_rise",
+      "views": ["side"],
+      "phases": ["toPeak", "peak", "toRest"],
+      "expr": "heel_rise > 0.12",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "heels_down",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 4,
+      "explain": {
+        "tr": "Topuk kalkınca denge öne kayar ve diz fazla yüklenir; genelde ayak bileği hareketliliği sınırlıdır. Duruşu biraz genişlet, topukları bas.",
+        "en": "Heels lifting shifts balance forward and loads the knee; usually a sign of limited ankle mobility. Widen the stance a little and keep the heels down.",
+        "source": "src_squat_mech_01"
+      }
+    }
+  ],
+  "score": {
+    "weights": {
+      "knee_valgus": 0.4,
+      "shallow_depth": 0.3,
+      "shallow_depth_front": 0.3,
+      "torso_lean": 0.2,
+      "heel_rise": 0.2
+    },
+    "cleanThreshold": 85
+  }
+}

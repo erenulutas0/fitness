@@ -1,0 +1,74 @@
+{
+  "id": "plank",
+  "version": 1,
+  "status": "beta",
+  "name": { "tr": "Plank", "en": "Plank" },
+  "description": {
+    "tr": "Dirsekler omuz altında, vücut baştan topuğa düz; karnı sık, nefes al.",
+    "en": "Elbows under the shoulders, body straight from head to heels; brace the abs, keep breathing."
+  },
+  "cameraViews": ["side"],
+  "countMode": "hold",
+  "primaryMuscles": ["FMA:9628", "FMA:13335", "FMA:71302"],
+  "secondaryMuscles": ["FMA:32521", "FMA:22314"],
+  "tags": ["core", "isometric", "bodyweight", "beginner", "mvp"],
+  "hold": {
+    "condition": "body_line_angle > 150 && torso_angle > 55 && vis_core > 0.5",
+    "minHoldMs": 1000,
+    "exitGraceMs": 700
+  },
+  "rules": [
+    {
+      "id": "hip_sag",
+      "expr": "hip_line_deviation > 0.045",
+      "minConfidence": 0.5,
+      "severity": 3,
+      "cue": "hips_up",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 8,
+      "refireMs": 6000,
+      "explain": {
+        "tr": "Kalça çökünce bel yüklenir ve karın çalışmaz. Kalçayı sık, karnı içeri çek.",
+        "en": "Sagging hips load the lower back instead of the core. Squeeze the glutes and brace the abs.",
+        "source": "src_plank_01"
+      }
+    },
+    {
+      "id": "hip_pike",
+      "expr": "hip_line_deviation < -0.06",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "hips_down",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 8,
+      "refireMs": 6000,
+      "explain": {
+        "tr": "Kalça yükselince karın kasları yükü bırakır. Kalçayı indir, düz çizgi ol.",
+        "en": "Raising the hips lets the core off the hook. Lower the hips into one straight line.",
+        "source": "src_plank_01"
+      }
+    },
+    {
+      "id": "head_drop",
+      "expr": "neck_angle < 140",
+      "minConfidence": 0.5,
+      "severity": 1,
+      "cue": "head_neutral",
+      "evaluateAt": "instant",
+      "minFraction": 0.4,
+      "minConsecutiveFrames": 10,
+      "refireMs": 8000,
+      "explain": {
+        "tr": "Baş sarkınca boyun gerilir. Bakış yere, baş omurganın devamı.",
+        "en": "A dropped head strains the neck. Look at the floor, head in line with the spine.",
+        "source": "src_plank_01"
+      }
+    }
+  ],
+  "score": {
+    "weights": { "hip_sag": 0.4, "hip_pike": 0.3, "head_drop": 0.15 },
+    "cleanThreshold": 85
+  }
+}

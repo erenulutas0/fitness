@@ -1,0 +1,42 @@
+{
+  "id": "glute_bridge",
+  "version": 1,
+  "status": "beta",
+  "name": { "tr": "Kalça köprüsü", "en": "Glute bridge" },
+  "description": {
+    "tr": "Sırt üstü, dizler bükülü, ayaklar yerde; kalçayı sıkarak yukarı kaldır, üstte bir an bekle.",
+    "en": "On your back, knees bent, feet flat; squeeze the glutes to lift the hips, pause at the top."
+  },
+  "cameraViews": ["side"],
+  "countMode": "reps",
+  "primaryMuscles": ["FMA:22314", "FMA:81022"],
+  "secondaryMuscles": ["FMA:71302", "FMA:9628"],
+  "tags": ["lower", "hinge", "bodyweight", "beginner", "mvp"],
+  "rep": {
+    "signal": "hip_angle",
+    "restThreshold": 135,
+    "peakThreshold": 155,
+    "hysteresis": 5,
+    "minDurationMs": 600,
+    "maxDurationMs": 10000
+  },
+  "rules": [
+    {
+      "id": "insufficient_extension",
+      "expr": "max(hip_angle) < 165",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "squeeze_glutes",
+      "evaluateAt": "rep_end",
+      "explain": {
+        "tr": "Kalça tam açılmadan gluteus kısa hareket açıklığında çalışır. Üstte kalçayı sık, omuz–kalça–diz tek çizgi olsun.",
+        "en": "Without full hip extension the glutes work through a short range. Squeeze at the top so shoulder, hip and knee form one line.",
+        "source": "src_bridge_01"
+      }
+    }
+  ],
+  "score": {
+    "weights": { "insufficient_extension": 0.3 },
+    "cleanThreshold": 85
+  }
+}

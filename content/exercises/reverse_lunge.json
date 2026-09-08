@@ -1,0 +1,61 @@
+{
+  "id": "reverse_lunge",
+  "version": 1,
+  "status": "draft",
+  "name": { "tr": "Geri lunge", "en": "Reverse lunge" },
+  "description": {
+    "tr": "Bir adım geri at, iki diz de yaklaşık 90 dereceye insin; ön diz ayak parmağı hizasında, gövde dik.",
+    "en": "Step back, both knees bend to about 90 degrees; front knee over the toes, torso upright."
+  },
+  "cameraViews": ["front", "side"],
+  "countMode": "reps",
+  "primaryMuscles": ["FMA:22428", "FMA:22314"],
+  "secondaryMuscles": ["FMA:81022", "FMA:22541"],
+  "tags": ["lower", "unilateral", "bodyweight", "beginner", "mvp", "todo-rules"],
+  "rep": {
+    "signal": "knee_angle_3d",
+    "restThreshold": 160,
+    "peakThreshold": 125,
+    "hysteresis": 8,
+    "minDurationMs": 800,
+    "maxDurationMs": 10000
+  },
+  "rules": [
+    {
+      "id": "front_knee_valgus",
+      "views": ["front"],
+      "phases": ["toPeak", "peak", "toRest"],
+      "expr": "knee_ankle_ratio_l < 0.8 || knee_ankle_ratio_r < 0.8",
+      "minConfidence": 0.6,
+      "severity": 3,
+      "cue": "knee_out_front",
+      "evaluateAt": "instant",
+      "minFraction": 0.3,
+      "minConsecutiveFrames": 4,
+      "explain": {
+        "tr": "Ön diz içe kayınca diz bağları zorlanır. Ön dizi ayak parmağı hizasına it.",
+        "en": "The front knee drifting inward strains the knee. Push it out over the toes.",
+        "source": "src_valgus_01"
+      }
+    },
+    {
+      "id": "torso_lean",
+      "views": ["side"],
+      "phases": ["peak"],
+      "expr": "max(torso_angle) > 30",
+      "minConfidence": 0.5,
+      "severity": 2,
+      "cue": "torso_upright",
+      "evaluateAt": "rep_end",
+      "explain": {
+        "tr": "Gövde öne eğilince denge bozulur ve yük bele kayar. Göğüs dik, bakış ileri.",
+        "en": "Leaning forward upsets balance and loads the lower back. Chest up, eyes forward.",
+        "source": "src_squat_mech_01"
+      }
+    }
+  ],
+  "score": {
+    "weights": { "front_knee_valgus": 0.4, "torso_lean": 0.2 },
+    "cleanThreshold": 85
+  }
+}

@@ -1,0 +1,19 @@
+name: forma_content
+description: FORMA content bundle - exercise rule sets, voice cue texts and evidence sources (versioned data, no code).
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.11.0
+  flutter: '>=3.41.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  assets:
+    - exercises/
+    - cues/
+    - sources/
