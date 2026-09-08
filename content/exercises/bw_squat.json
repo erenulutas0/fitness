@@ -93,6 +93,8 @@
     },
     {
       "id": "heel_rise",
+      "enabled": false,
+      "disabledNote": "8 Eyl 2026: iki gerçek kayıtta (Galaxy S23, yan açı, topuklar yerde) her tekrarda yanlış alarm verdi. Ölçüm squat derinleştikçe düzenli artıyor: ayakta ~0.02, dipte ~0.18. Aynı örüntü ayak uzunluğuna bölünce ve MediaPipe dünya koordinatlarında da çıkıyor (ayakta 0.19 → dipte 0.79), yani model derin squat'ta ayak yönelimini kestiremiyor, sorun eşikte değil. Yeniden açmadan önce kasten topuk kaldırılmış kayıtlarla ayrılabilirlik ölçülecek (docs/01 'dürüst kapsam').",
       "views": ["side"],
       "phases": ["toPeak", "peak", "toRest"],
       "expr": "heel_rise > 0.12",

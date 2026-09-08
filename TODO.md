@@ -2,7 +2,7 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 3** (Claude, kayıt ekranı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-08, oturum 4** (Claude, ilk gerçek kayıtlar + heel_rise kapatıldı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
@@ -16,6 +16,13 @@
 
 ## Şimdi (sıradaki oturum bunlarla başlar)
 
+- [ ] **Kasten hatalı kayıtlar** (recall ölçmek için): her hata tipi için 1-2 kayıt — bilerek topuk kaldır,
+      bilerek sığ in, bilerek dizleri içe ver, bilerek gövdeyi öne eğ. Şu an sadece temiz kayıt var; temiz veriyle
+      yalnızca yanlış alarmı ölçebiliyoruz, kaçırmayı ölçemiyoruz.
+- [ ] **Etiketleme alışkanlığı**: ilk iki kayıtta hiç etiket işaretlenmedi, dolayısıyla eval "her tekrar temiz"
+      varsaydı. Kayıt sonrası gerçekten olan hataları işaretle, yoksa doğruluk ölçümü tek yönlü kalıyor.
+- [ ] `shallow_depth` eşiği (105°) doğrulanacak: 18:16 kaydının 3. tekrarı 109° ölçüldü ve sığ işaretlendi,
+      diğerleri 97-98°. Kurucu onaylarsa eşik doğru, aksi halde 112-115° civarına çekilecek.
 - [ ] **İlk gerçek kayıt setini topla** (kurucu + Claude birlikte): telefon 2-3 m uzakta, tam vücut kadrajda.
       Hedef ilk hafta 20 kayıt: 5 egzersiz × 2 açı × birkaç ortam. Kayıt ekranı hazır, akış: Bugün → sağ üstteki
       kayıt ikonu → egzersiz/açı/kişi/ortam → Kaydı başlat → Durdur ve etiketle → hataları işaretle → Kaydet.
@@ -38,6 +45,14 @@
 - [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
+
+- [x] 2026-09-08 — **İlk gerçek kayıtlar analiz edildi** (2 kayıt, Galaxy S23, yan açı, 5'er tekrar):
+      tekrar sayımı 5/5 doğru (MAE 0), derinlik 78-85° ve 97-109°, gövde eğimi temiz, takip kaybı ~%0-2.
+      `tools/eval/bin/inspect.dart` ile tekrar tekrar döküm (süre, tempo, derinlik, skor, tetiklenen kural).
+- [x] 2026-09-08 — **`heel_rise` kuralı kapatıldı** (D17). İki temiz kayıtta 5/5 ve 2/5 yanlış alarm verdi.
+      Ölçülen: ayakta ~0.02, dipte ~0.18; fark iki kayıtta da ~0.15, yani artış topuk kalkmasından değil squat'a
+      inmekten geliyor. Ayak uzunluğuna bölünce ve MediaPipe dünya koordinatlarında da aynı (0.19 → 0.79).
+      Kurallar artık içerikten `enabled: false` ile kapatılabiliyor (`disabledNote` zorunlu), 3 yeni test.
 
 - [x] 2026-09-08 — **Kayıt (fixture) ekranı** (docs/10 Prompt 3), debug build'lerde Bugün ekranından erişilir:
       kurulum (egzersiz, açı, anonim kişi kodu, ortam, model, kamera, not; son ayarlar hatırlanır) → canlı kayıt
@@ -154,3 +169,7 @@
   → JSON → `tools/eval` raporu. `PoseEngineInfo` artık cihaz modelini taşıyor; `PoseFrame.toJson` koordinatları
   yuvarlıyor ve fixture zaman damgaları sıfırlanıyor (dosya ~yarı boyut). 2 yeni test (kayıt→fixture→eval
   round-trip ve kayıt akışı widget testi). Testler: 109 + 3 + 3 yeşil.
+- **2026-09-08 / oturum 4 (Claude):** Kurucu kayıt ekranından iki temiz squat seti kaydetti. `inspect.dart` yazıldı;
+  analiz `heel_rise` kuralının her tekrarda yanlış alarm verdiğini gösterdi ve nedeni ölçümle bulundu (özellik
+  squat derinliğiyle artıyor, 3B'de de). Kural kapatıldı (D17), kurallara `enabled`/`disabledNote` eklendi,
+  golden replay testi kapalı kuralları hesaba katacak şekilde sağlamlaştırıldı. Testler: 111 yeşil.

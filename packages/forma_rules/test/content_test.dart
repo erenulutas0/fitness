@@ -85,6 +85,53 @@ void main() {
     });
   }
 
+  test('a disabled rule is never evaluated, scored or cued', () {
+    final def = ExerciseDefinition.parse(
+      File('${root.path}/exercises/bw_squat.json').readAsStringSync(),
+    );
+    final heelRise = def.rules.firstWhere((r) => r.id == 'heel_rise');
+    expect(
+      heelRise.enabled,
+      isFalse,
+      reason: 'disabled on 2026-09-08, see disabledNote',
+    );
+    expect(heelRise.disabledNote, isNotNull);
+    expect(
+      def.rulesFor(CameraView.side).map((r) => r.id),
+      isNot(contains('heel_rise')),
+    );
+
+    // A take that used to trip it now scores clean.
+    final session = ExerciseSession(
+      definition: def,
+      view: CameraView.side,
+      config: const SessionConfig(smoothing: SmoothingConfig.none),
+    );
+    const SyntheticPose()
+        .squat(view: CameraView.side, reps: 3, heelRise: 0.08)
+        .forEach(session.process);
+    final result = session.finish();
+    expect(result.repCount, 3);
+    expect(result.errorCounts, isEmpty);
+  });
+
+  test('a disabled rule must say why', () {
+    final bad = ExerciseDefinition.fromJson({
+      'id': 'x',
+      'name': 'X',
+      'cameraViews': ['side'],
+      'rep': {
+        'signal': 'knee_angle',
+        'restThreshold': 155,
+        'peakThreshold': 125,
+      },
+      'rules': [
+        {'id': 'r1', 'expr': '1 < 2', 'enabled': false},
+      ],
+    });
+    expect(bad.validate(), contains(contains('disabledNote')));
+  });
+
   test('definition validation catches common mistakes', () {
     final bad = ExerciseDefinition.fromJson({
       'id': 'bad',

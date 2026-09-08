@@ -119,22 +119,29 @@ void main() {
             reason: 'hold ms',
           );
         }
-        // Every labeled error must be detected on that rep, and unlabeled
-        // reps must be clean (synthetic fixtures are exact).
-        for (var i = 0; i < result.reps.length; i++) {
-          final rep = result.reps[i];
+        // Labels describe what the body did, so they keep listing errors whose
+        // rule is currently disabled. Detection is judged against the enabled
+        // rules only: nothing invented, nothing enabled missed.
+        final enabled = {for (final r in def.rulesFor(fx.view)) r.id};
+        void check(int index, Set<String> detected, String what) {
+          final labelled = fx.labeledRulesForRep(index);
           expect(
-            rep.failedRules.toSet(),
-            fx.labeledRulesForRep(rep.index),
-            reason: 'rep ${rep.index}',
+            detected.difference(labelled),
+            isEmpty,
+            reason: '$what $index: reported an error that did not happen',
+          );
+          expect(
+            labelled.intersection(enabled).difference(detected),
+            isEmpty,
+            reason: '$what $index: missed an enabled rule',
           );
         }
+
+        for (final rep in result.reps) {
+          check(rep.index, rep.failedRules.toSet(), 'rep');
+        }
         for (final h in result.holds) {
-          expect(
-            h.failedRules.toSet(),
-            fx.labeledRulesForRep(h.index),
-            reason: 'hold ${h.index}',
-          );
+          check(h.index, h.failedRules.toSet(), 'hold');
         }
       });
     }

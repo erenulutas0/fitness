@@ -95,19 +95,19 @@ void main() {
       expect(r.reps.first.score.rounded, 80);
     });
 
-    test('heel rise fires live during the rep and is scored', () {
+    test('the disabled heel-rise rule stays silent', () {
+      // Two real takes (heels flat on the floor) tripped this rule on every
+      // rep: the feature grows with squat depth on its own. It is off in
+      // content until it can be separated from depth; see the disabledNote
+      // in content/exercises/bw_squat.json.
       final r = run(
         squat,
         CameraView.side,
         syn.squat(view: CameraView.side, reps: 3, heelRise: 0.08),
       );
       expect(r.reps.length, 3);
-      expect(r.count('heel_rise'), greaterThanOrEqualTo(3));
-      // live cue arrives before the rep completes
-      final firstRule = r.events.indexWhere((e) => e is SessionRuleTriggered);
-      final firstRep = r.events.indexWhere((e) => e is SessionRepCompleted);
-      expect(firstRule, lessThan(firstRep));
-      expect(r.reps.every((x) => x.failedRules.contains('heel_rise')), isTrue);
+      expect(r.count('heel_rise'), 0);
+      expect(r.reps.every((x) => x.score.rounded == 100), isTrue);
     });
 
     test('noisy input with smoothing still counts every rep', () {
@@ -207,6 +207,10 @@ void main() {
       );
       expect(r.reps.length, 4);
       expect(r.count('knee_valgus'), greaterThanOrEqualTo(4));
+      // an instant rule cues during the rep, not only at its end
+      final firstRule = r.events.indexWhere((e) => e is SessionRuleTriggered);
+      final firstRep = r.events.indexWhere((e) => e is SessionRepCompleted);
+      expect(firstRule, lessThan(firstRep));
       expect(
         r.reps.every((x) => x.failedRules.contains('knee_valgus')),
         isTrue,

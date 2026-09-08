@@ -181,6 +181,8 @@ class RuleSpec {
     this.minGatedFrames = 3,
     this.refireMs = 5000,
     this.explain,
+    this.enabled = true,
+    this.disabledNote,
   }) : exprAst = ExpressionParser.parse(expr);
 
   factory RuleSpec.fromJson(Map<String, dynamic> j) {
@@ -230,6 +232,8 @@ class RuleSpec {
       explain: explainJson is Map<String, dynamic>
           ? RuleExplain.fromJson(explainJson)
           : null,
+      enabled: j['enabled'] as bool? ?? true,
+      disabledNote: j['disabledNote'] as String?,
     );
   }
 
@@ -270,7 +274,16 @@ class RuleSpec {
 
   final RuleExplain? explain;
 
-  bool appliesTo(CameraView view) => views.isEmpty || views.contains(view);
+  /// A rule can be switched off in content without deleting it, so a measured
+  /// decision (and the evidence behind it) is not lost. Disabled rules are
+  /// never evaluated, never scored and never cued.
+  final bool enabled;
+
+  /// Why the rule is off; required whenever [enabled] is false.
+  final String? disabledNote;
+
+  bool appliesTo(CameraView view) =>
+      enabled && (views.isEmpty || views.contains(view));
 
   bool gates(RepPhase phase) => phases.isEmpty || phases.contains(phase);
 
@@ -288,6 +301,8 @@ class RuleSpec {
     'minGatedFrames': minGatedFrames,
     'refireMs': refireMs,
     if (explain != null) 'explain': explain!.toJson(),
+    if (!enabled) 'enabled': false,
+    if (disabledNote != null) 'disabledNote': disabledNote,
   };
 }
 
@@ -519,6 +534,9 @@ class ExerciseDefinition {
         errors.add(
           'rule ${r.id}: rep_end rules are evaluated when the hold ends',
         );
+      }
+      if (!r.enabled && (r.disabledNote?.isEmpty ?? true)) {
+        errors.add('rule ${r.id}: a disabled rule needs a disabledNote');
       }
     }
     for (final w in score.weights.keys) {
