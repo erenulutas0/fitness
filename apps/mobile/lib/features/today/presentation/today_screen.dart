@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
@@ -20,7 +21,19 @@ class TodayScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final content = ref.watch(contentRepositoryProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.appTitle)),
+      appBar: AppBar(
+        title: Text(l10n.appTitle),
+        actions: [
+          // Founder-only fixture recorder; compiled out of release builds.
+          if (kDebugMode)
+            IconButton(
+              key: const Key('today_recorder'),
+              tooltip: 'Kayıt (fixture)',
+              icon: const Icon(Icons.fiber_manual_record_outlined),
+              onPressed: () => unawaited(context.push(Routes.recorder)),
+            ),
+        ],
+      ),
       body: content.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(

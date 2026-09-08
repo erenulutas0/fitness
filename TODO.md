@@ -2,26 +2,30 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 2** (Claude, cihaz testi). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-08, oturum 3** (Claude, kayıt ekranı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 108 test · `forma_pose` 3 test · `apps/mobile` widget testi · eval raporu (sentetik, %100) ·
-  cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu.
+- Yeşil: `forma_rules` 109 test · `forma_pose` 3 test · `apps/mobile` 3 test · eval raporu (sentetik, %100) ·
+  cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
+  **kayıt ekranı**: cihazda kayıt → JSON → `tools/eval` döngüsü kapandı.
 - Kırmızı/bilinmeyen: ses klipleri yok (cue'lar sadece metin + haptik); iOS plugin stub; gerçek
   "telefon 2-3 m uzakta" senaryosu ve termal test yapılmadı.
 - Repo: `github.com/erenulutas0/fitness` (**public** — iş planı ve fiyat hipotezleri açık; private yapmayı düşün).
 
 ## Şimdi (sıradaki oturum bunlarla başlar)
 
+- [ ] **İlk gerçek kayıt setini topla** (kurucu + Claude birlikte): telefon 2-3 m uzakta, tam vücut kadrajda.
+      Hedef ilk hafta 20 kayıt: 5 egzersiz × 2 açı × birkaç ortam. Kayıt ekranı hazır, akış: Bugün → sağ üstteki
+      kayıt ikonu → egzersiz/açı/kişi/ortam → Kaydı başlat → Durdur ve etiketle → hataları işaretle → Kaydet.
+      Kayıtlar `Kaydet ve paylaş` ile telefondan çıkar; `data/fixtures/` gitignore'da.
+
 - [ ] Yayın formatı **AAB** olsun (`flutter build appbundle`): tek ABI release APK 40,4 MB (bütçe 60 MB ✓) ama
       üç ABI'li tek APK 91,7 MB. CI'daki APK adımı yanında AAB üret. `full` modeli asset'ten çıkarıp ilk kullanımda
       indirmek 9,4 MB daha kazandırır (v1.x).
 - [ ] **Gerçek senaryo testi:** telefon 2-3 m uzakta, tripod/masa, tam vücut kadrajda, 10 tekrar squat (ön + yan).
       İlk koşuda kamera aynadaki yansımayı gördü; kadraj/mesafe gerçek değildi.
-- [ ] **Landmark recorder** (docs/10 Prompt 3): uygulama içi gizli ekran (debug), PoseFrame dizisini
-      `docs/fixtures-schema.md` formatında JSON'a yazsın, share sheet ile çıksın. İlk hafta hedef 20 kayıt.
 - [ ] Gerçek kayıtlarla **eşik ayarı**: squat FSM eşikleri (rest 155 / peak 125) ve One Euro parametreleri
       (`minCutoff 1.5, beta 0.1`) sentetik veriye göre seçildi; elle değil `tools/eval` ile ayarla.
 - [ ] `AudioCuePlayer`: `just_audio` + `audio_session` (ducking), tek kanal, öncelik/kesme (docs/05 §5).
@@ -34,6 +38,16 @@
 - [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
+
+- [x] 2026-09-08 — **Kayıt (fixture) ekranı** (docs/10 Prompt 3), debug build'lerde Bugün ekranından erişilir:
+      kurulum (egzersiz, açı, anonim kişi kodu, ortam, model, kamera, not; son ayarlar hatırlanır) → canlı kayıt
+      (kadraj bandı: "biraz geri git / ışık az", görünürlük, fps, süre, frame sayısı, motorun canlı tekrar sayısı,
+      5 sn geri sayım, 3 dk sınır) → etiketleme (gerçek tekrar sayısı, tekrar başına kural işaretleme; motorun
+      tahmini rozet olarak görünür ama **seçili gelmez**) → JSON kaydet / paylaş, kayıt listesi (paylaş, sil).
+      Ham frame'ler kaydedilir (yumuşatma sonradan ayarlanabilsin diye), koordinatlar 6 haneye yuvarlanır,
+      zaman damgaları sıfırdan başlar. Cihazda doğrulandı: 769 frame / 565 KB, `tools/eval` dosyayı okudu.
+- [x] 2026-09-08 — `PoseEngineInfo.device` (Android `Build.MANUFACTURER + MODEL`) → fixture'a yazılıyor;
+      eval raporunu donanıma göre kırmak için. Cihazda doğrulandı: `samsung SM-S911B`.
 
 - [x] 2026-09-08 — Monorepo: pub workspace (D11), `apps/mobile`, `packages/forma_rules`, `packages/forma_pose`, `content` (asset paketi), `tools/eval`, `tools/tts_gen`, CI (`.github/workflows/ci.yml`).
 - [x] 2026-09-08 — `forma_rules`: landmark modeli, One Euro filtre, `FeatureExtractor` (2D + world 3D açılar, valgus/heel/hip-line/gesture özellikleri), `RepDetector` (hysteresis FSM, nötr fazlar D14), `HoldDetector`, kural DSL (parser + evaluator + series + validator), `ExerciseDefinition` JSON, `RuleEvaluator` (instant + rep_end), `ScoreEngine`, `ExerciseSession`, `FeedbackScheduler` (cooldown / rephrase / mute / positive / low-confidence), `CueCatalog`, `LandmarkFixture` + replayer, sentetik 3D iskelet üretici (squat, push-up, plank, glute bridge), `GestureDetector` (D15), `FramingChecker`. 105 test, 57 µs/frame.
@@ -104,6 +118,10 @@
 - [ ] `FeatureSet.point('hip')` baskın taraf, `knee_angle` iki tarafın ortalaması: DSL dokümanına yaz (küçük tutarsızlık).
 - [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.
 - [ ] `flutter analyze` custom_lint (riverpod_lint) CI'da çalıştırılmıyor; ekle.
+- [ ] Kayıt ekranı metinleri l10n dışında (bilinçli: kurucu aracı, sadece debug). Beta'da başka birine kayıt
+      yaptıracaksan İngilizceye çevir.
+- [ ] Kayıt sırasında ham frame'ler bellekte tutuluyor (3 dk ≈ 11 MB). Daha uzun kayıt gerekirse parça parça diske yaz.
+- [ ] `share_plus` + `path_provider` eklendi (ikisi de BSD-3). Lisans ekranına girecek listeye ekle (docs/08).
 - [x] 2026-09-08 — CI: action sürümleri v5'e çekildi; `tools/check_so_alignment.py` ile 16 KB hizalaması her build'de doğrulanıyor.
 - [ ] Plugin example'ındaki overlay aspect düzeltmesi yok (iskelet preview ile birebir örtüşmüyor); uygulamadaki
       `SkeletonPainter` cover-fit yapıyor, example basit. Örnek uygulamayı ona hizala ya da paylaşılan bir painter çıkar.
@@ -132,3 +150,7 @@
   3 hata bulunup düzeltildi (poz yokken meta veri kaybı, hayalet tekrar, plank süresi), 16 KB sayfa uyumluluğu
   için MediaPipe 1.0.0 + CameraX 1.6.2'ye yükseltildi ve doğrulandı. Release APK 91,7 MB ölçüldü (bütçe aşımı,
   "Şimdi" listesine alındı). Testler: 108 + 3 + 1 yeşil.
+- **2026-09-08 / oturum 3 (Claude):** Kayıt (fixture) ekranı yazıldı ve cihazda uçtan uca denendi: kayıt → etiketleme
+  → JSON → `tools/eval` raporu. `PoseEngineInfo` artık cihaz modelini taşıyor; `PoseFrame.toJson` koordinatları
+  yuvarlıyor ve fixture zaman damgaları sıfırlanıyor (dosya ~yarı boyut). 2 yeni test (kayıt→fixture→eval
+  round-trip ve kayıt akışı widget testi). Testler: 109 + 3 + 3 yeşil.
