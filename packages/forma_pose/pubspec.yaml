@@ -25,6 +25,10 @@ dev_dependencies:
   very_good_analysis: ^10.2.0
 
 flutter:
+  # Pose models live in the plugin so the app and the example share one copy.
+  # They are gitignored; run tools/fetch_models.{ps1,sh} after a fresh clone.
+  assets:
+    - assets/models/
   plugin:
     platforms:
       android:

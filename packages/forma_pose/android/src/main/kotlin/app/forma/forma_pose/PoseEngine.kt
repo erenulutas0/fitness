@@ -13,6 +13,7 @@ import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.google.mediapipe.framework.image.BitmapImageBuilder
@@ -63,6 +64,7 @@ class PoseEngine(
     private var cameraProvider: ProcessCameraProvider? = null
     private var landmarker: PoseLandmarker? = null
     private var options: Options? = null
+    private var boundPreview: PreviewView? = null
     private var usingGpu = false
     private var mirror = false
     private var lastWidth = 0
@@ -70,6 +72,7 @@ class PoseEngine(
     private var lastBrightness = -1f
     private var lastRotation = 0
     private var lastInferenceStartMs = 0L
+    private var frameIndex = 0
     private val fpsCounter = FpsCounter()
 
     /** Starts camera + landmarker; [onReady] receives the info map for Dart. */
@@ -123,12 +126,33 @@ class PoseEngine(
         analysis.setAnalyzer(analysisExecutor) { image -> analyze(image) }
 
         val useCases = mutableListOf<androidx.camera.core.UseCase>(analysis)
-        previewHolder.view?.let { view ->
+        val previewView = previewHolder.view
+        if (previewView != null) {
             val preview = Preview.Builder().build()
-            preview.surfaceProvider = view.surfaceProvider
+            preview.surfaceProvider = previewView.surfaceProvider
             useCases.add(preview)
         }
+        boundPreview = previewView
         provider.bindToLifecycle(lifecycleOwner, selector, *useCases.toTypedArray())
+
+        // The Flutter platform view may be created after start(); rebind once
+        // it shows up so the preview is not stuck black.
+        previewHolder.onViewAvailable = { view ->
+            if (running.get() && boundPreview !== view) {
+                ContextCompat.getMainExecutor(context).execute { rebindPreview(view) }
+            }
+        }
+    }
+
+    private fun rebindPreview(view: PreviewView) {
+        val provider = cameraProvider ?: return
+        val opts = options ?: return
+        if (boundPreview === view) return
+        try {
+            bind(provider, opts)
+        } catch (t: Throwable) {
+            Log.w(TAG, "preview rebind failed", t)
+        }
     }
 
     private fun createLandmarker(model: String, opts: Options): PoseLandmarker {
@@ -189,7 +213,10 @@ class PoseEngine(
                 lastWidth = bitmap.width
                 lastHeight = bitmap.height
                 lastRotation = proxy.imageInfo.rotationDegrees
-                lastBrightness = FrameEncoder.meanLuma(bitmap)
+                // Sampling every frame would cost more than the inference does.
+                if (frameIndex++ % BRIGHTNESS_EVERY_N_FRAMES == 0) {
+                    lastBrightness = FrameEncoder.meanLuma(bitmap)
+                }
                 val mpImage = BitmapImageBuilder(bitmap).build()
                 lastInferenceStartMs = SystemClock.uptimeMillis()
                 lm.detectAsync(mpImage, lastInferenceStartMs)
@@ -230,7 +257,9 @@ class PoseEngine(
     private fun onResult(result: PoseLandmarkerResult) {
         if (!running.get()) return
         val now = SystemClock.uptimeMillis()
-        val inferenceMs = (now - lastInferenceStartMs).toFloat()
+        // The timestamp we passed to detectAsync is the capture time of *this*
+        // result, so it measures latency without racing the next frame.
+        val inferenceMs = (now - result.timestampMs()).toFloat().coerceAtLeast(0f)
         val fps = fpsCounter.tick(now)
         val bytes = FrameEncoder.encode(
             result = result,
@@ -247,6 +276,8 @@ class PoseEngine(
 
     fun stop() {
         running.set(false)
+        previewHolder.onViewAvailable = null
+        boundPreview = null
         try {
             cameraProvider?.unbindAll()
         } catch (t: Throwable) {
@@ -278,5 +309,6 @@ class PoseEngine(
 
     private companion object {
         const val TAG = "FormaPose"
+        const val BRIGHTNESS_EVERY_N_FRAMES = 15
     }
 }

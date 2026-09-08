@@ -11,6 +11,20 @@ import io.flutter.plugin.platform.PlatformViewFactory
 class PreviewHolder {
     @Volatile
     var view: PreviewView? = null
+        private set
+
+    /** Called when a preview view is attached, so a running engine can rebind. */
+    @Volatile
+    var onViewAvailable: ((PreviewView) -> Unit)? = null
+
+    fun attach(view: PreviewView) {
+        this.view = view
+        onViewAvailable?.invoke(view)
+    }
+
+    fun detach(view: PreviewView) {
+        if (this.view === view) this.view = null
+    }
 }
 
 class PreviewViewFactory(private val holder: PreviewHolder) :
@@ -26,12 +40,12 @@ class PreviewPlatformView(context: Context, private val holder: PreviewHolder) :
     }
 
     init {
-        holder.view = previewView
+        holder.attach(previewView)
     }
 
     override fun getView(): View = previewView
 
     override fun dispose() {
-        if (holder.view === previewView) holder.view = null
+        holder.detach(previewView)
     }
 }

@@ -148,7 +148,7 @@ class FormaPosePlugin :
         val e = PoseEngine(
             context = context,
             lifecycleOwner = activity,
-            assetResolver = { name -> assets.getAssetFilePathByName("assets/models/$name") },
+            assetResolver = { name -> assets.getAssetFilePathByName("assets/models/$name", "forma_pose") },
             previewHolder = previewHolder,
             listener = object : PoseEngine.Listener {
                 override fun onFrame(bytes: ByteArray) {

@@ -1,9 +1,9 @@
-# Downloads MediaPipe Pose Landmarker models (Apache 2.0) into apps/mobile/assets/models.
+# Downloads MediaPipe Pose Landmarker models (Apache 2.0) into packages/forma_pose/assets/models.
 # Source: https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker#models
 param([string]$Variant = "lite,full")
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
-$dest = Join-Path $root "apps/mobile/assets/models"
+$dest = Join-Path $root "packages/forma_pose/assets/models"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 foreach ($v in $Variant.Split(",")) {
   $v = $v.Trim()

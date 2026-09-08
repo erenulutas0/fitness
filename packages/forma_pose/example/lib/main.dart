@@ -84,11 +84,18 @@ class _EngineDemoState extends State<EngineDemo> {
                   Text(_info?.toString() ?? 'starting…'),
                   if (_error != null)
                     Text(_error!, style: const TextStyle(color: Colors.orange)),
-                  if (f != null)
+                  if (f != null) ...[
+                    Text('fps ${f.fps?.toStringAsFixed(1) ?? '-'}'),
                     Text(
-                      'fps ${f.fps?.toStringAsFixed(1) ?? '-'}  inference ${f.inferenceMs?.toStringAsFixed(1) ?? '-'} ms  '
+                      'inference ${f.inferenceMs?.toStringAsFixed(1) ?? '-'} ms',
+                    ),
+                    Text(
                       'pose ${f.hasPose}  vis ${f.meanVisibility(coreLandmarks).toStringAsFixed(2)}',
                     ),
+                    Text(
+                      'frame ${f.width}x${f.height}  light ${f.brightness?.toStringAsFixed(2) ?? '-'}',
+                    ),
+                  ],
                 ],
               ),
             ),

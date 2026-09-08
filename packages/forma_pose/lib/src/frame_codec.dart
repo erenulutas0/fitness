@@ -42,7 +42,17 @@ abstract final class PoseFrameCodec {
     final hasPose = d.getInt32(32, e) != 0;
     final hasWorld = d.getInt32(36, e) != 0;
     if (!hasPose) {
-      return PoseFrame.empty(ts, width: w, height: h);
+      // No person detected, but the engine metrics still matter: the setup
+      // assistant needs brightness and the HUD needs fps / inference time.
+      return PoseFrame(
+        timestampMs: ts,
+        width: w,
+        height: h,
+        landmarks: List.filled(PoseLandmark.count, Landmark.missing),
+        fps: fps > 0 ? fps : null,
+        inferenceMs: inf > 0 ? inf : null,
+        brightness: br >= 0 ? br : null,
+      );
     }
     if (d.lengthInBytes < frameBytesWithoutWorld) {
       throw const FormatException('pose frame body too short');
