@@ -2,7 +2,7 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 5** (Claude, video→fixture aracı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-08, oturum 5** (Claude, video→fixture aracı + ilk doğruluk incelemesi). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
@@ -18,6 +18,10 @@
 
 - [ ] **Topuk kalkması kararı**: yan açıdan tek bir video çek (5 tekrar yeter), `--preview` ile iskeleti izle.
       Model ayağı doğru görüyorsa kuralı taban çizgisiyle yeniden yazarız; göremiyorsa kapalı kalır (D17).
+- [ ] **Ayak görünürlüğü sorunu**: dört kayıtta da ayak landmark güveni 0.37-0.64. Kamera yüksekliği/mesafesi
+      ve ayakkabı etkisini test et; gerekirse kurulum asistanı "ayakların kadrajda olsun" desin.
+- [ ] `minSignalConfidence` (0.4) ile kural `minConfidence` (0.5) boşluğu: tekrar sayılıp hiç kural
+      değerlendirilmemesi mümkün. Ya hizala ya HUD'da ayrı bir durum göster.
 - [ ] **Kasten hatalı kayıtlar** (recall ölçmek için): her hata tipi için 1-2 kayıt — bilerek topuk kaldır,
       bilerek sığ in, bilerek dizleri içe ver, bilerek gövdeyi öne eğ. Şu an sadece temiz kayıt var; temiz veriyle
       yalnızca yanlış alarmı ölçebiliyoruz, kaçırmayı ölçemiyoruz.
@@ -47,6 +51,15 @@
 - [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
+
+- [x] 2026-09-08 — **İlk doğruluk incelemesi** (kurucunun 2 videosu + 2 Pexels örneği + 4 cihaz kaydı = 8 fixture):
+      tekrar sayımı **MAE 0** (her kayıtta doğru sayı), derinlik tespiti iskelet önizlemesiyle gözle doğrulandı
+      (88-96° derin, 107-116° sığ ayrımı görüntülerle uyuşuyor), düşük güvende susma çalışıyor.
+      Landmark görünürlüğü: gövde 0.75-1.00, bacak 0.69-0.99, **ayak 0.37-0.64** — ayak en zayıf halka,
+      topuk kuralının neden güvenilmez olduğunu da bu açıklıyor (D17).
+      Not: kadraj kesik videoda (Pexels A, ayak görünürlüğü 0.37) tekrar sayıldı ama kural sessiz kaldı;
+      `minSignalConfidence` 0.4 ile kural `minConfidence` 0.5 arasındaki boşluk. Kullanıcıya "sayıyor ama hiç
+      uyarmıyor" gibi görünebilir; eşikleri hizalamak ya da HUD'da "ayakların görünmüyor" demek gerekebilir.
 
 - [x] 2026-09-08 — **`tools/video_to_fixture`**: sıradan video → fixture JSON (aynı MediaPipe modeli, masaüstü).
       Kayıt ekranından çok daha az iş: telefonla normal video çek, dönüştür. `--preview` iskeleti videonun üzerine
