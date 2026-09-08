@@ -2,58 +2,73 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 6** (Claude, 26 kayıtlık doğruluk taraması + kadraj koruması). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-09, oturum 7** (Claude, ses + kadraj adımı + anatomik makullük + CI/AAB). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 109 test · `forma_pose` 3 test · `apps/mobile` 3 test · eval raporu (sentetik, %100) ·
-  cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
-  **kayıt ekranı**: cihazda kayıt → JSON → `tools/eval` döngüsü kapandı.
-- Kırmızı/bilinmeyen: ses klipleri yok (cue'lar sadece metin + haptik); iOS plugin stub; gerçek
+- Yeşil: `forma_rules` 116 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
+  `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
+  **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
+  **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
+- Kırmızı/bilinmeyen: önceden üretilmiş ses klipleri hâlâ yok (cihaz TTS'i yedek olarak çalışıyor ama robotik ve
+  ilk kelimesi gecikebiliyor); iOS plugin stub; **kasten hatalı kayıt yok → recall ölçülemiyor**; gerçek
   "telefon 2-3 m uzakta" senaryosu ve termal test yapılmadı.
 - Repo: `github.com/erenulutas0/fitness` (**public** — iş planı ve fiyat hipotezleri açık; private yapmayı düşün).
 
 ## Şimdi (sıradaki oturum bunlarla başlar)
 
-- [ ] **Topuk kalkması kararı**: yan açıdan tek bir video çek (5 tekrar yeter), `--preview` ile iskeleti izle.
+- [ ] **Kasten hatalı kayıt** (kurucu çekecek — 9 Eylül'de söz verildi): yan açıdan 5 tekrar, ikisi bilerek sığ,
+      ikisi bilerek dizler içe, biri temiz. Şu an korpusta yalnızca temiz kayıt var; temiz veriyle sadece yanlış
+      alarmı ölçebiliyoruz, **kaçırmayı (recall) ölçemiyoruz** — Kapı 2'nin (recall ≥ %70) önündeki tek engel bu.
+- [ ] **Topuk kalkması kararı**: aynı videoda bilerek topuk kaldır, `--preview` ile iskeleti izle.
       Model ayağı doğru görüyorsa kuralı taban çizgisiyle yeniden yazarız; göremiyorsa kapalı kalır (D17).
-- [ ] Kalan uç durum: yalnızca bacakları gösteren yakın çekimde (stok px_6326821) eklemler kadraj içinde kaldığı
-      için koruma tetiklenmiyor ve motor 9° gibi bir açı üretebiliyor. Vücut oranı kontrolü (gövde/bacak) gerekebilir.
-- [ ] **Ayak görünürlüğü sorunu**: dört kayıtta da ayak landmark güveni 0.37-0.64. Kamera yüksekliği/mesafesi
-      ve ayakkabı etkisini test et; gerekirse kurulum asistanı "ayakların kadrajda olsun" desin.
-- [ ] `minSignalConfidence` (0.4) ile kural `minConfidence` (0.5) boşluğu: tekrar sayılıp hiç kural
-      değerlendirilmemesi mümkün. Ya hizala ya HUD'da ayrı bir durum göster.
-- [ ] **Kasten hatalı kayıtlar** (recall ölçmek için): her hata tipi için 1-2 kayıt — bilerek topuk kaldır,
-      bilerek sığ in, bilerek dizleri içe ver, bilerek gövdeyi öne eğ. Şu an sadece temiz kayıt var; temiz veriyle
-      yalnızca yanlış alarmı ölçebiliyoruz, kaçırmayı ölçemiyoruz.
 - [ ] **Etiketleme alışkanlığı**: ilk iki kayıtta hiç etiket işaretlenmedi, dolayısıyla eval "her tekrar temiz"
       varsaydı. Kayıt sonrası gerçekten olan hataları işaretle, yoksa doğruluk ölçümü tek yönlü kalıyor.
 - [ ] `shallow_depth` eşiği (105°) doğrulanacak: 18:16 kaydının 3. tekrarı 109° ölçüldü ve sığ işaretlendi,
       diğerleri 97-98°. Kurucu onaylarsa eşik doğru, aksi halde 112-115° civarına çekilecek.
+- [ ] **Ayak görünürlüğü sorunu**: dört kayıtta da ayak landmark güveni 0.37-0.64. Kamera yüksekliği/mesafesi
+      ve ayakkabı etkisini test et; kadraj adımı artık "biraz geri git" diyor ama ayak özelinde bir yönerge yok.
 - [ ] **İlk gerçek kayıt setini topla** (kurucu + Claude birlikte): telefon 2-3 m uzakta, tam vücut kadrajda.
       Hedef ilk hafta 20 kayıt: 5 egzersiz × 2 açı × birkaç ortam. Kayıt ekranı hazır, akış: Bugün → sağ üstteki
       kayıt ikonu → egzersiz/açı/kişi/ortam → Kaydı başlat → Durdur ve etiketle → hataları işaretle → Kaydet.
       Kayıtlar `Kaydet ve paylaş` ile telefondan çıkar; `data/fixtures/` gitignore'da.
-
-- [ ] Yayın formatı **AAB** olsun (`flutter build appbundle`): tek ABI release APK 40,4 MB (bütçe 60 MB ✓) ama
-      üç ABI'li tek APK 91,7 MB. CI'daki APK adımı yanında AAB üret. `full` modeli asset'ten çıkarıp ilk kullanımda
-      indirmek 9,4 MB daha kazandırır (v1.x).
 - [ ] **Gerçek senaryo testi:** telefon 2-3 m uzakta, tripod/masa, tam vücut kadrajda, 10 tekrar squat (ön + yan).
       İlk koşuda kamera aynadaki yansımayı gördü; kadraj/mesafe gerçek değildi.
 - [ ] Gerçek kayıtlarla **eşik ayarı**: squat FSM eşikleri (rest 155 / peak 125) ve One Euro parametreleri
       (`minCutoff 1.5, beta 0.1`) sentetik veriye göre seçildi; elle değil `tools/eval` ile ayarla.
-- [ ] `AudioCuePlayer`: `just_audio` + `audio_session` (ducking), tek kanal, öncelik/kesme (docs/05 §5).
-      Şu an `HapticLogCuePlayer` yalnızca haptik + log; cue metni HUD'da görünüyor.
-- [ ] `tools/tts_gen` ile ilk TR/EN klipleri üret (Google TTS hesabı + `ffmpeg`), `assets/audio/cues/` pubspec'e ekle.
-- [ ] Kamera kurulum asistanı ekranı (docs/06 §4.2): `FramingChecker` motorda hazır → ekran + 5 sn sesli geri sayım +
-      "ışık az" uyarısı (`brightness` artık cihazdan geliyor).
+- [ ] `tools/tts_gen` ile ilk TR/EN klipleri üret (**kurucu:** Google TTS hesabı + `ffmpeg`),
+      `assets/audio/cues/` pubspec'e ekle. Oynatıcı hazır: klip varsa klibi, yoksa cihaz TTS'ini kullanıyor.
 - [ ] D15 kararını onayla/ret: el-serbest jest kontrolü (`GestureDetector` motorda hazır, HUD'a bağlanmadı) +
       poz-tetikli otomatik set başlangıcı.
 - [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
 
+- [x] 2026-09-09 — **Koç artık konuşuyor** (docs/10 Prompt 5): `VoiceCuePlayer` önce
+      `assets/audio/cues/<dil>/<clip>_<varyant>.opus` klibini arıyor, yoksa aynı cümleyi cihazın konuşma motoruyla
+      söylüyor — yani ses bugün var, klipler üretilince kendiliğinden hızlanıp doğallaşıyor. Tek kanal: yüksek
+      öncelikli cue çalanı keser, düşük öncelikli olan kuyruğa girmez (iki tekrar geç gelen düzeltme, hiç gelmemesinden
+      kötü). `audio_session` kullanıcının müziğini durdurmak yerine kısıyor; konuşma motoru açılışta ısıtılıyor.
+      Cihazda doğrulandı: geri sayım ve düzeltmeler Türkçe sesli geliyor.
+- [x] 2026-09-09 — **Kadraj adımı** (docs/06 §4.2): set artık kadrajla açılıyor; tek seferde tek yönerge
+      ("biraz geri git", "ışık az") hem sesli hem ekranda, kadraj 700 ms iyi kalınca 5 sn sesli geri sayım,
+      sabırsız kullanıcı için "Şimdi başla". Ayrı ekran değil, **aynı açık kamera** üzerinde çalışıyor: ekranlar
+      arasında kamerayı kapatıp açmak ~1 sn kaybettiriyor. Telefon yerleştirilirken yapılan tekrarlar set
+      başlarken atılıyor; kadraj dışı uyarısı artık "Seni göremiyorum" yerine "Biraz geri git" diyor.
+- [x] 2026-09-09 — **Anatomik makullük kontrolü**: baldır/uyluk oranı 1,6'yı geçerse oturum donuyor. 26 kayıtta
+      ölçüldü — gerçek kayıtlarda oran hiç 1,21'i geçmedi, uydurma iskeletlerde 1,6-25 arasına çıkıyor. Etki:
+      kesik kadrajlı stok videolarda kalan sahte tekrarlar sıfırlandı (px_6326821 1→0, px_2785531 3→0),
+      kurucunun kayıtları 5/5/3/5 ile aynı kaldı. D18'in ikinci katmanı.
+- [x] 2026-09-09 — `minSignalConfidence` 0,4 → **0,5**, yani kuralların `minConfidence` eşiğiyle aynı: "tekrar
+      sayılıyor ama hiçbir kural değerlendirilmiyor" boşluğu kapandı. 26 kayıtlık korpusta tekrar sayımı değişmedi.
+- [x] 2026-09-09 — Yayın formatı **AAB**: CI artık `custom_lint` çalıştırıyor ve hem APK hem AAB üretip yüklüyor.
+      Ölçüldü: `app-release.aab` **74,9 MB** (üç ABI bir arada); cihaza inen tek ABI'lik pay ~40 MB, bütçe içinde.
+      `full` modeli asset'ten çıkarıp ilk kullanımda indirmek 9,4 MB daha kazandırır (v1.x).
+- [x] 2026-09-09 — Uygulama adı iki platformda da **FORMA** (`android:label`, `CFBundleDisplayName`/`CFBundleName`);
+      iOS'a `NSCameraUsageDescription` eklendi (izin diyaloğu metni Türkçe ve ne yapıldığını açıklıyor).
+- [x] 2026-09-09 — MediaPipe modeli artık main thread'de yüklenmiyor: `PoseEngine` landmarker'ı analiz
+      executor'ında `FutureTask` ile kuruyor, hata da aynı yoldan `ModelException` olarak geri dönüyor.
 - [x] 2026-09-08 — **26 kayıtlık tarama** (4 cihaz kaydı + kurucunun 2 videosu + 20 ücretsiz stok video):
       tekrar sayımı doğru kadrajlı her kayıtta tutarlı; kesik kadrajlı stok videolarda motor **imkansız diz açıları**
       (3-12°) üretiyordu. Kök neden ölçüldü: MediaPipe kadraj dışındaki eklemi tahmin edip yüksek `visibility`
@@ -67,9 +82,6 @@
       (88-96° derin, 107-116° sığ ayrımı görüntülerle uyuşuyor), düşük güvende susma çalışıyor.
       Landmark görünürlüğü: gövde 0.75-1.00, bacak 0.69-0.99, **ayak 0.37-0.64** — ayak en zayıf halka,
       topuk kuralının neden güvenilmez olduğunu da bu açıklıyor (D17).
-      Not: kadraj kesik videoda (Pexels A, ayak görünürlüğü 0.37) tekrar sayıldı ama kural sessiz kaldı;
-      `minSignalConfidence` 0.4 ile kural `minConfidence` 0.5 arasındaki boşluk. Kullanıcıya "sayıyor ama hiç
-      uyarmıyor" gibi görünebilir; eşikleri hizalamak ya da HUD'da "ayakların görünmüyor" demek gerekebilir.
 
 - [x] 2026-09-08 — **`tools/video_to_fixture`**: sıradan video → fixture JSON (aynı MediaPipe modeli, masaüstü).
       Kayıt ekranından çok daha az iş: telefonla normal video çek, dönüştür. `--preview` iskeleti videonun üzerine
@@ -97,10 +109,10 @@
 - [x] 2026-09-08 — Monorepo: pub workspace (D11), `apps/mobile`, `packages/forma_rules`, `packages/forma_pose`, `content` (asset paketi), `tools/eval`, `tools/tts_gen`, CI (`.github/workflows/ci.yml`).
 - [x] 2026-09-08 — `forma_rules`: landmark modeli, One Euro filtre, `FeatureExtractor` (2D + world 3D açılar, valgus/heel/hip-line/gesture özellikleri), `RepDetector` (hysteresis FSM, nötr fazlar D14), `HoldDetector`, kural DSL (parser + evaluator + series + validator), `ExerciseDefinition` JSON, `RuleEvaluator` (instant + rep_end), `ScoreEngine`, `ExerciseSession`, `FeedbackScheduler` (cooldown / rephrase / mute / positive / low-confidence), `CueCatalog`, `LandmarkFixture` + replayer, sentetik 3D iskelet üretici (squat, push-up, plank, glute bridge), `GestureDetector` (D15), `FramingChecker`. 105 test, 57 µs/frame.
 - [x] 2026-09-08 — İçerik: `bw_squat` (5 kural), `push_up` (3), `plank` (hold, 3), `glute_bridge` (1), `reverse_lunge` (taslak, 2); `cues.json` 60+ cue TR/EN varyantlı; sentetik golden fixture'lar (12).
-- [x] 2026-09-08 — `forma_pose`: platform interface, binary codec (40 B header + 33×5 + 33×3 float), `FakeFormaPose` (sentetik/fixture), Android Kotlin (CameraX RGBA + PoseLandmarker LIVE_STREAM, GPU→CPU fallback, PreviewView platform view, izin akışı) — **derlenmedi/test edilmedi**, iOS stub.
+- [x] 2026-09-08 — `forma_pose`: platform interface, binary codec (40 B header + 33×5 + 33×3 float), `FakeFormaPose` (sentetik/fixture), Android Kotlin (CameraX RGBA + PoseLandmarker LIVE_STREAM, GPU→CPU fallback, PreviewView platform view, izin akışı), iOS stub.
 - [x] 2026-09-08 — `apps/mobile`: Riverpod codegen, go_router, l10n TR/EN, tema (docs/06 token'ları), Bugün ekranı, HUD (sayaç, skor halkası, tempo, cue metni, iskelet overlay + hata eklemi vurgusu, gizlilik rozeti), set özeti (skor, en sık 2 hata + "neden" kartı), fake motor ile widget testi.
 - [x] 2026-09-08 — `tools/eval`: precision/recall/F1, rep MAE, cue/rep; `docs/eval/latest.md` üretir; Kapı 2 eşiği ile çıkış kodu.
-- [x] 2026-09-08 — `flutter build apk --debug` lokalde yeşil: Kotlin plugin MediaPipe `tasks-vision:0.10.21` + CameraX 1.4.2 ile derleniyor (`app-debug.apk` 175 MB, debug; release boyutu ayrıca ölçülecek).
+- [x] 2026-09-08 — `flutter build apk --debug` lokalde yeşil: Kotlin plugin MediaPipe `tasks-vision:0.10.21` + CameraX 1.4.2 ile derleniyor (`app-debug.apk` 175 MB, debug; release boyutu ayrıca ölçüldü).
 - [x] 2026-09-08 — **Cihazda uçtan uca doğrulandı** (Galaxy S23, Android 16, arm64, debug): kamera izni → CameraX →
       MediaPipe GPU → landmark → kural motoru → cue → HUD. **30,2-30,4 fps**, **21-24 ms** yakalama→landmark gecikmesi,
       iskelet overlay kadraja oturuyor, tekrar sayıldı, `shallow_depth` tetiklendi ("Daha derin in"), hata ekleminde
@@ -113,7 +125,8 @@
       3 regresyon testi), (3) plank süresi kadraj dışında işlemeye devam ediyordu.
 - [x] 2026-09-08 — Modeller `packages/forma_pose/assets/models/` altına taşındı (uygulama ve example tek kopyayı
       paylaşıyor); parlaklık her 15 frame'de bir örnekleniyor; preview platform view geç oluşursa yeniden bağlanıyor.
-- [ ] Android plugin'i gerçek cihazda doğrula (çalışma zamanı: izin, CameraX bind, GPU delegate, EventChannel throughput); CI'daki APK adımını da yeşile çek.
+- [x] 2026-09-09 — Android plugin çalışma zamanı doğrulandı (izin, CameraX bind, GPU delegate, EventChannel
+      throughput) ve CI'daki build adımı yeşil: debug APK + release APK + release AAB üretiliyor.
 - [ ] Eşik taraması (grid search önerisi) `tools/eval`'a ekle (docs/10 Prompt 9).
 - [ ] `reverse_lunge` kuralları: adım uzunluğu, ön diz ilerlemesi, gövde eğimi — sentetik lunge iskeleti yok, gerçek kayıt şart.
 - [ ] `push_up` ön açı (dirsek açılması `shoulder_angle`) — kamera yerde ön açı gerçekçi mi, keşifte sor.
@@ -158,27 +171,34 @@
 ## Teknik borç / bilinen eksikler
 
 - [ ] `applicationId` `app.forma.forma_mobile` → marka seçilince bundle id'yi değiştir (mağazaya çıkmadan).
+      Görünen ad artık FORMA; değişecek olan yalnızca paket kimliği.
+- [ ] Ses klipleri üretilene kadar her cue cihaz TTS'iyle söyleniyor: ilk kelime birkaç yüz ms gecikebilir ve ses
+      robotik. `VoiceCuePlayer` klip bulunca kendiliğinden ona geçer, kod değişikliği gerekmez.
+- [ ] Kadraj adımının geri sayımı duvar saatiyle (`Timer.periodic`), tekrar mantığı frame zaman damgasıyla
+      çalışıyor; kamera takılırsa ikisi ayrışır. Tek zaman kaynağına indirmeyi düşün.
+- [ ] `SessionConfig.maxShinThighRatio` (1,6) ve `maxBodyHeightFraction` (0,97) 26 kayıtlık küçük bir korpustan
+      geldi; kayıt sayısı artınca yeniden ölç.
 - [ ] FMA kas id'leri (`content/exercises/*.json` primary/secondaryMuscles) doğrulanmadı — anatomi katmanında kontrol.
 - [ ] `explain.source` id'leri yer tutucu (`src_valgus_01` vb.) — `content/sources/` doldurulunca eşle.
-- [ ] `FeatureSet.point('hip')` baskın taraf, `knee_angle` iki tarafın ortalaması: DSL dokümanına yaz (küçük tutarsızlık).
 - [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.
-- [ ] `flutter analyze` custom_lint (riverpod_lint) CI'da çalıştırılmıyor; ekle.
 - [ ] Kayıt ekranı metinleri l10n dışında (bilinçli: kurucu aracı, sadece debug). Beta'da başka birine kayıt
       yaptıracaksan İngilizceye çevir.
 - [ ] Kayıt sırasında ham frame'ler bellekte tutuluyor (3 dk ≈ 11 MB). Daha uzun kayıt gerekirse parça parça diske yaz.
-- [ ] `share_plus` + `path_provider` eklendi (ikisi de BSD-3). Lisans ekranına girecek listeye ekle (docs/08).
-- [x] 2026-09-08 — CI: action sürümleri v5'e çekildi; `tools/check_so_alignment.py` ile 16 KB hizalaması her build'de doğrulanıyor.
-- [ ] Plugin example'ındaki overlay aspect düzeltmesi yok (iskelet preview ile birebir örtüşmüyor); uygulamadaki
-      `SkeletonPainter` cover-fit yapıyor, example basit. Örnek uygulamayı ona hizala ya da paylaşılan bir painter çıkar.
-- [ ] `PoseEngine.createLandmarker` modeli main thread'de yüklüyor (~5,8 MB); soğuk açılışta birkaç yüz ms bloklayabilir.
+- [ ] Lisans ekranı listesi: `share_plus`, `path_provider` (BSD-3), `just_audio`, `flutter_tts` (MIT),
+      `audio_session` (MIT). Hepsi docs/08'deki tabloda; uygulama içi ekran yazılınca oradan beslenecek.
 - [ ] MediaPipe `tensor.cc: Tensors are designed for single writes` uyarısı her koşuda çıkıyor (GPU delegate, zararsız
       görünüyor); 1.0.0'da da var, takip et.
 - [ ] HUD'daki debug metrik satırı `kDebugMode` ile sınırlı; release'de görünmüyor ama beta build'lerde bir ayar arkasına alınabilir.
-- [ ] Windows'ta `dart format --set-exit-if-changed` CRLF'e duyarlı olabilir; `.gitattributes` ile LF zorla.
+- [x] 2026-09-09 — `flutter analyze` + `custom_lint` (riverpod_lint) CI'da koşuyor; release AAB de CI'da üretiliyor.
+- [x] 2026-09-09 — Plugin example'ı artık uygulamayla aynı cover-fit overlay'i kullanıyor (iskelet preview'a oturuyor).
+- [x] 2026-09-09 — `PoseEngine.createLandmarker` main thread'i bloklamıyor (analiz executor'ında `FutureTask`).
+- [x] 2026-09-08 — CI: action sürümleri v5'e çekildi; `tools/check_so_alignment.py` ile 16 KB hizalaması her build'de doğrulanıyor.
+- [x] 2026-09-08 — `.gitattributes` ile satır sonları LF'e sabitlendi (`dart format --set-exit-if-changed` Windows'ta da aynı davranıyor).
 
 ## Kurucuya ait (kod dışı)
 
 - [ ] **Kapı 1 keşif:** 5 PT/fizyoterapist + 10 kullanıcı görüşmesi (docs/09 Hafta 0). Çıkış: 6/10 "formumdan emin değilim", 3/5 PT "önerirdim".
+- [ ] **Kasten hatalı squat videosu** (yukarıda "Şimdi" listesinde) — recall ölçümünün önündeki tek engel.
 - [ ] Marka adı aday listesi + Türk Patent/EUIPO ön arama; domain.
 - [ ] Beta onam formu (video kaydı/etiketleme rızası).
 - [ ] Google Cloud TTS hesabı (ücretsiz kota) → `tools/tts_gen`.
@@ -207,3 +227,11 @@
   26 kayıt tarandı. Topuk sorusu iskelet önizlemesiyle gözle kapatıldı (topuklar yerde, model dipte ayağı eğik
   görüyor). Kesik kadrajın imkansız açılar ürettiği ölçüldü ve kadraj koruması eklendi (D18) + ayrı kadraj cue'su.
   Testler: 115 + 3 + 3 yeşil.
+- **2026-09-09 / oturum 7 (Claude):** "Yeni video beklemeyen ne varsa bitir" oturumu. Ürünü cihazda eksik hissettiren
+  iki boşluk kapandı: koç artık **sesli** konuşuyor (klip varsa klip, yoksa cihaz TTS'i) ve set **kadraj adımıyla**
+  açılıyor (sesli yönerge + 5 sn geri sayım + "Şimdi başla"); ikisi de Galaxy S23'te doğrulandı. Kesik kadrajda
+  kalan imkansız açılar anatomik makullük kontrolüyle kapatıldı, `minSignalConfidence` kural eşiğine hizalandı.
+  Uygulama adı FORMA oldu + iOS kamera izni metni, CI'a `custom_lint` ve release AAB eklendi (74,9 MB ölçüldü),
+  MediaPipe modeli main thread'den çıkarıldı, plugin example overlay'i uygulamayla hizalandı, docs/05 + docs/08 +
+  fixtures-schema güncellendi. Testler: **116 + 3 + 3 yeşil**, analiz + custom_lint + format temiz.
+  Kalan tek blokaj: kasten hatalı kayıt (kurucu yarın çekecek).
