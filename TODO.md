@@ -104,6 +104,7 @@
 - [ ] `FeatureSet.point('hip')` baskın taraf, `knee_angle` iki tarafın ortalaması: DSL dokümanına yaz (küçük tutarsızlık).
 - [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.
 - [ ] `flutter analyze` custom_lint (riverpod_lint) CI'da çalıştırılmıyor; ekle.
+- [x] 2026-09-08 — CI: action sürümleri v5'e çekildi; `tools/check_so_alignment.py` ile 16 KB hizalaması her build'de doğrulanıyor.
 - [ ] Plugin example'ındaki overlay aspect düzeltmesi yok (iskelet preview ile birebir örtüşmüyor); uygulamadaki
       `SkeletonPainter` cover-fit yapıyor, example basit. Örnek uygulamayı ona hizala ya da paylaşılan bir painter çıkar.
 - [ ] `PoseEngine.createLandmarker` modeli main thread'de yüklüyor (~5,8 MB); soğuk açılışta birkaç yüz ms bloklayabilir.

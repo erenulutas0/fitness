@@ -14,7 +14,7 @@ jobs:
     name: Rules engine (pure Dart)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -31,7 +31,7 @@ jobs:
       - name: Eval report (synthetic fixtures)
         working-directory: tools/eval
         run: dart run bin/eval.dart --out ../../docs/eval/latest.md --json ../../docs/eval/latest.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: eval-report
           path: docs/eval/
@@ -40,8 +40,8 @@ jobs:
     name: App + plugin (analyze, test, Android debug build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -69,7 +69,9 @@ jobs:
       - name: Build Android debug APK
         working-directory: apps/mobile
         run: flutter build apk --debug
-      - uses: actions/upload-artifact@v4
+      - name: Check 16 KB page-size alignment of native libraries
+        run: python3 tools/check_so_alignment.py apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+      - uses: actions/upload-artifact@v5
         with:
           name: forma-debug-apk
           path: apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
