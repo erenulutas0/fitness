@@ -133,12 +133,20 @@ class _DotsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (!frame.hasPose) return;
+    // The preview cover-fits the camera image, so the overlay has to use the
+    // same mapping or the skeleton drifts away from the body.
+    final aspect = frame.aspect;
+    final boxAspect = size.width / size.height;
+    final drawH = aspect > boxAspect ? size.height : size.width / aspect;
+    final drawW = aspect > boxAspect ? size.height * aspect : size.width;
+    final dx = (size.width - drawW) / 2;
+    final dy = (size.height - drawH) / 2;
     final line = Paint()
       ..color = const Color(0xFFC8FF3D)
       ..strokeWidth = 2;
     final dot = Paint()..color = const Color(0xFF5AD8FF);
     Offset p(PoseLandmark l) =>
-        Offset(frame[l].x * size.width, frame[l].y * size.height);
+        Offset(dx + frame[l].x * drawW, dy + frame[l].y * drawH);
     for (final (a, b) in skeletonEdges) {
       if (frame[a].visibility < 0.5 || frame[b].visibility < 0.5) continue;
       canvas.drawLine(p(a), p(b), line);
