@@ -2,25 +2,36 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-08, oturum 1** (Claude). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-08, oturum 2** (Claude, cihaz testi). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
-- Faz: **Hafta 1-2 "Motor"** işlerinin büyük kısmı bir oturumda kod olarak çıktı; cihaz testi yapılmadı (ADB yoktu).
-- Yeşil: `packages/forma_rules` 105 test · `packages/forma_pose` 3 test · `apps/mobile` widget testi · eval raporu (sentetik, %100).
-- Kırmızı/bilinmeyen: Android native plugin **derleniyor ama cihazda hiç çalışmadı**; iOS plugin stub (NOT_SUPPORTED); ses klipleri üretilmedi.
+- Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
+- Yeşil: `forma_rules` 108 test · `forma_pose` 3 test · `apps/mobile` widget testi · eval raporu (sentetik, %100) ·
+  cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu.
+- Kırmızı/bilinmeyen: ses klipleri yok (cue'lar sadece metin + haptik); iOS plugin stub; gerçek
+  "telefon 2-3 m uzakta" senaryosu ve termal test yapılmadı.
 - Repo: `github.com/erenulutas0/fitness` (**public** — iş planı ve fiyat hipotezleri açık; private yapmayı düşün).
 
 ## Şimdi (sıradaki oturum bunlarla başlar)
 
-- [ ] **Cihazda ilk çalıştırma** (USB/ADB): `cd apps/mobile && flutter run` → kamera izni, preview, fps/inferenceMs oku. Hedef: lite modelde ≤ 33 ms (docs/05 §10). Sorun çıkarsa `packages/forma_pose/example` ile izole et.
-- [ ] `pwsh tools/fetch_models.ps1` ile modeli indir (gitignore'da) — APK'ya gömülmesi için `assets/models/*.task` mevcut olmalı.
-- [ ] Gerçek kamerada **squat FSM eşiklerini** kontrol et (`knee_angle` rest 155 / peak 125 sentetik veriye göre; gerçek MediaPipe gürültüsüyle One Euro parametreleri `minCutoff 1.5, beta 0.1` ayarlanacak — elle değil, kayıt + `tools/eval` ile).
-- [ ] **Landmark recorder** (docs/10 Prompt 3): uygulama içi gizli ekran (debug), PoseFrame dizisini `docs/fixtures-schema.md` formatında JSON'a yazsın, share sheet ile çıkarsın. İlk hafta hedef 20 kayıt.
-- [ ] D15 kararını onayla/ret: el-serbest jest kontrolü (`GestureDetector` motorda hazır, HUD'a bağlanmadı) + poz-tetikli otomatik set başlangıcı.
-- [ ] Kamera kurulum asistanı ekranı (docs/06 §4.2): `FramingChecker` motorda hazır → ekran + 5 sn sesli geri sayım + "ışık az" uyarısı.
-- [ ] `AudioCuePlayer`: `just_audio` + `audio_session` (ducking), tek kanal, öncelik/kesme kuralı (docs/05 §5). Şu an `HapticLogCuePlayer` sadece haptik + log.
+- [ ] Yayın formatı **AAB** olsun (`flutter build appbundle`): tek ABI release APK 40,4 MB (bütçe 60 MB ✓) ama
+      üç ABI'li tek APK 91,7 MB. CI'daki APK adımı yanında AAB üret. `full` modeli asset'ten çıkarıp ilk kullanımda
+      indirmek 9,4 MB daha kazandırır (v1.x).
+- [ ] **Gerçek senaryo testi:** telefon 2-3 m uzakta, tripod/masa, tam vücut kadrajda, 10 tekrar squat (ön + yan).
+      İlk koşuda kamera aynadaki yansımayı gördü; kadraj/mesafe gerçek değildi.
+- [ ] **Landmark recorder** (docs/10 Prompt 3): uygulama içi gizli ekran (debug), PoseFrame dizisini
+      `docs/fixtures-schema.md` formatında JSON'a yazsın, share sheet ile çıksın. İlk hafta hedef 20 kayıt.
+- [ ] Gerçek kayıtlarla **eşik ayarı**: squat FSM eşikleri (rest 155 / peak 125) ve One Euro parametreleri
+      (`minCutoff 1.5, beta 0.1`) sentetik veriye göre seçildi; elle değil `tools/eval` ile ayarla.
+- [ ] `AudioCuePlayer`: `just_audio` + `audio_session` (ducking), tek kanal, öncelik/kesme (docs/05 §5).
+      Şu an `HapticLogCuePlayer` yalnızca haptik + log; cue metni HUD'da görünüyor.
 - [ ] `tools/tts_gen` ile ilk TR/EN klipleri üret (Google TTS hesabı + `ffmpeg`), `assets/audio/cues/` pubspec'e ekle.
+- [ ] Kamera kurulum asistanı ekranı (docs/06 §4.2): `FramingChecker` motorda hazır → ekran + 5 sn sesli geri sayım +
+      "ışık az" uyarısı (`brightness` artık cihazdan geliyor).
+- [ ] D15 kararını onayla/ret: el-serbest jest kontrolü (`GestureDetector` motorda hazır, HUD'a bağlanmadı) +
+      poz-tetikli otomatik set başlangıcı.
+- [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
 
@@ -31,6 +42,18 @@
 - [x] 2026-09-08 — `apps/mobile`: Riverpod codegen, go_router, l10n TR/EN, tema (docs/06 token'ları), Bugün ekranı, HUD (sayaç, skor halkası, tempo, cue metni, iskelet overlay + hata eklemi vurgusu, gizlilik rozeti), set özeti (skor, en sık 2 hata + "neden" kartı), fake motor ile widget testi.
 - [x] 2026-09-08 — `tools/eval`: precision/recall/F1, rep MAE, cue/rep; `docs/eval/latest.md` üretir; Kapı 2 eşiği ile çıkış kodu.
 - [x] 2026-09-08 — `flutter build apk --debug` lokalde yeşil: Kotlin plugin MediaPipe `tasks-vision:0.10.21` + CameraX 1.4.2 ile derleniyor (`app-debug.apk` 175 MB, debug; release boyutu ayrıca ölçülecek).
+- [x] 2026-09-08 — **Cihazda uçtan uca doğrulandı** (Galaxy S23, Android 16, arm64, debug): kamera izni → CameraX →
+      MediaPipe GPU → landmark → kural motoru → cue → HUD. **30,2-30,4 fps**, **21-24 ms** yakalama→landmark gecikmesi,
+      iskelet overlay kadraja oturuyor, tekrar sayıldı, `shallow_depth` tetiklendi ("Daha derin in"), hata ekleminde
+      turuncu vurgu, "Seni net göremiyorum" düşük güvende çalıştı.
+- [x] 2026-09-08 — **16 KB sayfa boyutu uyumluluğu** (D16): Android 16 uyumsuzluk uyarısı verdi; MediaPipe
+      `tasks-vision` 0.10.21 → **1.0.0**, CameraX 1.4.2 → **1.6.2**. APK'daki tüm `.so` dosyaları artık ≥ 16384 hizalı
+      (doğrulandı), uyarı kayboldu. Google Play, Android 15+ hedefleyen uygulamalarda bunu zorunlu tutuyor.
+- [x] 2026-09-08 — Cihazda bulunan 3 hata düzeltildi: (1) poz yokken fps/gecikme/parlaklık meta verisi düşüyordu,
+      (2) kadraj dışına çıkınca tekrar FSM'i askıda kalıp dönüşte hayalet tekrar sayıyordu (`RepDetector.abort`,
+      3 regresyon testi), (3) plank süresi kadraj dışında işlemeye devam ediyordu.
+- [x] 2026-09-08 — Modeller `packages/forma_pose/assets/models/` altına taşındı (uygulama ve example tek kopyayı
+      paylaşıyor); parlaklık her 15 frame'de bir örnekleniyor; preview platform view geç oluşursa yeniden bağlanıyor.
 - [ ] Android plugin'i gerçek cihazda doğrula (çalışma zamanı: izin, CameraX bind, GPU delegate, EventChannel throughput); CI'daki APK adımını da yeşile çek.
 - [ ] Eşik taraması (grid search önerisi) `tools/eval`'a ekle (docs/10 Prompt 9).
 - [ ] `reverse_lunge` kuralları: adım uzunluğu, ön diz ilerlemesi, gövde eğimi — sentetik lunge iskeleti yok, gerçek kayıt şart.
@@ -81,6 +104,12 @@
 - [ ] `FeatureSet.point('hip')` baskın taraf, `knee_angle` iki tarafın ortalaması: DSL dokümanına yaz (küçük tutarsızlık).
 - [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.
 - [ ] `flutter analyze` custom_lint (riverpod_lint) CI'da çalıştırılmıyor; ekle.
+- [ ] Plugin example'ındaki overlay aspect düzeltmesi yok (iskelet preview ile birebir örtüşmüyor); uygulamadaki
+      `SkeletonPainter` cover-fit yapıyor, example basit. Örnek uygulamayı ona hizala ya da paylaşılan bir painter çıkar.
+- [ ] `PoseEngine.createLandmarker` modeli main thread'de yüklüyor (~5,8 MB); soğuk açılışta birkaç yüz ms bloklayabilir.
+- [ ] MediaPipe `tensor.cc: Tensors are designed for single writes` uyarısı her koşuda çıkıyor (GPU delegate, zararsız
+      görünüyor); 1.0.0'da da var, takip et.
+- [ ] HUD'daki debug metrik satırı `kDebugMode` ile sınırlı; release'de görünmüyor ama beta build'lerde bir ayar arkasına alınabilir.
 - [ ] Windows'ta `dart format --set-exit-if-changed` CRLF'e duyarlı olabilir; `.gitattributes` ile LF zorla.
 
 ## Kurucuya ait (kod dışı)
@@ -97,3 +126,8 @@
 ## Oturum günlüğü
 
 - **2026-09-08 / oturum 1 (Claude):** Doküman seti okundu; `docs/`'a taşındı; Decision Log D11–D15 ve 9 yeni fikir eklendi; monorepo + motor + içerik + plugin (Android kod, cihazsız) + uygulama iskeleti + eval + TTS scripti + CI yazıldı; testler yeşil; GitHub'a push edildi.
+- **2026-09-08 / oturum 2 (Claude):** Galaxy S23 bağlandı. Modeller plugin paketine taşındı, plugin demo ve ana
+  uygulama cihaza kuruldu, uçtan uca hat doğrulandı (30 fps, 21-24 ms, tekrar + kural + cue + overlay). Cihazda
+  3 hata bulunup düzeltildi (poz yokken meta veri kaybı, hayalet tekrar, plank süresi), 16 KB sayfa uyumluluğu
+  için MediaPipe 1.0.0 + CameraX 1.6.2'ye yükseltildi ve doğrulandı. Release APK 91,7 MB ölçüldü (bütçe aşımı,
+  "Şimdi" listesine alındı). Testler: 108 + 3 + 1 yeşil.

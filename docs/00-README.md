@@ -51,6 +51,7 @@ Sıra bilinçli: 1. katman tek başına gösterilebilir ve satılabilir bir ür�
 | D13 | Tekrar sayımı **gevşek eşik** ile, kalite **kurallarla**: kısa squat da tekrar sayılır, `shallow_depth` kuralı uyarır | Sayaç eşiği ile derinlik kuralı çelişmesin; deneme sayılır, kalite puanlanır (aksi halde "kısa" tekrarlar hiç görünmez) | 05 |
 | D14 | Kural DSL fazları nötr: `rest / toPeak / peak / toRest` (+ squat takma adları `top / descending / bottom / ascending`) | Glute bridge gibi "yukarı" hareketlerde "descending" kafa karıştırır; motor tek, isimler egzersizden bağımsız | 05 |
 | D15 | MVP'ye **el-serbest jest kontrolü** (iki bilek baş üstünde ~1,5 sn = başlat / sonraki set; T-pozu = bitir) ve **poz-tetikli otomatik set başlangıcı** eklendi — *Claude önerisi 8 Eyl 2026, kurucu onayı bekliyor* | "Telefon 2-3 m uzakta" sürtünmesi 01'deki 1 numaralı risk; landmark'lar zaten var, ek maliyet yok | 03 (fikir 13-14) |
+| D16 | Android native bağımlılıkları **16 KB sayfa uyumlu** sürümlerde sabit: MediaPipe tasks-vision **1.0.0**, CameraX **1.6.2** (sürüm düşürülmez) | Google Play, Android 15+ hedefleyen uygulamalarda 16 KB desteğini zorunlu kılıyor; eski sürümler (0.10.21 / 1.4.2) Galaxy S23 + Android 16'da uyumsuzluk uyarısı verdi | 05, TODO |
 
 ## Doğrulama kapıları (bunlar geçilmeden sonraki faza geçilmez)
 

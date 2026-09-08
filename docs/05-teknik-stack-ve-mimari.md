@@ -191,14 +191,16 @@ Android: CameraX `ImageAnalysis` (STRATEGY_KEEP_ONLY_LATEST) → MediaPipe `Pose
 
 ## 10. Performans bütçeleri (Kapı 2)
 
-| Metrik | Hedef | Ölçüm |
-|---|---|---|
-| Inference (lite, GPU) | ≤ 33 ms (orta segment Android, ör. 2023 Snapdragon 6-serisi) | Plugin `inferenceMs` |
-| Uçtan uca cue gecikmesi (hareket → ses başlangıcı) | ≤ 400 ms | Yüksek hızlı kamera ile ölçüm veya sentetik test |
-| Kamera preview | 30 fps, jank yok | DevTools |
-| 10 dk seans | Thermal throttling yok, batarya ≤ %8 | Cihaz matrisi |
-| Uygulama boyutu | ≤ 60 MB (lite model + TR/EN klipler) | |
-| Soğuk açılış → kamera hazır | ≤ 2,5 sn | |
+| Metrik | Hedef | Ölçüm | İlk cihaz koşusu (8 Eyl 2026, Galaxy S23 / Android 16, debug) |
+|---|---|---|---|
+| Inference (lite, GPU) | ≤ 33 ms (orta segment Android, ör. 2023 Snapdragon 6-serisi) | Plugin `inferenceMs` | **21-24 ms** (yakalama → landmark, üst segment cihaz) |
+| Uçtan uca cue gecikmesi (hareket → ses başlangıcı) | ≤ 400 ms | Yüksek hızlı kamera ile ölçüm veya sentetik test | Ses katmanı yok; Dart hattı 0,06 ms/frame |
+| Kamera preview | 30 fps, jank yok | DevTools | **30,2-30,4 fps** |
+| 10 dk seans | Thermal throttling yok, batarya ≤ %8 | Cihaz matrisi | Ölçülmedi |
+| Uygulama boyutu | ≤ 60 MB (lite model + TR/EN klipler) | | **40,4 MB** (arm64 release, lite+full model gömülü). Üç ABI'li tek APK 91,7 MB → yayın **AAB** ile |
+| Soğuk açılış → kamera hazır | ≤ 2,5 sn | | Ölçülmedi |
+
+Orta segment cihazda ölçüm tekrarlanmadan bu satırlar kesin sayılmaz (S23 üst segment).
 
 Cihaz matrisi (minimum): 1 düşük Android (Redmi/Samsung A-serisi 2022), 1 orta, 1 üst; iPhone 11, iPhone 14+.
 
