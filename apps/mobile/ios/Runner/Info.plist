@@ -6,8 +6,10 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>FORMA hareketini izleyip formunu düzeltmek için kamerayı kullanır. Görüntü telefonundan çıkmaz. / FORMA uses the camera to watch your form. Video never leaves your phone.</string>
 	<key>CFBundleDisplayName</key>
-	<string>Forma Mobile</string>
+	<string>FORMA</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +17,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>forma_mobile</string>
+	<string>FORMA</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
