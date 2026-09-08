@@ -1,0 +1,15 @@
+name: forma_eval
+description: Evaluation harness for FORMA - runs labelled landmark fixtures through forma_rules and reports precision/recall/F1 and rep-count MAE.
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  args: ^2.7.0
+  forma_rules:
+    path: ../../packages/forma_rules
+
+dev_dependencies: {test: ^1.30.0, very_good_analysis: ^10.2.0}
