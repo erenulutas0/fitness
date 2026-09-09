@@ -30,9 +30,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  * CameraX + MediaPipe Pose Landmarker (LIVE_STREAM) → binary frames.
  *
  * Frames are analysed on a single background thread with
- * [ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST]; rotation and front-camera
- * mirroring are applied here so Dart always sees an upright, un-mirrored,
- * normalized coordinate system.
+ * [ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST]. Rotation is applied here, and so
+ * is front-camera mirroring: PreviewView shows the front lens mirrored (what
+ * people expect of a selfie), so the landmarks Dart receives are in that same
+ * space and an overlay can be drawn straight onto the preview without
+ * flipping anything.
  */
 class PoseEngine(
     private val context: Context,

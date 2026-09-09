@@ -83,6 +83,7 @@ class VoiceCuePlayer extends CuePlayer {
   bool _ready = false;
   int _playingPriority = 0;
   final Set<String> _missingClips = {};
+  bool _speaking = false;
 
   static const _basePath = 'assets/audio/cues';
 
@@ -153,14 +154,25 @@ class VoiceCuePlayer extends CuePlayer {
     }
     try {
       await _tts.stop();
-      unawaited(_tts.speak(text).whenComplete(() => _playingPriority = 0));
+      _speaking = true;
+      unawaited(
+        _tts.speak(text).whenComplete(() {
+          _speaking = false;
+          _playingPriority = 0;
+        }),
+      );
     } on Object catch (e) {
+      _speaking = false;
       _playingPriority = 0;
       debugPrint('[cue] speak failed: $e');
     }
   }
 
-  bool get _isBusy => _player.playing;
+  /// Busy has to include the speech engine, not just the clip player. Until
+  /// the clips are rendered every cue goes down the TTS path, and with only
+  /// `_player.playing` here the priority policy was dead code: each cue cut
+  /// the one before it, so a correction could truncate a safety cue.
+  bool get _isBusy => _player.playing || _speaking;
 
   /// Clip ids that were requested but are not bundled; drives the TODO for
   /// `tools/tts_gen`.

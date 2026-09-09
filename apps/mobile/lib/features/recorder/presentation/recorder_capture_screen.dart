@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_pose/forma_pose.dart';
@@ -51,6 +53,14 @@ class _RecorderCaptureScreenState extends ConsumerState<RecorderCaptureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The 3-minute cap finishes the take through the same path as the button,
+    // so it lands on labelling instead of quietly leaving a stopped screen.
+    ref.listen(
+      recorderControllerProvider.select((s) => s.reachedLimit),
+      (_, hit) {
+        if (hit && mounted) unawaited(_stop());
+      },
+    );
     final state = ref.watch(recorderControllerProvider);
     final frame = state.frame;
     final framing = state.framing;
@@ -76,7 +86,6 @@ class _RecorderCaptureScreenState extends ConsumerState<RecorderCaptureScreen> {
               painter: SkeletonPainter(
                 frame: frame,
                 tracking: (framing?.confidence ?? 0) >= 0.5,
-                mirror: widget.config.lens == CameraLens.front,
               ),
             ),
           SafeArea(

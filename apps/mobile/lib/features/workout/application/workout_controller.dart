@@ -112,6 +112,9 @@ class WorkoutController extends _$WorkoutController {
   static const readyHoldMs = 700;
   static const framingCueCooldownMs = 4000;
 
+  /// Minimum gap between any two framing instructions, roughly one utterance.
+  static const minFramingCueGapMs = 1500;
+
   ExerciseSession? _session;
   FeedbackScheduler? _scheduler;
   CueCatalog? _catalog;
@@ -125,6 +128,13 @@ class WorkoutController extends _$WorkoutController {
   StreamSubscription<PoseFrame>? _sub;
   bool _ownsEngine = false;
 
+  /// start() is a chain of awaits and the provider is autoDispose: leaving the
+  /// screen while it runs used to tear down nothing (both fields were still
+  /// null) and then hand a live camera to a notifier nobody owns. The native
+  /// engine stayed running, so every later set failed with ALREADY_RUNNING
+  /// until the app was restarted.
+  bool _disposed = false;
+
   @override
   HudState build(String exerciseId, CameraView view) {
     ref.onDispose(_teardown);
@@ -137,6 +147,7 @@ class WorkoutController extends _$WorkoutController {
     if (state.status != HudStatus.idle) return;
     state = state.copyWith(status: HudStatus.starting);
     final content = await ref.read(contentRepositoryProvider.future);
+    if (_disposed) return;
     final def = content.exercise(exerciseId);
     if (def == null) {
       state = state.copyWith(
@@ -178,6 +189,12 @@ class WorkoutController extends _$WorkoutController {
         );
         return;
       }
+    }
+    if (_disposed) {
+      // The screen went away while the camera was opening.
+      await engine.stop();
+      if (_ownsEngine && engine is FakeFormaPose) await engine.dispose();
+      return;
     }
     _engine = engine;
     _sub = engine.frames.listen(
@@ -312,6 +329,12 @@ class WorkoutController extends _$WorkoutController {
   }
 
   void _speakFramingCue(String clipId, int nowMs) {
+    // Two guards, because they stop different things. The same instruction
+    // repeats at most every few seconds; ANY instruction waits for the last
+    // one to be spoken. Without the second, a measurement sitting on a
+    // threshold flips the verdict frame to frame and the coach stutters
+    // between "step back" and "step closer" at 30 fps.
+    if (nowMs - _lastFramingCueMs < minFramingCueGapMs) return;
     if (clipId == _lastFramingCue &&
         nowMs - _lastFramingCueMs < framingCueCooldownMs) {
       return;
@@ -387,6 +410,7 @@ class WorkoutController extends _$WorkoutController {
   }
 
   void _teardown() {
+    _disposed = true;
     _countdownTimer?.cancel();
     unawaited(_stopEngine());
   }

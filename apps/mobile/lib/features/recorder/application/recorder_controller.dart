@@ -145,6 +145,7 @@ class RecorderState {
     this.engineHoldMs = 0,
     this.errorMessage,
     this.engine,
+    this.reachedLimit = false,
   });
 
   final RecorderStatus status;
@@ -157,6 +158,12 @@ class RecorderState {
   final int engineHoldMs;
   final String? errorMessage;
   final String? engine;
+
+  /// The 3-minute cap was hit. The screen finishes the take the same way a
+  /// manual stop does; the controller cannot navigate, and calling stop()
+  /// here would drop the draft on the floor and leave a three-minute
+  /// recording behind a button that now reads "Vazgeç".
+  final bool reachedLimit;
 
   bool get isRecording => status == RecorderStatus.recording;
   bool get isLive =>
@@ -173,6 +180,7 @@ class RecorderState {
     int? engineHoldMs,
     String? errorMessage,
     String? engine,
+    bool? reachedLimit,
   }) => RecorderState(
     status: status ?? this.status,
     frameCount: frameCount ?? this.frameCount,
@@ -184,6 +192,7 @@ class RecorderState {
     engineHoldMs: engineHoldMs ?? this.engineHoldMs,
     errorMessage: errorMessage ?? this.errorMessage,
     engine: engine ?? this.engine,
+    reachedLimit: reachedLimit ?? this.reachedLimit,
   );
 }
 
@@ -203,6 +212,10 @@ class RecorderController extends _$RecorderController {
   StreamSubscription<PoseFrame>? _sub;
   Timer? _countdownTimer;
   bool _ownsEngine = false;
+
+  /// See WorkoutController._disposed: an autoDispose notifier can go away
+  /// mid-start and leave a live camera behind.
+  bool _disposed = false;
   int? _recordStartMs;
   RecordingConfig? _config;
   String? _device;
@@ -212,6 +225,7 @@ class RecorderController extends _$RecorderController {
   @override
   RecorderState build() {
     ref.onDispose(() {
+      _disposed = true;
       _countdownTimer?.cancel();
       unawaited(_stopEngine());
     });
@@ -259,6 +273,14 @@ class RecorderController extends _$RecorderController {
         );
         return;
       }
+    }
+    if (_disposed) {
+      // The screen went away while the camera was opening: nothing owns this
+      // engine any more, and the countdown timer below would tick forever on
+      // a dead notifier.
+      await engine.stop();
+      if (_ownsEngine && engine is FakeFormaPose) await engine.dispose();
+      return;
     }
     _engine = engine;
     _device ??= info.device;
@@ -312,7 +334,9 @@ class RecorderController extends _$RecorderController {
       engineReps: snap?.repCount ?? 0,
       engineHoldMs: snap?.holdMs ?? 0,
     );
-    if (duration >= maxDurationMs) unawaited(stop());
+    if (duration >= maxDurationMs && !state.reachedLimit) {
+      state = state.copyWith(reachedLimit: true);
+    }
   }
 
   /// Stop recording and hand back the draft for labelling.

@@ -43,9 +43,14 @@ class _RecorderLabelScreenState extends ConsumerState<RecorderLabelScreen> {
     final draft = widget.draft;
     final isHold = _isHold;
     setState(() => _saving = true);
+    // Ticking rep 6 and then correcting the count down to 5 used to ship the
+    // stale label: the harness counts a label on a rep that does not exist as
+    // a miss, so the rule's recall is permanently depressed and a threshold
+    // sweep compensates by loosening it.
+    final maxUnit = isHold ? 1 : _units;
     final labels = <FixtureLabel>[
       for (final e in _labels.entries)
-        if (e.value.isNotEmpty)
+        if (e.value.isNotEmpty && e.key <= maxUnit)
           FixtureLabel(rep: e.key, rules: e.value.toList()..sort()),
     ]..sort((a, b) => a.rep.compareTo(b.rep));
     final fixture = draft.toFixture(
