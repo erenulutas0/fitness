@@ -160,13 +160,23 @@ class FormaPosePlugin :
                 }
             },
         )
+        // Claim the slot before starting, not in the ready callback: while the
+        // camera was opening `engine` was null, so stop() tore down nothing and
+        // a second start() slipped past the ALREADY_RUNNING guard.
+        engine = e
         try {
-            e.start(options) { info ->
-                engine = e
-                mainHandler.post { result.success(info) }
-            }
+            e.start(
+                options,
+                onReady = { info -> mainHandler.post { result.success(info) } },
+                onFailure = { code, message ->
+                    e.stop()
+                    if (engine === e) engine = null
+                    mainHandler.post { result.error(code, message, null) }
+                },
+            )
         } catch (t: Throwable) {
             e.stop()
+            if (engine === e) engine = null
             val code = if (t is PoseEngine.ModelException) "MODEL_LOAD_FAILED" else "CAMERA_UNAVAILABLE"
             result.error(code, t.message ?: t.toString(), null)
         }

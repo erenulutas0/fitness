@@ -77,8 +77,21 @@ class PoseEngine(
     private var frameIndex = 0
     private val fpsCounter = FpsCounter()
 
-    /** Starts camera + landmarker; [onReady] receives the info map for Dart. */
-    fun start(opts: Options, onReady: (Map<String, Any?>) -> Unit) {
+    /**
+     * Starts camera + landmarker. [onReady] receives the info map for Dart;
+     * [onFailure] receives (code, message) when the asynchronous part fails.
+     *
+     * Both callbacks run on the main thread, and exactly one of them is
+     * always called: everything here happens after this method returns, so a
+     * failure that only reached the event sink would leave the Dart side
+     * awaiting a MethodChannel reply that never comes — and MethodChannel has
+     * no timeout.
+     */
+    fun start(
+        opts: Options,
+        onReady: (Map<String, Any?>) -> Unit,
+        onFailure: (String, String) -> Unit,
+    ) {
         options = opts
         mirror = opts.lens == "front"
         // Reading a 6 MB model blocks for a few hundred ms; do it while the
@@ -107,7 +120,7 @@ class PoseEngine(
                 val cause = (t as? java.util.concurrent.ExecutionException)?.cause ?: t
                 Log.e(TAG, "start failed", cause)
                 val code = if (cause is ModelException) "MODEL_LOAD_FAILED" else "CAMERA_UNAVAILABLE"
-                listener.onError(code, cause.message ?: cause.toString())
+                onFailure(code, cause.message ?: cause.toString())
             }
         }, ContextCompat.getMainExecutor(context))
     }
