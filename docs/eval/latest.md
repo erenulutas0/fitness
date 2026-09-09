@@ -1,6 +1,6 @@
 # FORMA eval report
 
-Generated: 2026-09-09T17:47:20.923967 · fixtures: 17 · smoothing: true · **Gate 2: PASS** (precision ≥ 0.80, recall ≥ 0.70 per exercise)
+Generated: 2026-09-09T18:00:44.464047 · fixtures: 17 · smoothing: true · **Gate 2: PASS** (precision ≥ 0.80, recall ≥ 0.70 per exercise)
 
 | Exercise | Fixtures | Rep MAE | Cues/rep | Precision | Recall | F1 |
 |---|---|---|---|---|---|---|

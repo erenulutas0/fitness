@@ -7,7 +7,7 @@
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 122 test · `forma_eval` 24 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
+- Yeşil: `forma_rules` 128 test · `forma_eval` 26 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
   `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
@@ -305,5 +305,10 @@
   reddediyor; eval harness'ı artık CI'da analiz ediliyor ve test ediliyor.
   Ardından 5 ajanlı düşmanca bir hata avı koşuldu: 28 ham bulgunun 18'i doğrulandı ve düzeltildi (7'si yüksek),
   6'sı reddedildi. Her biri regresyon testli; 8 gerçek kaydın tekrar sayıları değişmedi.
-  Testler: **122 + 24 + 3 + 3 yeşil**, analiz + custom_lint + format temiz.
+  Gece devamı: ilk gerçek dünya doğruluk sayısı (stok videodan gözle doğrulanmış yer gerçeğiyle
+  `shallow_depth` 2 TP / 0 FP / 0 FN), kısmi termal koşu, cue gecikmesinin yazılım payı (100 ms),
+  hiç ölçülmemiş 5 kural için fixture, ve **etiketlemeyi resme bakmaya indiren iki araç** (`--sheet` ve
+  kayıt ekranındaki tekrar iskeletleri). Ayrıca `shallow_depth` eşiği ilk kez ölçüye dayalı tarandı:
+  105 üst sınırda, yükseltmek kaçırmaya başlıyor.
+  Testler: **128 + 26 + 3 + 3 yeşil**.
   Kalan tek blokaj: kasten hatalı kayıt (kurucu yarın çekecek).
