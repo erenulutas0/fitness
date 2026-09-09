@@ -98,5 +98,18 @@
       }
     }
   },
-  "skipRest": "Dinlenmeyi atla"
+  "skipRest": "Dinlenmeyi atla",
+  "shareCard": "Kartı paylaş",
+  "shareCardBody": "{exercise} · form skoru {score}",
+  "@shareCardBody": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "shareFailed": "Kart oluşturulamadı"
 }

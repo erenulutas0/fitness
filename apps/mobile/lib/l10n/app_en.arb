@@ -98,5 +98,18 @@
       }
     }
   },
-  "skipRest": "Skip rest"
+  "skipRest": "Skip rest",
+  "shareCard": "Share card",
+  "shareCardBody": "{exercise} · form score {score}",
+  "@shareCardBody": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "shareFailed": "Could not build the card"
 }

@@ -120,6 +120,13 @@ class WorkoutController extends _$WorkoutController {
   StreamSubscription<PoseFrame>? _sub;
   bool _ownsEngine = false;
 
+  /// The frame at the deepest point of the set, kept for the shareable card
+  /// (docs/06 §4.5). One frame, not a buffer: the card wants the user's real
+  /// pose at their best rep, and landmarks are all it ever gets — no video
+  /// leaves the phone, by design.
+  PoseFrame? _deepestFrame;
+  double? _deepestValue;
+
   /// start() is a chain of awaits and the provider is autoDispose: leaving the
   /// screen while it runs used to tear down nothing (both fields were still
   /// null) and then hand a live camera to a notifier nobody owns. The native
@@ -214,6 +221,8 @@ class WorkoutController extends _$WorkoutController {
 
   void _beginSet() {
     _countdownTimer?.cancel();
+    _deepestFrame = null;
+    _deepestValue = null;
     final def = _session?.definition;
     if (def != null) {
       // Drop whatever happened while the phone was being placed.
@@ -349,6 +358,7 @@ class WorkoutController extends _$WorkoutController {
       return;
     }
     final events = session.process(frame);
+    _trackDeepest(frame, session);
     final cues = scheduler.handle(events, nowMs: frame.timestampMs);
     if (cues.isNotEmpty) unawaited(ref.read(cuePlayerProvider).playAll(cues));
 
@@ -374,6 +384,25 @@ class WorkoutController extends _$WorkoutController {
       highlightRule: highlight,
       highlightUntilMs: highlightUntil,
     );
+  }
+
+  /// The pose at the deepest point of the set, or null if nothing was tracked.
+  PoseFrame? get deepestFrame => _deepestFrame;
+
+  void _trackDeepest(PoseFrame frame, ExerciseSession session) {
+    final snap = session.snapshot;
+    final value = snap.signalValue;
+    if (value == null || !snap.tracking) return;
+    final spec = session.definition.repFor(view);
+    // "Deepest" follows the exercise: a squat's knee angle falls toward the
+    // bottom, a glute bridge's hip angle rises toward the top.
+    final decreasing = spec == null || spec.peakThreshold < spec.restThreshold;
+    final best = _deepestValue;
+    final better = best == null || (decreasing ? value < best : value > best);
+    if (better) {
+      _deepestValue = value;
+      _deepestFrame = frame;
+    }
   }
 
   /// Stop the engine and return the set result.

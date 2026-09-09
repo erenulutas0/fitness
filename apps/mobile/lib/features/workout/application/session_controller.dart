@@ -4,6 +4,18 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'session_controller.g.dart';
 
+/// One finished set, plus the pose the user held at its deepest point.
+///
+/// The pose is landmarks only and never leaves the phone unless the user
+/// shares the card themselves (docs/06 §4.5: a drawing, not a video).
+@immutable
+class SessionSet {
+  const SessionSet({required this.result, this.pose});
+
+  final SetResult result;
+  final PoseFrame? pose;
+}
+
 /// One workout session: several sets of the same exercise, back to back.
 ///
 /// Kept in memory for now. Persisting it (docs/05 §9) is the next step and
@@ -22,7 +34,7 @@ class WorkoutSessionState {
 
   final String? exerciseId;
   final CameraView view;
-  final List<SetResult> sets;
+  final List<SessionSet> sets;
   final int setTotal;
 
   /// 1-based number of the set about to be performed.
@@ -37,20 +49,34 @@ class WorkoutSessionState {
   double? get meanScore {
     final scores = [
       for (final s in sets)
-        if (s.formScore != null) s.formScore!,
+        if (s.result.formScore != null) s.result.formScore!,
     ];
     if (scores.isEmpty) return null;
     return scores.reduce((a, b) => a + b) / scores.length;
   }
 
-  int get totalReps => sets.fold(0, (a, s) => a + s.repCount);
-  int get totalHoldMs => sets.fold(0, (a, s) => a + s.totalHoldMs);
+  int get totalReps => sets.fold(0, (a, s) => a + s.result.repCount);
+  int get totalHoldMs => sets.fold(0, (a, s) => a + s.result.totalHoldMs);
+
+  /// The pose to put on the shareable card: the deepest one recorded in the
+  /// best-scoring set, so the card shows the user at their best.
+  PoseFrame? get bestPose {
+    SessionSet? best;
+    for (final s in sets) {
+      if (s.pose == null) continue;
+      if (best == null ||
+          (s.result.formScore ?? 0) > (best.result.formScore ?? 0)) {
+        best = s;
+      }
+    }
+    return best?.pose;
+  }
 
   /// How often each rule fired across the whole session.
   Map<String, int> get errorCounts {
     final out = <String, int>{};
     for (final s in sets) {
-      for (final e in s.errorCounts.entries) {
+      for (final e in s.result.errorCounts.entries) {
         out[e.key] = (out[e.key] ?? 0) + e.value;
       }
     }
@@ -60,7 +86,7 @@ class WorkoutSessionState {
   WorkoutSessionState copyWith({
     String? exerciseId,
     CameraView? view,
-    List<SetResult>? sets,
+    List<SessionSet>? sets,
     int? setTotal,
   }) => WorkoutSessionState(
     exerciseId: exerciseId ?? this.exerciseId,
@@ -88,9 +114,14 @@ class WorkoutSessionController extends _$WorkoutSessionController {
   /// Record a finished set. Empty sets (nothing counted) are dropped: they
   /// are usually a false start, and averaging a zero into the session score
   /// would punish the user for it.
-  void recordSet(SetResult result) {
+  void recordSet(SetResult result, {PoseFrame? pose}) {
     if (result.repCount == 0 && result.totalHoldMs == 0) return;
-    state = state.copyWith(sets: [...state.sets, result]);
+    state = state.copyWith(
+      sets: [
+        ...state.sets,
+        SessionSet(result: result, pose: pose),
+      ],
+    );
   }
 
   void setTotal(int total) =>

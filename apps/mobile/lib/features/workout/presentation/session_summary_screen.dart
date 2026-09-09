@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../application/session_controller.dart';
+import 'share_card.dart';
 
 /// Session summary (docs/06 §4.5): what the whole workout looked like.
 ///
@@ -99,7 +104,11 @@ class SessionSummaryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             for (var i = 0; i < session.sets.length; i++)
-              _SetRow(index: i + 1, result: session.sets[i], isHold: isHold),
+              _SetRow(
+                index: i + 1,
+                result: session.sets[i].result,
+                isHold: isHold,
+              ),
             const SizedBox(height: 24),
             Text(l10n.topErrors, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
@@ -125,6 +134,15 @@ class SessionSummaryScreen extends ConsumerWidget {
                 ),
               ),
             const SizedBox(height: 32),
+            OutlinedButton.icon(
+              key: const Key('session_share'),
+              onPressed: session.sets.isEmpty
+                  ? null
+                  : () => _share(context, l10n, session, def, isHold: isHold),
+              icon: const Icon(Icons.ios_share),
+              label: Text(l10n.shareCard),
+            ),
+            const SizedBox(height: 10),
             FilledButton(
               key: const Key('session_done'),
               onPressed: () => _leave(context, ref),
@@ -143,6 +161,47 @@ class SessionSummaryScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _share(
+    BuildContext context,
+    AppLocalizations l10n,
+    WorkoutSessionState session,
+    ExerciseDefinition? def, {
+    required bool isHold,
+  }) async {
+    final score = session.meanScore;
+    final card = ShareCard(
+      exerciseName: def?.name.text(l10n.localeName) ?? '',
+      score: score,
+      sets: session.sets.length,
+      repsLabel: isHold ? l10n.seconds : l10n.reps,
+      repsValue: isHold
+          ? '${(session.totalHoldMs / 1000).round()}'
+          : '${session.totalReps}',
+      pose: session.bestPose,
+    );
+    try {
+      final png = await renderShareCard(card);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/forma-session.png');
+      await file.writeAsBytes(png);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: l10n.shareCardBody(
+            def?.name.text(l10n.localeName) ?? '',
+            score == null ? '–' : score.round().toString(),
+          ),
+        ),
+      );
+    } on Object catch (e) {
+      debugPrint('[share] $e');
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.shareFailed)));
+    }
   }
 
   void _leave(BuildContext context, WidgetRef ref) {

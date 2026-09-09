@@ -45,7 +45,9 @@ class _HudScreenState extends ConsumerState<HudScreen> {
   Future<void> _finish() async {
     final result = await ref.read(_provider.notifier).finish();
     if (!mounted || result == null) return;
-    ref.read(workoutSessionControllerProvider.notifier).recordSet(result);
+    ref
+        .read(workoutSessionControllerProvider.notifier)
+        .recordSet(result, pose: ref.read(_provider.notifier).deepestFrame);
     context.pushReplacement(Routes.summary, extra: result);
   }
 
