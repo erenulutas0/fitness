@@ -215,6 +215,10 @@
 - [ ] Kayıt sırasında ham frame'ler bellekte tutuluyor (3 dk ≈ 11 MB). Daha uzun kayıt gerekirse parça parça diske yaz.
 - [ ] Lisans ekranı listesi: `share_plus`, `path_provider` (BSD-3), `just_audio`, `flutter_tts` (MIT),
       `audio_session` (MIT). Hepsi docs/08'deki tabloda; uygulama içi ekran yazılınca oradan beslenecek.
+- [ ] `GestureDetector`: kesintisiz tutulan bir jest her `cooldownMs`'de yeniden tetikleniyor (yeni bir tutuş
+      beklemiyor). Bugün zararsız — jestler HUD'a bağlı değil — ama D15 onaylanırsa önce bu düzelmeli.
+- [ ] `toUprightBitmap` kare başına iki tam boy ARGB_8888 bitmap ayırıyor ve parlaklığı `getPixel` ile okuyor.
+      Ölçülmedi; 10 dk termal testinde bakılacak ilk yer burası.
 - [ ] MediaPipe `tensor.cc: Tensors are designed for single writes` uyarısı her koşuda çıkıyor (GPU delegate, zararsız
       görünüyor); 1.0.0'da da var, takip et.
 - [ ] HUD'daki debug metrik satırı `kDebugMode` ile sınırlı; release'de görünmüyor ama beta build'lerde bir ayar arkasına alınabilir.
