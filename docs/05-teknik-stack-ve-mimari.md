@@ -199,7 +199,7 @@ Android: CameraX `ImageAnalysis` (STRATEGY_KEEP_ONLY_LATEST) → MediaPipe `Pose
 | Metrik | Hedef | Ölçüm | İlk cihaz koşusu (8 Eyl 2026, Galaxy S23 / Android 16, debug) |
 |---|---|---|---|
 | Inference (lite, GPU) | ≤ 33 ms (orta segment Android, ör. 2023 Snapdragon 6-serisi) | Plugin `inferenceMs` | **21-24 ms** (yakalama → landmark, üst segment cihaz) |
-| Uçtan uca cue gecikmesi (hareket → ses başlangıcı) | ≤ 400 ms | Yüksek hızlı kamera ile ölçüm veya sentetik test | Ses katmanı yok; Dart hattı 0,06 ms/frame |
+| Uçtan uca cue gecikmesi (hareket → ses başlangıcı) | ≤ 400 ms | Yüksek hızlı kamera ile ölçüm veya sentetik test | **Yazılım payı 100 ms** (9 Eyl, `benchmark_test`): kural doğru olduğu ilk kareden cue'nun çıktığı kareye kadar, üç ölçümde de aynı. Cihaz payı (TTS + hoparlör) ölçülmedi |
 | Kamera preview | 30 fps, jank yok | DevTools | **30,2-30,4 fps** |
 | 10 dk seans | Thermal throttling yok, batarya ≤ %8 | Cihaz matrisi | **Kısmi** (9 Eyl, 7,5 dk): batarya 32,2 → 37,3 °C, CPU 48,1 → 54,7 °C (tepe 57,0), GPU 45,3 → 50,1 °C, throttling gözlenmedi. Bkz. not |
 | Uygulama boyutu | ≤ 60 MB (lite model + TR/EN klipler) | | **40,4 MB** (arm64 release, lite+full model gömülü). Üç ABI'li tek APK 91,7 MB → yayın **AAB** ile |
@@ -214,6 +214,12 @@ gerçek kullanımın **alt sınırı**. Yine de iki şey öğrenildi:
    diyor ama fps düşüşü ayrıca ele alınmalı: loş salonda tekrar temposu ölçümü bozulabilir.
 Isınma eğrisi sonda hâlâ ~0,4 °C/dk ile yükseliyordu, yani 10 dakikada plato görülmedi; kadrajda gerçek bir insan
 varken tekrarlanmalı.
+
+**Cue gecikmesi notu.** 100 ms'nin tamamı `minConsecutiveFrames: 3` kapısından geliyor (30 fps'de 3 kare);
+scheduler üstüne hiç gecikme eklemiyor. Yani 400 ms bütçesinin dörtte birini motor harcıyor, kalan 300 ms
+konuşma motoruna ve hoparlöre kalıyor — ve **risk orada**: Android'de ilk konuşma birkaç yüz ms sürüyor
+(`VoiceCuePlayer.prepare()` bu yüzden motoru ısıtıyor). Önceden üretilmiş klipler geldiğinde bu pay küçülecek.
+Cihazda uçtan uca ölçüm (yüksek hızlı kamera ya da ses kaydı) hâlâ yapılmadı.
 
 Orta segment cihazda ölçüm tekrarlanmadan bu satırlar kesin sayılmaz (S23 üst segment).
 

@@ -186,6 +186,8 @@
 
 - [ ] Gerçek kişilerle test videosu/kayıt seti: 5 kişi × 5 egzersiz × 2 açı × 3 ortam (`data/fixtures/`, gitignore'da; onam formu).
 - [ ] Kapı 2 raporu: precision ≥ %80, recall ≥ %70, cue gecikmesi ≤ 400 ms, 10 dk thermal test (cihaz matrisi docs/05 §10).
+      Cue gecikmesinin **yazılım payı ölçüldü: 100 ms** (bütçenin dörtte biri, tamamı `minConsecutiveFrames: 3`
+      kapısından). Kalan 300 ms konuşma motoru + hoparlör; cihazda uçtan uca ölçüm yapılmadı ve asıl risk orada.
 - [ ] HUD: yatay mod, overlay aç/kapa ayarı, "az konuş" modu (`FeedbackPolicy.quietMode` hazır), düşük güvende gri sayaç (var) + tek seferlik cue (var).
 - [ ] Set/seans akışı: dinlenme sayacı, 3 set, seans özeti, paylaşılabilir kart (iskelet çizimi, video değil).
 - [ ] Yerel DB (Drift): Session/SetResult/Rep şeması (docs/05 §9).
