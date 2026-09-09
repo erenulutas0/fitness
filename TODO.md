@@ -200,7 +200,17 @@
       çıkan tek şey eklem koordinatlarının çizimi — kart bir `PoseFrame` ve dört sayıdan başka bir şey
       görmüyor, bir test kartta hiç `Image` olmadığını doğruluyor. `SkeletonPainter`'a vücuda göre sığdırma
       modu eklendi (arkada preview yokken kadraja sığdırmak insanı küçük ve kenarda bırakıyordu) ve çizgi
-      kalınlığı tuvale göre ölçekleniyor. **Cihazda görülmedi** (telefon kullanımdaydı).
+      kalınlığı tuvale göre ölçekleniyor.
+- [x] 2026-09-10 — **Set/seans akışı ve kart cihazda doğrulandı** (S23, demo motoruyla): kadraj → geri sayım →
+      set 1/3 → 2/3 → 3/3, dinlenme sayacı, seans özeti (ortalama 70, 3 set, set set döküm), paylaşım sayfası
+      ve gerçek 1080×1350 PNG. TTS motorunun (`com.google.android.tts`, CONTENT_TYPE_SPEECH) set sonunda
+      gerçekten çaldığı logcat'ten görüldü — medya sesi 0 olduğu için duyulmadı, yol çalışıyor.
+      Cihazın gösterdiği ve testlerin kaçırdığı 3 hata düzeltildi: kart "3 × 34 tekrar" diyordu (102 gibi
+      okunuyor, oysa 34 toplam) → "3 set · 34 tekrar"; uzun metin skor satırını 124 px taşırıyordu; dinlenme
+      butonu üç satıra sarıyordu.
+- [x] 2026-09-10 — **Debug demo motoru** (Bugün ekranında robot ikonu): antrenmanı sentetik motorla koşuyor.
+      "Tekrar sayıldı"dan sonraki her ekrana (dinlenme, seans özeti, kart) ulaşmak yoksa telefonun karşısında
+      squat yapmayı gerektiriyor. `kDebugMode` arkasında, release'de yok.
 - [ ] "Bugünün skoru vs geçen seans" — kalıcı depolama gerektiriyor, aşağıdaki Drift maddesine bağlı.
 - [ ] Yerel DB: Session/SetResult/Rep şeması (docs/05 §9). **Şu an kurulamıyor:** `drift_dev` analyzer ≥13
       istiyor, `custom_lint` 0.8.1 ve `freezed` 3.2.3 bizi analyzer 8'de tutuyor (10 Eylül'de denendi, pubspec
@@ -210,7 +220,9 @@
       Not: `sqlite3_flutter_libs` native `.so` getiriyor — hangi yol seçilirse seçilsin 16 KB hizalaması
       `tools/check_so_alignment.py` ile yeniden doğrulanmalı.
 - [ ] iOS plugin (docs/10 Prompt 8): MediaPipe Tasks iOS ya da Apple Vision → 33-nokta eşleme; RN'e geçiş karar noktası 3. hafta sonu.
-- [ ] Figma 6 ekran + 5 kişilik kullanılabilirlik testi (docs/06 §10).
+- [ ] Figma 6 ekran + 5 kişilik kullanılabilirlik testi (docs/06 §10). Küçük bir tasarım borcu: dinlenme
+      kartındaki iki buton ("Sonraki set" / "Seansı bitir") hâlâ iki satıra sarıyor — dengeli duruyor ama
+      tasarım geçişinde bakılmalı.
 - [ ] Fontlar: Manrope + Inter (SIL OFL) paketle; tabular rakam sayaç.
 
 ## Hafta 5-6 — Beta (Kapı 3)
