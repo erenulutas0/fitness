@@ -12,13 +12,16 @@
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
 - Kırmızı/bilinmeyen: önceden üretilmiş ses klipleri hâlâ yok (cihaz TTS'i yedek olarak çalışıyor ama robotik ve
-  ilk kelimesi gecikebiliyor); iOS plugin stub; **kasten hatalı kayıt yok → recall ölçülemiyor**; gerçek
-  "telefon 2-3 m uzakta" senaryosu ve termal test yapılmadı.
+  ilk kelimesi gecikebiliyor); iOS plugin stub; gerçek "telefon 2-3 m uzakta" senaryosu yapılmadı; termal test
+  yalnızca kısmen (kadrajda kimse yokken 7,5 dk).
+- **İlk gerçek dünya doğruluk ölçümü var** (9 Eylül): stok videolardan gözle doğrulanmış yer gerçeğiyle
+  `shallow_depth` 2 TP / 0 FP / 0 FN, rep MAE 0. Örneklem küçük (6 tekrar, 2 video) ama etiketler motorun
+  çıktısından değil iskelet önizlemesinden geldi — döngüsel değil.
 - Repo: `github.com/erenulutas0/fitness` (**public** — iş planı ve fiyat hipotezleri açık; private yapmayı düşün).
 
 ## Şimdi (sıradaki oturum bunlarla başlar)
 
-- [ ] **Kasten hatalı kayıt** (kurucu çekecek — 9 Eylül'de söz verildi): yan açıdan 5 tekrar, ikisi bilerek sığ,
+- [ ] **Kasten hatalı kayıt** (kurucu çekecek — 9 Eylül'de söz verildi; ilk 2 gerçek pozitif stok videodan geldi): yan açıdan 5 tekrar, ikisi bilerek sığ,
       ikisi bilerek dizler içe, biri temiz. Şu an korpusta yalnızca temiz kayıt var; temiz veriyle sadece yanlış
       alarmı ölçebiliyoruz, **kaçırmayı (recall) ölçemiyoruz** — Kapı 2'nin (recall ≥ %70) önündeki tek engel bu.
 - [ ] **Topuk kalkması kararı**: aynı videoda bilerek topuk kaldır, `--preview` ile iskeleti izle.
@@ -43,10 +46,28 @@
       `assets/audio/cues/` pubspec'e ekle. Oynatıcı hazır: klip varsa klibi, yoksa cihaz TTS'ini kullanıyor.
 - [ ] D15 kararını onayla/ret: el-serbest jest kontrolü (`GestureDetector` motorda hazır, HUD'a bağlanmadı) +
       poz-tetikli otomatik set başlangıcı.
-- [ ] 10 dk termal/batarya testi (docs/05 §10) ve orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
+- [ ] 10 dk termal/batarya testini **kadrajda gerçek bir insanla** tekrarla. 9 Eylül'de 7,5 dk koşuldu ama sahne
+      karanlıktı (kimse yok → MediaPipe yalnızca dedektör geçişi), yani rakamlar alt sınır: batarya 32,2 → 37,3 °C,
+      CPU 48,1 → 54,7 °C (tepe 57,0), throttling yok, eğri sonda hâlâ ~0,4 °C/dk yükseliyordu. Ayrıntı docs/05 §10.
+- [ ] **USB'ye bağlıyken batarya düştü** (%79 → %78, 7,5 dk): uygulama portun verdiğinden fazla çekiyor.
+      Bataryadan koşarken "%8 / 10 dk" hedefi ciddi risk altında — prizsiz ölçüm şart.
+- [ ] **Loş odada kamera ~25 fps** veriyor (30 değil); otomatik pozlama kareyi uzatıyor. Tempo ölçümü ve cue
+      gecikmesi bundan etkilenir; kadraj asistanı "ışık az" diyor ama fps düşüşü ayrıca ele alınmalı.
+- [ ] **Kadrajda iki kişi** olduğunda ne olacağı tanımsız: MediaPipe birini seçiyor (`numPoses = 1`), kullanıcı
+      hangisinin izlendiğini bilmiyor (stok kayıt px_4258996 bu durumda). Kadraj asistanı uyarabilir.
+- [ ] Orta segment bir Android'de fps/gecikme tekrarı (S23 üst segment).
 
 ## Hafta 1-2 — Motor (docs/09)
 
+- [x] 2026-09-09 — **İlk gerçek dünya yer gerçeği ve recall ölçümü**. Elde 20 stok videodan yalnızca 6'sı tekrar
+      üretiyor (kalanı kadraj korumasınca doğru şekilde reddediliyor). İkisi gözle doğrulandı ve etiketlendi:
+      • `px_6868332` — iskelet önizlemesinde iki tekrar da **açıkça sığ** (uyluklar paralelin belirgin üstünde),
+        motor 107° ve 108° ölçüp `shallow_depth` dedi → **2 gerçek pozitif**.
+      • `px_8837118` — dört tekrar da açıkça derin, motor sessiz kaldı → **4 gerçek negatif**.
+      Sonuç: `shallow_depth` 2 TP / 0 FP / 0 FN, rep MAE 0. `torso_lean` **etiketlenmedi**: gövde açısının 55°'yi
+      geçip geçmediği gözle karara bağlanamaz, o yüzden ölçülmemiş olarak duruyor (raporda `n/a`).
+      Yöntem: `--preview` ile iskeleti videonun üstüne çiz → her tekrarın dip karesine bak → yalnızca tartışmasız
+      olanı etiketle. Etiketler `data/stock/*.json` içinde (gitignore'da).
 - [x] 2026-09-09 — **18 hata bulundu ve düzeltildi** (5 ajanlı düşmanca inceleme; 28 ham bulgu → 18 doğrulandı,
       6 reddedildi). Her davranış düzeltmesi, düzeltmeden önce kırılan bir testle geldi; **8 gerçek kaydın tekrar
       sayıları değişmedi** — düzeltmeler yalnızca hata yollarını değiştiriyor. Öne çıkanlar:

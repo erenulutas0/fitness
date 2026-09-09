@@ -201,9 +201,19 @@ Android: CameraX `ImageAnalysis` (STRATEGY_KEEP_ONLY_LATEST) → MediaPipe `Pose
 | Inference (lite, GPU) | ≤ 33 ms (orta segment Android, ör. 2023 Snapdragon 6-serisi) | Plugin `inferenceMs` | **21-24 ms** (yakalama → landmark, üst segment cihaz) |
 | Uçtan uca cue gecikmesi (hareket → ses başlangıcı) | ≤ 400 ms | Yüksek hızlı kamera ile ölçüm veya sentetik test | Ses katmanı yok; Dart hattı 0,06 ms/frame |
 | Kamera preview | 30 fps, jank yok | DevTools | **30,2-30,4 fps** |
-| 10 dk seans | Thermal throttling yok, batarya ≤ %8 | Cihaz matrisi | Ölçülmedi |
+| 10 dk seans | Thermal throttling yok, batarya ≤ %8 | Cihaz matrisi | **Kısmi** (9 Eyl, 7,5 dk): batarya 32,2 → 37,3 °C, CPU 48,1 → 54,7 °C (tepe 57,0), GPU 45,3 → 50,1 °C, throttling gözlenmedi. Bkz. not |
 | Uygulama boyutu | ≤ 60 MB (lite model + TR/EN klipler) | | **40,4 MB** (arm64 release, lite+full model gömülü). Üç ABI'li tek APK 91,7 MB → yayın **AAB** ile |
 | Soğuk açılış → kamera hazır | ≤ 2,5 sn | | Ölçülmedi |
+
+**10 dk seans notu (9 Eylül 2026, S23, USB'ye bağlı).** Ölçüm 7,5 dakikada kesildi (telefon kullanıcı tarafından
+alındı) ve kadrajda kimse yoktu: karanlık bir sahnede MediaPipe yalnızca dedektör geçişini koşar, yani bu rakamlar
+gerçek kullanımın **alt sınırı**. Yine de iki şey öğrenildi:
+1. **USB'ye bağlıyken batarya %79 → %78 düştü** — uygulama, portun verdiğinden fazlasını çekiyor. Prizde bile
+   şarj olmuyorsa, bataryadan koşarken %8/10 dk hedefi ciddi risk altında.
+2. **Karanlıkta kamera 30 değil ~25 fps veriyor** (otomatik pozlama kareyi uzatıyor). Kadraj asistanı "ışık az"
+   diyor ama fps düşüşü ayrıca ele alınmalı: loş salonda tekrar temposu ölçümü bozulabilir.
+Isınma eğrisi sonda hâlâ ~0,4 °C/dk ile yükseliyordu, yani 10 dakikada plato görülmedi; kadrajda gerçek bir insan
+varken tekrarlanmalı.
 
 Orta segment cihazda ölçüm tekrarlanmadan bu satırlar kesin sayılmaz (S23 üst segment).
 

@@ -73,4 +73,8 @@ en hızlı yolu (bkz. docs/00 D17). Ayrıntı: `tools/video_to_fixture/README.md
   (imkansız açı üreten her klipte %59-100 frame, doğru kadrajlı kayıtlarda %0) — bkz. D18.
 - **Anatomik makullük.** Baldır/uyluk oranı gerçek kayıtlarda hiç 1,21'i geçmedi; uydurma iskeletlerde 1,6-25
   arasına çıktı. `SessionConfig.maxShinThighRatio` bu sınıra dayanıyor.
+- **Etiketleme yöntemi (video kaynaklı yer gerçeği).** `--preview` ile iskeleti videonun üstüne çiz, her tekrarın
+  dip karesine bak, **yalnızca tartışmasız olanı** etiketle. Derinlik gözle ayırt edilebilir (uyluk paralelin
+  altında mı, üstünde mi); gövde açısının 55°'yi geçip geçmediği **ayırt edilemez** — onu etiketlemek, motorun
+  çıktısını yer gerçeği sanmak olur. Etiketlenmeyen kural raporda `n/a` çıkar, %100 değil.
 - **Ayak noktaları en zayıf halka** (güven 0,37-0,64); topuk kalkması kuralının kapatılma nedeni (D17).
