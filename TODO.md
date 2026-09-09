@@ -2,12 +2,12 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-09, oturum 7** (Claude, ses + kadraj adımı + anatomik makullük + CI/AAB). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-09, oturum 7** (Claude, ses + kadraj adımı + anatomik makullük + CI/AAB + 18 hata avı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 116 test · `forma_eval` 17 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
+- Yeşil: `forma_rules` 122 test · `forma_eval` 24 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
   `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
@@ -47,6 +47,23 @@
 
 ## Hafta 1-2 — Motor (docs/09)
 
+- [x] 2026-09-09 — **18 hata bulundu ve düzeltildi** (5 ajanlı düşmanca inceleme; 28 ham bulgu → 18 doğrulandı,
+      6 reddedildi). Her davranış düzeltmesi, düzeltmeden önce kırılan bir testle geldi; **8 gerçek kaydın tekrar
+      sayıları değişmedi** — düzeltmeler yalnızca hata yollarını değiştiriyor. Öne çıkanlar:
+      • Tekrar sonu kuralları **ayakta duran** karelerde ölçülüyordu (900'lük tampon giriş bekleyişiyle doluyordu):
+        temiz derin squat "sığ" damgası yiyebiliyordu.
+      • Sinyal körleşince FSM donuyordu: iki squat tek 4,7 sn'lik tekrara birleşip sayaç bir eksik kalıyordu.
+      • `maxDurationMs` yalnızca dönüşte bakılıyordu → dipte kalan tekrar sonsuza kadar açık, sayaç donmuş.
+      • Kısa hold hiç olay üretmiyordu → çöken denemenin kareleri sonraki plank'a sızıyordu (temiz plank 60 puan).
+      • Hiçbir landmark görünmediğinde kadraj kutusu (0,0)'a çöküp "biraz geri git" diyordu — 3 m uzaktaki
+        kullanıcıya sonsuza kadar.
+      • Kamera açılırken ekrandan çıkmak native motoru açık bırakıyordu → sonraki her set `ALREADY_RUNNING`.
+      • Native start'ın asenkron hatası MethodChannel'ı hiç yanıtlamıyordu → HUD sonsuza kadar "Başlıyor…".
+      • Cue öncelik politikası ölü koddu (klip yokken `_isBusy` hep false): her cue bir öncekini kesiyordu.
+      • 3 dk otomatik durdurma, biten kaydı çöpe atıp ekranda "Vazgeç" bırakıyordu.
+      • Eval: negatif eşik `--0.04` olarak yazılıp kuralın işaretini ters çeviriyordu; Kapı 2 hiç ölçüm
+        yapılmadan PASS diyordu; değerlendirilmeyen etiketler sessizce düşüyordu (heel_rise'lı 3 tekrar);
+        hold egzersizlerinde cue/tekrar yapısal olarak 0,00'dı (plank gerçekte 1,50).
 - [x] 2026-09-09 — **Koç artık konuşuyor** (docs/10 Prompt 5): `VoiceCuePlayer` önce
       `assets/audio/cues/<dil>/<clip>_<varyant>.opus` klibini arıyor, yoksa aynı cümleyi cihazın konuşma motoruyla
       söylüyor — yani ses bugün var, klipler üretilince kendiliğinden hızlanıp doğallaşıyor. Tek kanal: yüksek
@@ -185,7 +202,11 @@
 - [ ] Kadraj adımının geri sayımı duvar saatiyle (`Timer.periodic`), tekrar mantığı frame zaman damgasıyla
       çalışıyor; kamera takılırsa ikisi ayrışır. Tek zaman kaynağına indirmeyi düşün.
 - [ ] `SessionConfig.maxShinThighRatio` (1,6) ve `maxBodyHeightFraction` (0,97) 26 kayıtlık küçük bir korpustan
-      geldi; kayıt sayısı artınca yeniden ölç.
+      geldi; kayıt sayısı artınca yeniden ölç. Aynısı `signalLossGraceMs` (300 ms) için de geçerli.
+- [ ] `syn_squat_side_lean_heels` fixture'ı hâlâ 3 tekrarı `heel_rise` ile etiketliyor ama kural kapalı (D17),
+      dolayısıyla o tekrarlar ölçülmüyor. Eval artık uyarı basıyor; etiketi kaldır ya da kural geri açılınca bırak.
+- [ ] Eval'de `n/a` çıkan 5 kural (plank hip_pike/head_drop, push_up hip_pike/shallow_depth,
+      squat shallow_depth_front) hiç ölçülmedi: sentetik fixture setinde bunları tetikleyen kayıt yok.
 - [ ] FMA kas id'leri (`content/exercises/*.json` primary/secondaryMuscles) doğrulanmadı — anatomi katmanında kontrol.
 - [ ] `explain.source` id'leri yer tutucu (`src_valgus_01` vb.) — `content/sources/` doldurulunca eşle.
 - [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.
@@ -244,5 +265,7 @@
   fixtures-schema güncellendi. Son iş: **eşik taraması** (`tools/eval/bin/sweep.dart`, docs/10 Prompt 9) —
   parametreyi tarayıp öneriyor, `content/`'e yazmıyor ve korpus soruyu cevaplayamıyorsa öneri vermeyi
   reddediyor; eval harness'ı artık CI'da analiz ediliyor ve test ediliyor.
-  Testler: **116 + 17 + 3 + 3 yeşil**, analiz + custom_lint + format temiz.
+  Ardından 5 ajanlı düşmanca bir hata avı koşuldu: 28 ham bulgunun 18'i doğrulandı ve düzeltildi (7'si yüksek),
+  6'sı reddedildi. Her biri regresyon testli; 8 gerçek kaydın tekrar sayıları değişmedi.
+  Testler: **122 + 24 + 3 + 3 yeşil**, analiz + custom_lint + format temiz.
   Kalan tek blokaj: kasten hatalı kayıt (kurucu yarın çekecek).
