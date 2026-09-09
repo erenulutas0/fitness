@@ -29,6 +29,7 @@ from pathlib import Path
 
 try:
     import cv2
+    import numpy as np
 except ImportError:  # pragma: no cover
     sys.exit('pip install opencv-python')
 try:
@@ -112,10 +113,16 @@ def main() -> None:
                     help='downscale before inference, like the phone does')
     ap.add_argument('--start', type=float, default=0, help='skip the first N seconds')
     ap.add_argument('--end', type=float, help='stop at N seconds')
+    ap.add_argument('--sheet', action='store_true',
+                    help='write one numbered picture per detected rep (its lowest point) '
+                         'so labelling is "look at N pictures and tick the bad ones". '
+                         'Implies --preview.')
     ap.add_argument('--preview', action='store_true',
                     help='also write <name>.skeleton.mp4 with the skeleton drawn')
     ap.add_argument('--out', type=Path, default=ROOT / 'data' / 'fixtures')
     args = ap.parse_args()
+    if args.sheet:
+        args.preview = True
 
     if not args.video.exists():
         sys.exit(f'no such video: {args.video}')
@@ -257,6 +264,92 @@ def main() -> None:
     else:
         target = out_path.as_posix()
     print(f'  cd tools/eval && dart run bin/inspect.dart {target}')
+
+    if args.sheet:
+        write_rep_sheet(out_path, args.video.with_suffix('.skeleton.mp4'))
+
+
+def write_rep_sheet(fixture_path: Path, preview_path: Path) -> None:
+    """One picture per rep, at the bottom of the movement, numbered.
+
+    Labelling is the step that keeps getting skipped, and the reason is that
+    it asks you to remember which rep was which. This turns it into looking
+    at N pictures. The rep boundaries come from the engine itself (via
+    `inspect --rep-times`), so the picture is the frame the engine scored.
+    """
+    import shutil
+    import subprocess
+
+    if not preview_path.exists():
+        print()
+        print(f'no preview video at {preview_path}; skipping the rep sheet')
+        return
+    eval_dir = ROOT / 'tools' / 'eval'
+    # Windows needs the resolved path: `dart` is a .bat and bare exec fails.
+    dart = shutil.which('dart')
+    if dart is None:
+        print()
+        print('dart is not on PATH; skipping the rep sheet')
+        return
+    try:
+        proc = subprocess.run(
+            [dart, 'run', 'bin/inspect.dart', str(fixture_path.resolve()),
+             '--rep-times', '-c', str((ROOT / 'content').resolve())],
+            cwd=eval_dir, capture_output=True, text=True, timeout=600,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        print()
+        print(f'could not run the inspector for the rep sheet: {e}')
+        return
+    if proc.returncode != 0:
+        print()
+        print('inspector failed, no rep sheet:')
+        print(proc.stderr.strip()[:400])
+        return
+
+    reps = []
+    for line in proc.stdout.splitlines():
+        parts = line.strip().split(',')
+        if len(parts) == 3 and parts[0].isdigit():
+            reps.append((int(parts[0]), int(parts[1]), parts[2]))
+    if not reps:
+        print()
+        print('no reps detected, so no rep sheet')
+        return
+
+    cap = cv2.VideoCapture(str(preview_path))
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    tiles = []
+    for index, t_ms, depth in reps:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, int(round(t_ms / 1000 * fps)))
+        ok, frame = cap.read()
+        if not ok:
+            continue
+        h = 360
+        scale = h / frame.shape[0]
+        frame = cv2.resize(frame, (int(frame.shape[1] * scale), h))
+        cv2.rectangle(frame, (0, 0), (frame.shape[1], 26), (0, 0, 0), -1)
+        cv2.putText(frame, f'rep {index}  {t_ms/1000:.1f}s  {depth}',
+                    (6, 19), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1)
+        tiles.append(frame)
+    cap.release()
+    if not tiles:
+        print()
+        print('could not read frames for the rep sheet')
+        return
+
+    width = min(4, len(tiles))
+    rows = []
+    for i in range(0, len(tiles), width):
+        row = tiles[i:i + width]
+        while len(row) < width:
+            row.append(np.zeros_like(row[0]))
+        rows.append(np.hstack(row))
+    sheet_path = preview_path.with_suffix('.reps.jpg')
+    cv2.imwrite(str(sheet_path), np.vstack(rows))
+    print()
+    print(f'rep sheet {sheet_path} ({len(tiles)} reps)')
+    print('look at each rep and label the bad ones, e.g. --label 2:shallow_depth')
 
 
 if __name__ == '__main__':

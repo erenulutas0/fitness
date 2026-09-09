@@ -35,8 +35,28 @@ topuk kalkması gibi tartışmalı kurallarda model tahmininin gerçeğe uyup uy
 | `--max-width` | inference öncesi küçültme (varsayılan 640, telefondaki gibi) |
 | `--start`, `--end` | videonun sadece bir aralığını al (saniye) |
 | `--model lite/full` | cihazdakiyle aynı model dosyası |
+| `--sheet` | her tekrarın **dip karesini** numaralı tek bir resme dizer (`--preview` gerektirir, kendisi açar) |
 
 Model dosyası yoksa: `pwsh tools/fetch_models.ps1`.
+
+## Etiketleme (atlanmaması gereken adım)
+
+Etiketsiz kayıt, eval'e "her tekrar temizdi" der; o zaman yalnızca yanlış alarmı ölçebiliriz, kaçırmayı değil.
+Etiketlemenin zor yanı hangi tekrarın hangisi olduğunu hatırlamaktı — `--sheet` bunu ortadan kaldırıyor:
+
+```bash
+python tools/video_to_fixture/video_to_fixture.py cekim.mp4     --exercise bw_squat --view side --person p01 --environment salon --sheet
+```
+
+Çıktı: `cekim.skeleton.reps.jpg` — her tekrarın en dip karesi, üstünde **tekrar numarası, saniye ve ölçülen
+derinlik**. Resimlere bak, kötü olanları seç, aynı komutu etiketlerle tekrar çalıştır:
+
+```bash
+    --reps 5 --label 2:shallow_depth --label 4:shallow_depth,knee_valgus
+```
+
+Tekrar sınırları motorun kendisinden geliyor (`inspect --rep-times`), yani resim motorun puanladığı karedir.
+Gözle ayırt edilemeyen bir şeyi etiketleme (ör. gövde açısının 55°'yi geçip geçmediği) — bkz. docs/fixtures-schema.
 
 ## Sonra
 

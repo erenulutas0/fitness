@@ -16,6 +16,12 @@ Future<void> main(List<String> argv) async {
     ..addOption('content', abbr: 'c', defaultsTo: '../../content')
     ..addFlag('smoothing', defaultsTo: true)
     ..addFlag('raw', help: 'Also dump the rep signal per frame.')
+    ..addFlag(
+      'rep-times',
+      help:
+          'Print one "rep,extremeMs,depth" line per rep and nothing else, so '
+          'a script can cut a picture of each rep out of the video.',
+    )
     ..addFlag('help', abbr: 'h', negatable: false);
   final args = parser.parse(argv);
   if (args['help'] as bool || args.rest.isEmpty) {
@@ -77,6 +83,16 @@ Future<void> main(List<String> argv) async {
     }
   }
   final result = session.finish();
+
+  if (args['rep-times'] as bool) {
+    for (final r in result.reps) {
+      stdout.writeln(
+        '${r.index},${r.summary.extremeMs},'
+        '${r.summary.extremeValue.toStringAsFixed(1)}',
+      );
+    }
+    return;
+  }
 
   stdout
     ..writeln('# ${fixture.id}')

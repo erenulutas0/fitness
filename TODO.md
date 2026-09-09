@@ -27,7 +27,8 @@
 - [ ] **Topuk kalkması kararı**: aynı videoda bilerek topuk kaldır, `--preview` ile iskeleti izle.
       Model ayağı doğru görüyorsa kuralı taban çizgisiyle yeniden yazarız; göremiyorsa kapalı kalır (D17).
 - [ ] **Etiketleme alışkanlığı**: ilk iki kayıtta hiç etiket işaretlenmedi, dolayısıyla eval "her tekrar temiz"
-      varsaydı. Kayıt sonrası gerçekten olan hataları işaretle, yoksa doğruluk ölçümü tek yönlü kalıyor.
+      varsaydı. Artık kolay: `--sheet` her tekrarın dip karesini numaralı tek bir resme diziyor (tekrar no,
+      saniye, ölçülen derinlik). Resimlere bak, kötüleri `--label 2:shallow_depth` ile işaretle.
 - [ ] `shallow_depth` eşiğinin **alt** ucu belirsiz. İlk etiketli gerçek veriyle tarandı (9 Eylül,
       `bin/sweep.dart`): 95-105° arası her değer F1 = 1,00; **107,5°'de iki pozitiften biri kaçıyor**, 110°+
       ikisini de kaçırıyor. Yani "112-115'e çekelim" hipotezi çürüdü — 105 üst sınırda, yükseltmek kaçırmaya
