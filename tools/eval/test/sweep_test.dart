@@ -188,6 +188,47 @@ void main() {
       },
     );
 
+    test('a negative threshold moves with its sign', () {
+      // push_up and plank both carry `hip_line_deviation < -0.06`. Rewriting
+      // only the digits produced `< --0.04`, which the DSL parses as a double
+      // negation: the rule fires when the hips are NOT piked, and every row of
+      // the sweep measured that inverted rule while reporting it as today's
+      // value.
+      final push =
+          json.decode(
+                json.encode(
+                  ExerciseDefinition.parse(
+                    File(
+                      '../../content/exercises/push_up.json',
+                    ).readAsStringSync(),
+                  ).toJson(),
+                ),
+              )
+              as Map<String, dynamic>;
+      expect(readOverride(push, 'rules.hip_pike.threshold'), -0.06);
+      applyOverride(push, 'rules.hip_pike.threshold', -0.04);
+      final rule = (push['rules'] as List)
+          .cast<Map<String, dynamic>>()
+          .firstWhere((r) => r['id'] == 'hip_pike');
+      expect(rule['expr'], 'hip_line_deviation < -0.04');
+      expect(ExerciseDefinition.fromJson(push).validate(), isEmpty);
+    });
+
+    test('subtraction is not mistaken for a sign', () {
+      final json = _json();
+      final rule = (json['rules'] as List)
+          .cast<Map<String, dynamic>>()
+          .firstWhere((r) => r['id'] == 'shallow_depth');
+      rule['expr'] = 'min(knee_angle) - 5 > 105';
+      expect(
+        () => applyOverride(json, 'rules.shallow_depth.threshold', 110),
+        throwsA(isA<SweepException>()),
+        reason: '5 and 105 are two different thresholds, not -5',
+      );
+      applyOverride(json, 'rules.shallow_depth.threshold@105', 110);
+      expect(rule['expr'], 'min(knee_angle) - 5 > 110');
+    });
+
     test('unknown paths fail loudly', () {
       final json = _json();
       expect(

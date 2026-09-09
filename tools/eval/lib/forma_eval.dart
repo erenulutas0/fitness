@@ -34,6 +34,7 @@ class ExerciseStats {
   int fixtures = 0;
   int labeledReps = 0;
   int detectedReps = 0;
+  int detectedHolds = 0;
   double repAbsError = 0;
   int repFixtures = 0;
   int cues = 0;
@@ -41,7 +42,21 @@ class ExerciseStats {
   RuleStats rule(String id) => rules.putIfAbsent(id, RuleStats.new);
 
   double get repMae => repFixtures == 0 ? 0 : repAbsError / repFixtures;
-  double get cuesPerRep => detectedReps == 0 ? 0 : cues / detectedReps;
+
+  /// Cues per scored unit. Holds count too: plank produces no reps at all, so
+  /// dividing by reps alone made its cue rate structurally 0.00 and a
+  /// regression that tripled it would not have moved the column.
+  double get cuesPerRep {
+    final units = detectedReps + detectedHolds;
+    return units == 0 ? 0 : cues / units;
+  }
+
+  /// Rule decisions actually made. Without this a report can print 100%
+  /// precision for a rule nothing ever exercised.
+  int get decisions {
+    final o = overall;
+    return o.tp + o.fp + o.fn;
+  }
 
   /// Micro-averaged over all rule decisions of this exercise.
   RuleStats get overall {
@@ -79,9 +94,19 @@ class EvalReport {
   final DateTime generatedAt;
   final List<String> warnings = [];
 
-  bool get meetsGate2 => exercises.values.every(
-    (e) => e.overall.precision >= 0.8 && e.overall.recall >= 0.7,
-  );
+  /// Gate 2 (docs/00): precision >= 0.80 and recall >= 0.70 per exercise.
+  ///
+  /// An exercise with no rule decisions at all cannot pass: precision and
+  /// recall both default to 1 when nothing was measured, so the gate used to
+  /// report PASS for a corpus that proved nothing.
+  bool get meetsGate2 =>
+      exercises.isNotEmpty &&
+      exercises.values.every(
+        (e) =>
+            e.decisions > 0 &&
+            e.overall.precision >= 0.8 &&
+            e.overall.recall >= 0.7,
+      );
 
   Map<String, Object?> toJson() => {
     'generatedAt': generatedAt.toIso8601String(),
@@ -107,9 +132,10 @@ class EvalReport {
       ..writeln('|---|---|---|---|---|---|---|');
     for (final e in exercises.values) {
       final o = e.overall;
+      final n = e.decisions;
       b.writeln(
         '| ${e.exerciseId} | ${e.fixtures} | ${e.repMae.toStringAsFixed(2)} | ${e.cuesPerRep.toStringAsFixed(2)} | '
-        '${_pct(o.precision)} | ${_pct(o.recall)} | ${_pct(o.f1)} |',
+        '${_pct(o.precision, n)} | ${_pct(o.recall, n)} | ${_pct(o.f1, n)} |',
       );
     }
     b
@@ -121,8 +147,10 @@ class EvalReport {
     for (final e in exercises.values) {
       for (final r in e.rules.entries) {
         final s = r.value;
+        final n = s.tp + s.fp + s.fn;
         b.writeln(
-          '| ${e.exerciseId} | ${r.key} | ${s.tp} | ${s.fp} | ${s.fn} | ${_pct(s.precision)} | ${_pct(s.recall)} | ${_pct(s.f1)} |',
+          '| ${e.exerciseId} | ${r.key} | ${s.tp} | ${s.fp} | ${s.fn} | '
+          '${_pct(s.precision, n)} | ${_pct(s.recall, n)} | ${_pct(s.f1, n)} |',
         );
       }
     }
@@ -138,7 +166,10 @@ class EvalReport {
     return b.toString();
   }
 
-  static String _pct(double v) => '${(v * 100).toStringAsFixed(1)}%';
+  /// A rule nobody exercised has no precision, and printing 100% for it reads
+  /// as evidence it does not have.
+  static String _pct(double v, [int decisions = 1]) =>
+      decisions == 0 ? 'n/a' : '${(v * 100).toStringAsFixed(1)}%';
 }
 
 /// Definitions, cues and fixtures parsed once, so a threshold sweep can replay
@@ -221,18 +252,26 @@ class EvalCorpus {
     SessionConfig config = const SessionConfig(),
   }) {
     final exercises = <String, ExerciseStats>{};
+    final runWarnings = <String>[];
     for (final fx in fixtures) {
       final def = overrides[fx.exerciseId] ?? definitions[fx.exerciseId]!;
       final stats = exercises.putIfAbsent(def.id, () => ExerciseStats(def.id));
       stats.fixtures++;
-      _evaluateFixture(fx, def, catalog, stats, config: config);
+      _evaluateFixture(
+        fx,
+        def,
+        catalog,
+        stats,
+        config: config,
+        warnings: runWarnings,
+      );
     }
     return EvalReport(
       exercises: exercises,
       fixtureCount: fixtures.length,
       smoothing: !config.smoothing.isDisabled,
       generatedAt: DateTime.now(),
-    )..warnings.addAll(warnings);
+    )..warnings.addAll([...warnings, ...runWarnings]);
   }
 }
 
@@ -261,6 +300,7 @@ void _evaluateFixture(
   CueCatalog catalog,
   ExerciseStats stats, {
   required SessionConfig config,
+  List<String>? warnings,
 }) {
   final session = ExerciseSession(
     definition: def,
@@ -279,7 +319,8 @@ void _evaluateFixture(
   final result = session.finish();
   stats
     ..cues += cues
-    ..detectedReps += result.repCount;
+    ..detectedReps += result.repCount
+    ..detectedHolds += result.holds.length;
 
   final expected = fx.expectedReps;
   if (expected != null) {
@@ -290,6 +331,22 @@ void _evaluateFixture(
   }
 
   final ruleIds = {for (final r in def.rulesFor(fx.view)) r.id};
+  // A label naming a rule this view never evaluates — disabled, wrong view,
+  // or simply mistyped — contributes nothing at all, so a typo is
+  // indistinguishable from a clean rep unless the report says so.
+  if (warnings != null) {
+    final unmatched = <String>{
+      for (final label in fx.errorLabels)
+        for (final id in label.rules)
+          if (!ruleIds.contains(id)) id,
+    };
+    for (final id in unmatched) {
+      warnings.add(
+        '${fx.id}: label "$id" is not evaluated for ${fx.view.name} '
+        '(disabled rule, wrong view, or a typo) — those reps are unmeasured',
+      );
+    }
+  }
   final units = <(int, Set<String>)>[
     for (final r in result.reps) (r.index, r.failedRules.toSet()),
     for (final h in result.holds) (h.index, h.failedRules.toSet()),

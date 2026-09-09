@@ -710,13 +710,47 @@ double? _wantedLiteral(String field) {
   return v;
 }
 
-List<double> _literals(String expr) {
-  final seen = <double>{};
-  for (final m in _literal.allMatches(expr)) {
-    seen.add(double.parse(m.group(1)!));
+/// One numeric literal and where it sits in the expression.
+typedef _Span = ({int start, int end, double value});
+
+/// Anything that can end an operand. A `-` after one of these (or at the
+/// start) is a sign; after an identifier or a number it is subtraction.
+const _operatorChars = '<>=!&|(,+-*/';
+
+int _lastNonSpace(String s, int before) {
+  var i = before - 1;
+  while (i >= 0 && s[i] == ' ') {
+    i--;
   }
-  return seen.toList()..sort();
+  return i;
 }
+
+/// Numeric literals with the minus sign that belongs to them.
+///
+/// `hip_line_deviation < -0.06` is a negative threshold and has to move as
+/// one: rewriting only the digits produced `< --0.04`, which the DSL parses
+/// as a double negation, so the whole sweep measured a rule with its sign
+/// inverted while reporting it as the current value.
+List<_Span> _literalSpans(String expr) {
+  final out = <_Span>[];
+  for (final m in _literal.allMatches(expr)) {
+    var start = m.start;
+    final dash = _lastNonSpace(expr, start);
+    if (dash >= 0 && expr[dash] == '-') {
+      final before = _lastNonSpace(expr, dash);
+      if (before < 0 || _operatorChars.contains(expr[before])) start = dash;
+    }
+    out.add((
+      start: start,
+      end: m.end,
+      value: double.parse(expr.substring(start, m.end)),
+    ));
+  }
+  return out;
+}
+
+List<double> _literals(String expr) =>
+    {for (final s in _literalSpans(expr)) s.value}.toList()..sort();
 
 /// Replaces a threshold inside a rule expression.
 ///
@@ -737,14 +771,20 @@ String _rewriteLiteral(String expr, double? wanted, double value, String id) {
     throw SweepException('rule $id: "$expr" has no threshold $target');
   }
   final text = _format(value);
+  final buffer = StringBuffer();
+  var cursor = 0;
   var replaced = 0;
-  final out = expr.replaceAllMapped(_literal, (m) {
-    if (double.parse(m.group(1)!) != target) return m.group(0)!;
+  for (final span in _literalSpans(expr)) {
+    if (span.value != target) continue;
+    buffer
+      ..write(expr.substring(cursor, span.start))
+      ..write(text);
+    cursor = span.end;
     replaced++;
-    return text;
-  });
+  }
   if (replaced == 0) throw SweepException('rule $id: nothing replaced');
-  return out;
+  buffer.write(expr.substring(cursor));
+  return buffer.toString();
 }
 
 String _format(double v) =>
