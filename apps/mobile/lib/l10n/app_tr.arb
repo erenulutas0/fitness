@@ -83,7 +83,7 @@
   "outOfFrame": "Biraz geri git",
   "restTitle": "Dinlen",
   "restSubtitle": "Sonraki set birazdan",
-  "startNextSet": "Sonraki seti başlat",
+  "startNextSet": "Sonraki set",
   "endSession": "Seansı bitir",
   "sessionSummaryTitle": "Seans özeti",
   "sessionMeanScore": "Ortalama form skoru",
@@ -111,5 +111,19 @@
       }
     }
   },
-  "shareFailed": "Kart oluşturulamadı"
+  "shareFailed": "Kart oluşturulamadı",
+  "shareCardStats": "{sets} set · {reps} {unit}",
+  "@shareCardStats": {
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  }
 }

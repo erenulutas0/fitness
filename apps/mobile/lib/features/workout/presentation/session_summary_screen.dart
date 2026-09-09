@@ -174,11 +174,13 @@ class SessionSummaryScreen extends ConsumerWidget {
     final card = ShareCard(
       exerciseName: def?.name.text(l10n.localeName) ?? '',
       score: score,
-      sets: session.sets.length,
-      repsLabel: isHold ? l10n.seconds : l10n.reps,
-      repsValue: isHold
-          ? '${(session.totalHoldMs / 1000).round()}'
-          : '${session.totalReps}',
+      statsLine: l10n.shareCardStats(
+        session.sets.length,
+        isHold
+            ? '${(session.totalHoldMs / 1000).round()}'
+            : '${session.totalReps}',
+        isHold ? l10n.seconds : l10n.reps,
+      ),
       pose: session.bestPose,
     );
     try {

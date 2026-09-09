@@ -10,6 +10,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../workout/infrastructure/pose_engine_provider.dart';
 
 /// Placeholder "Bugün" tab: quick form check + exercise list. Onboarding,
 /// programs and progress arrive in later prompts (docs/10).
@@ -24,6 +25,25 @@ class TodayScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          // Run the workout on the synthetic engine, so the screens after
+          // "a rep was counted" can be reached without doing squats at the
+          // phone. Debug only, like the recorder next to it.
+          if (kDebugMode)
+            IconButton(
+              key: const Key('today_demo_mode'),
+              tooltip: 'Demo motoru (sentetik tekrarlar)',
+              icon: Icon(
+                ref.watch(demoModeProvider)
+                    ? Icons.smart_toy
+                    : Icons.smart_toy_outlined,
+                color: ref.watch(demoModeProvider)
+                    ? FormaColors.secondary
+                    : null,
+              ),
+              onPressed: () => ref
+                  .read(demoModeProvider.notifier)
+                  .set(on: !ref.read(demoModeProvider)),
+            ),
           // Founder-only fixture recorder; compiled out of release builds.
           if (kDebugMode)
             IconButton(

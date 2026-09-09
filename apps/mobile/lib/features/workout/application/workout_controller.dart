@@ -168,6 +168,10 @@ class WorkoutController extends _$WorkoutController {
 
     var engine = ref.read(poseEngineProvider);
     PoseEngineInfo info;
+    if (kDebugMode && ref.read(demoModeProvider)) {
+      engine = buildFallbackEngine(view);
+      _ownsEngine = true;
+    }
     try {
       if (!await engine.hasCameraPermission()) {
         await engine.requestCameraPermission();

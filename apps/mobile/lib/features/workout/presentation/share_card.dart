@@ -18,9 +18,7 @@ class ShareCard extends StatelessWidget {
   const ShareCard({
     required this.exerciseName,
     required this.score,
-    required this.sets,
-    required this.repsLabel,
-    required this.repsValue,
+    required this.statsLine,
     this.pose,
     super.key,
   });
@@ -29,9 +27,11 @@ class ShareCard extends StatelessWidget {
 
   final String exerciseName;
   final double? score;
-  final int sets;
-  final String repsLabel;
-  final String repsValue;
+
+  /// Already-localised, e.g. "3 set · 34 tekrar". Built by the caller so the
+  /// card never has to reason about plurals or units — and so it cannot say
+  /// "3 × 34", which reads as 102 reps rather than 34 across three sets.
+  final String statsLine;
   final PoseFrame? pose;
 
   @override
@@ -97,13 +97,18 @@ class ShareCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Text(
-                      '$sets × $repsValue $repsLabel',
-                      style: const TextStyle(
-                        color: FormaColors.textMuted,
-                        fontSize: 40,
+                  // Flexible, not fixed: the stats line is localised and can
+                  // grow ("3 sets · 120 seconds"), and a card that overflows
+                  // is a card that ships wrong.
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Text(
+                        statsLine,
+                        style: const TextStyle(
+                          color: FormaColors.textMuted,
+                          fontSize: 40,
+                        ),
                       ),
                     ),
                   ),

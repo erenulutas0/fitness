@@ -83,7 +83,7 @@
   "outOfFrame": "Step back a bit",
   "restTitle": "Rest",
   "restSubtitle": "Next set coming up",
-  "startNextSet": "Start next set",
+  "startNextSet": "Next set",
   "endSession": "End session",
   "sessionSummaryTitle": "Session summary",
   "sessionMeanScore": "Average form score",
@@ -111,5 +111,19 @@
       }
     }
   },
-  "shareFailed": "Could not build the card"
+  "shareFailed": "Could not build the card",
+  "shareCardStats": "{sets} sets · {reps} {unit}",
+  "@shareCardStats": {
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  }
 }

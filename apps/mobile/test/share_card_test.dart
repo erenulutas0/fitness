@@ -18,9 +18,7 @@ void main() {
         ShareCard(
           exerciseName: 'Squat',
           score: 92,
-          sets: 3,
-          repsLabel: 'tekrar',
-          repsValue: '24',
+          statsLine: '3 set · 24 tekrar',
           pose: pose,
         ),
       ),
@@ -43,9 +41,24 @@ void main() {
         const ShareCard(
           exerciseName: 'Plank',
           score: null,
-          sets: 1,
-          repsLabel: 'sn',
-          repsValue: '45',
+          statsLine: '1 set · 45 sn',
+        ),
+      ),
+    );
+    expect(png!.length, greaterThan(1000));
+  });
+
+  testWidgets('a long stats line does not overflow the card', (tester) async {
+    // The line is localised and grows: "3 sets · 120 seconds" is far wider
+    // than "3 set · 24 tekrar". A RenderFlex overflow here would ship a card
+    // with a striped bar across it.
+    final png = await tester.runAsync(
+      () => renderShareCard(
+        ShareCard(
+          exerciseName: 'Squat (bodyweight), side view',
+          score: 100,
+          statsLine: '12 sets · 240 repetitions across the whole session',
+          pose: pose,
         ),
       ),
     );
@@ -61,9 +74,7 @@ void main() {
           child: ShareCard(
             exerciseName: 'Squat (vücut ağırlığı)',
             score: 92,
-            sets: 3,
-            repsLabel: 'tekrar',
-            repsValue: '24',
+            statsLine: '3 set · 24 tekrar',
             pose: pose,
           ),
         ),
@@ -71,7 +82,7 @@ void main() {
     );
     expect(find.text('FORMA'), findsOneWidget);
     expect(find.text('92'), findsOneWidget);
-    expect(find.text('3 × 24 tekrar'), findsOneWidget);
+    expect(find.text('3 set · 24 tekrar'), findsOneWidget);
     expect(find.text('Squat (vücut ağırlığı)'), findsOneWidget);
     // The privacy promise is structural: the only visual is a CustomPaint over
     // joint positions. If an Image ever appears here, something started
