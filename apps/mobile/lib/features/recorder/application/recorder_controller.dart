@@ -74,6 +74,27 @@ class RecordingDraft {
   int get engineReps => engineResult.repCount;
   int get engineHoldMs => engineResult.totalHoldMs;
 
+  /// The frame at the bottom (or top) of a given 1-based rep — the one the
+  /// engine scored. Drawn on the labelling screen so a rep can be recognised
+  /// without remembering the order it happened in.
+  PoseFrame? extremeFrameFor(int index) {
+    int? target;
+    for (final r in engineResult.reps) {
+      if (r.index == index) target = r.summary.extremeMs;
+    }
+    if (target == null || frames.isEmpty) return null;
+    PoseFrame? best;
+    var bestDelta = 1 << 30;
+    for (final f in frames) {
+      final delta = (f.timestampMs - target).abs();
+      if (delta < bestDelta) {
+        bestDelta = delta;
+        best = f;
+      }
+    }
+    return best;
+  }
+
   /// Rules the engine thinks fired on a given 1-based rep / hold.
   Set<String> engineRulesFor(int index) {
     for (final r in engineResult.reps) {

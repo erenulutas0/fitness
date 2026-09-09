@@ -83,6 +83,20 @@ void main() {
       );
       expect(draft.engineReps, 3);
       expect(draft.engineRulesFor(1), contains('knee_valgus'));
+
+      // The labelling screen draws this frame so a rep can be recognised
+      // without remembering the order it happened in.
+      for (var rep = 1; rep <= 3; rep++) {
+        final shot = draft.extremeFrameFor(rep);
+        expect(shot, isNotNull, reason: 'rep $rep has no frame to show');
+        final scored = session.reps[rep - 1].summary.extremeMs;
+        expect(
+          (shot!.timestampMs - scored).abs(),
+          lessThanOrEqualTo(34),
+          reason: 'the picture must be the frame the engine scored',
+        );
+      }
+      expect(draft.extremeFrameFor(99), isNull);
       expect(draft.meanVisibility, greaterThan(0.9));
       expect(draft.lostRatio, 0);
 

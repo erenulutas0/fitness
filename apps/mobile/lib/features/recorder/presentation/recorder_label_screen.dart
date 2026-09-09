@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/content/content_repository.dart';
+import '../../workout/presentation/skeleton_painter.dart';
 import '../application/recorder_controller.dart';
 import '../infrastructure/fixture_store.dart';
 
@@ -138,6 +139,7 @@ class _RecorderLabelScreenState extends ConsumerState<RecorderLabelScreen> {
               rules: rules,
               cues: cues,
               engineRules: draft.engineRulesFor(i),
+              extremeFrame: isHold ? null : draft.extremeFrameFor(i),
               selected: _labels[i] ?? const {},
               onToggle: (ruleId, {required on}) => setState(() {
                 final set = _labels.putIfAbsent(i, () => <String>{});
@@ -270,6 +272,7 @@ class _UnitCard extends StatelessWidget {
     required this.engineRules,
     required this.selected,
     required this.onToggle,
+    this.extremeFrame,
   });
 
   final int index;
@@ -279,6 +282,12 @@ class _UnitCard extends StatelessWidget {
   final Set<String> engineRules;
   final Set<String> selected;
   final void Function(String ruleId, {required bool on}) onToggle;
+
+  /// The frame the engine scored for this rep. Labelling kept getting skipped
+  /// because it asks you to remember which rep was which minutes after the
+  /// fact; a picture of the bottom position answers that instantly. Drawn
+  /// from the landmarks we already keep, so no video is stored.
+  final PoseFrame? extremeFrame;
 
   String _label(RuleSpec r) {
     final cue = r.cue;
@@ -301,6 +310,25 @@ class _UnitCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                if (extremeFrame != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: ColoredBox(
+                      color: FormaColors.background,
+                      child: SizedBox(
+                        width: 54,
+                        height: 72,
+                        child: CustomPaint(
+                          painter: SkeletonPainter(
+                            frame: extremeFrame!,
+                            tracking: true,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
                 Text(
                   isHold ? 'Tutuş' : 'Tekrar $index',
                   style: const TextStyle(fontWeight: FontWeight.w700),
