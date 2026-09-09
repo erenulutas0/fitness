@@ -59,6 +59,68 @@ void main() {
     expect(ExerciseStats('empty').cuesPerRep, 0);
   });
 
+  test('a rep-count mismatch warns that the labels may be misaligned', () {
+    // Labels are matched to reps by index. Miscount one rep and every later
+    // label lands on the wrong one — scored as a miss AND a false alarm, with
+    // nothing in the numbers to show for it.
+    final def = ExerciseDefinition.parse(
+      File('../../content/exercises/bw_squat.json').readAsStringSync(),
+    );
+    final corpus = EvalCorpus(
+      definitions: {def.id: def},
+      catalog: const CueCatalog({}),
+      fixtures: [
+        LandmarkFixture(
+          id: 'miscounted',
+          exerciseId: def.id,
+          view: CameraView.side,
+          synthetic: true,
+          expectedReps: 5, // the person did five; the clip only holds three
+          errorLabels: const [
+            FixtureLabel(rep: 4, rules: ['shallow_depth']),
+          ],
+          frames: const SyntheticPose().squat(
+            view: CameraView.side,
+            reps: 3,
+            noiseStd: 0,
+          ),
+        ),
+      ],
+    );
+    final report = corpus.evaluate();
+    expect(report.warnings, hasLength(1));
+    expect(report.warnings.single, contains('may line up with the wrong reps'));
+    expect(report.warnings.single, contains('3 reps detected but 5 labelled'));
+  });
+
+  test('matching counts do not warn', () {
+    final def = ExerciseDefinition.parse(
+      File('../../content/exercises/bw_squat.json').readAsStringSync(),
+    );
+    final corpus = EvalCorpus(
+      definitions: {def.id: def},
+      catalog: const CueCatalog({}),
+      fixtures: [
+        LandmarkFixture(
+          id: 'counted',
+          exerciseId: def.id,
+          view: CameraView.side,
+          synthetic: true,
+          expectedReps: 3,
+          errorLabels: const [
+            FixtureLabel(rep: 2, rules: ['shallow_depth']),
+          ],
+          frames: const SyntheticPose().squat(
+            view: CameraView.side,
+            reps: 3,
+            noiseStd: 0,
+          ),
+        ),
+      ],
+    );
+    expect(corpus.evaluate().warnings, isEmpty);
+  });
+
   test('a label the harness cannot evaluate is reported, not swallowed', () {
     final def = ExerciseDefinition.parse(
       File('../../content/exercises/bw_squat.json').readAsStringSync(),

@@ -374,4 +374,19 @@ void _evaluateFixture(
       if (ruleIds.contains(id)) stats.rule(id).fn++;
     }
   }
+
+  // Per-rep labels are matched by index. That only holds while the engine
+  // counts the same reps a person did: miscount rep 2 and every later label
+  // lands on the wrong rep, which scores as a miss AND a false alarm without
+  // anything looking wrong. Say so rather than reporting the number.
+  if (warnings != null &&
+      expected != null &&
+      fx.errorLabels.isNotEmpty &&
+      units.length != expected) {
+    warnings.add(
+      '${fx.id}: ${units.length} reps detected but $expected labelled, so the '
+      'per-rep labels may line up with the wrong reps. Precision and recall '
+      'from this fixture are unreliable until the counts agree.',
+    );
+  }
 }

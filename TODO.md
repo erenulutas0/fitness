@@ -224,8 +224,9 @@
       Görünen ad artık FORMA; değişecek olan yalnızca paket kimliği.
 - [ ] Ses klipleri üretilene kadar her cue cihaz TTS'iyle söyleniyor: ilk kelime birkaç yüz ms gecikebilir ve ses
       robotik. `VoiceCuePlayer` klip bulunca kendiliğinden ona geçer, kod değişikliği gerekmez.
-- [ ] Kadraj adımının geri sayımı duvar saatiyle (`Timer.periodic`), tekrar mantığı frame zaman damgasıyla
-      çalışıyor; kamera takılırsa ikisi ayrışır. Tek zaman kaynağına indirmeyi düşün.
+- [x] 2026-09-09 — Kadraj geri sayımının duvar saatinde kalmasına **karar verildi**: geri sayım insana bakan bir
+      sayaç, insan zamanında akmalı. Frame zaman damgasına bağlansaydı kamera takıldığında geri sayım donup
+      kullanıcıyı ekranda kilitlerdi. İki saat hiçbir yerde karşılaştırılmıyor.
 - [ ] `SessionConfig.maxShinThighRatio` (1,6) ve `maxBodyHeightFraction` (0,97) 26 kayıtlık küçük bir korpustan
       geldi; kayıt sayısı artınca yeniden ölç. Aynısı `signalLossGraceMs` (300 ms) için de geçerli.
 - [x] 2026-09-09 — Eval'de hiç ölçülmemiş 5 kural için sentetik fixture eklendi (plank hip_pike/head_drop,
@@ -237,7 +238,9 @@
       ve eval bunu uyarı olarak basıyor. Kural geri açılırsa yer gerçeği hazır.
 - [ ] FMA kas id'leri (`content/exercises/*.json` primary/secondaryMuscles) doğrulanmadı — anatomi katmanında kontrol.
 - [ ] `explain.source` id'leri yer tutucu (`src_valgus_01` vb.) — `content/sources/` doldurulunca eşle.
-- [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.
+- [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor. Index kayması artık **sessiz değil** — sayılar
+      uyuşmuyorsa harness "etiketler yanlış tekrara denk gelmiş olabilir" uyarısı basıyor. Gerçek bir kayma
+      görülürse (şimdiye kadar rep MAE hep 0) zaman örtüşmesine dayalı eşleme/DTW gerekecek.
 - [ ] Kayıt ekranı metinleri l10n dışında (bilinçli: kurucu aracı, sadece debug). Beta'da başka birine kayıt
       yaptıracaksan İngilizceye çevir.
 - [ ] Kayıt sırasında ham frame'ler bellekte tutuluyor (3 dk ≈ 11 MB). Daha uzun kayıt gerekirse parça parça diske yaz.
