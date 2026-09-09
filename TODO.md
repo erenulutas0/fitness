@@ -195,7 +195,12 @@
       (ortalama skor, set set döküm, seansın en sık 3 hatası). `WorkoutSessionController` seansı tutuyor;
       egzersiz değişirse yeni seans başlıyor, hiçbir şey saymayan set ortalamaya girmiyor. HUD'un kendi
       `setIndex/setTotal` alanları silindi (aynı şey için iki sayaç = kayan sayı).
-- [ ] Seans sonu **paylaşılabilir kart** (iskelet çizimi, video değil) — docs/06 §4.5'in kalan yarısı.
+- [x] 2026-09-10 — **Paylaşılabilir kart** (docs/06 §4.5): 1080×1350 PNG, ekran dışında render ediliyor;
+      FORMA + egzersiz adı + en iyi setin en derin **iskelet çizimi** + skor + "3 × 24 tekrar". Telefondan
+      çıkan tek şey eklem koordinatlarının çizimi — kart bir `PoseFrame` ve dört sayıdan başka bir şey
+      görmüyor, bir test kartta hiç `Image` olmadığını doğruluyor. `SkeletonPainter`'a vücuda göre sığdırma
+      modu eklendi (arkada preview yokken kadraja sığdırmak insanı küçük ve kenarda bırakıyordu) ve çizgi
+      kalınlığı tuvale göre ölçekleniyor. **Cihazda görülmedi** (telefon kullanımdaydı).
 - [ ] "Bugünün skoru vs geçen seans" — kalıcı depolama gerektiriyor, aşağıdaki Drift maddesine bağlı.
 - [ ] Yerel DB: Session/SetResult/Rep şeması (docs/05 §9). **Şu an kurulamıyor:** `drift_dev` analyzer ≥13
       istiyor, `custom_lint` 0.8.1 ve `freezed` 3.2.3 bizi analyzer 8'de tutuyor (10 Eylül'de denendi, pubspec
