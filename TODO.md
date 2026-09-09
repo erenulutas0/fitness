@@ -190,8 +190,20 @@
       Cue gecikmesinin **yazılım payı ölçüldü: 100 ms** (bütçenin dörtte biri, tamamı `minConsecutiveFrames: 3`
       kapısından). Kalan 300 ms konuşma motoru + hoparlör; cihazda uçtan uca ölçüm yapılmadı ve asıl risk orada.
 - [ ] HUD: yatay mod, overlay aç/kapa ayarı, "az konuş" modu (`FeedbackPolicy.quietMode` hazır), düşük güvende gri sayaç (var) + tek seferlik cue (var).
-- [ ] Set/seans akışı: dinlenme sayacı, 3 set, seans özeti, paylaşılabilir kart (iskelet çizimi, video değil).
-- [ ] Yerel DB (Drift): Session/SetResult/Rep şeması (docs/05 §9).
+- [x] 2026-09-10 — **Set/seans akışı** (docs/06 §4.4-4.5): set özeti → **sesli dinlenme sayacı** (son 3 saniye
+      sesli, telefon karşı duvarda olduğu için sessiz sayaç sayaç değil) → sonraki set → seans özeti
+      (ortalama skor, set set döküm, seansın en sık 3 hatası). `WorkoutSessionController` seansı tutuyor;
+      egzersiz değişirse yeni seans başlıyor, hiçbir şey saymayan set ortalamaya girmiyor. HUD'un kendi
+      `setIndex/setTotal` alanları silindi (aynı şey için iki sayaç = kayan sayı).
+- [ ] Seans sonu **paylaşılabilir kart** (iskelet çizimi, video değil) — docs/06 §4.5'in kalan yarısı.
+- [ ] "Bugünün skoru vs geçen seans" — kalıcı depolama gerektiriyor, aşağıdaki Drift maddesine bağlı.
+- [ ] Yerel DB: Session/SetResult/Rep şeması (docs/05 §9). **Şu an kurulamıyor:** `drift_dev` analyzer ≥13
+      istiyor, `custom_lint` 0.8.1 ve `freezed` 3.2.3 bizi analyzer 8'de tutuyor (10 Eylül'de denendi, pubspec
+      geri alındı). Üç seçenek: (a) toolchain'i topluca yükselt — riverpod_generator/freezed codegen'i kırma
+      riski var, (b) codegen'siz daha basit bir kalıcılık katmanı yaz (seans başına birkaç kayıt; SQL'e gerek
+      olmayabilir), (c) drift_dev'in analyzer kısıtı gevşeyene kadar bekle. Karar kurucunun.
+      Not: `sqlite3_flutter_libs` native `.so` getiriyor — hangi yol seçilirse seçilsin 16 KB hizalaması
+      `tools/check_so_alignment.py` ile yeniden doğrulanmalı.
 - [ ] iOS plugin (docs/10 Prompt 8): MediaPipe Tasks iOS ya da Apple Vision → 33-nokta eşleme; RN'e geçiş karar noktası 3. hafta sonu.
 - [ ] Figma 6 ekran + 5 kişilik kullanılabilirlik testi (docs/06 §10).
 - [ ] Fontlar: Manrope + Inter (SIL OFL) paketle; tabular rakam sayaç.
