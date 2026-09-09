@@ -31,13 +31,40 @@
   "noErrors": "Temiz set — hata yok",
   "whyTitle": "Neden böyle dedim?",
   "sourceLabel": "Kaynak: {id}",
-  "@sourceLabel": { "placeholders": { "id": { "type": "String" } } },
+  "@sourceLabel": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "setOf": "Set {current}/{total}",
-  "@setOf": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@setOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "errorTimes": "{count} kez",
-  "@errorTimes": { "placeholders": { "count": { "type": "int" } } },
+  "@errorTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "engineError": "Kamera başlatılamadı: {message}",
-  "@engineError": { "placeholders": { "message": { "type": "String" } } },
+  "@engineError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "healthDisclaimer": "Ağrı hissedersen dur. Sağlık sorunun varsa önce doktoruna danış.",
   "setupTitle": "Kamerayı yerleştir",
   "setupHintSide": "Yandan çekim: tüm vücudun görünsün, telefonu yere paralel tut.",
@@ -53,5 +80,23 @@
   "setupReady": "Hazırsan başlıyoruz",
   "setupStartNow": "Şimdi başla",
   "setupCancel": "Vazgeç",
-  "outOfFrame": "Biraz geri git"
+  "outOfFrame": "Biraz geri git",
+  "restTitle": "Dinlen",
+  "restSubtitle": "Sonraki set birazdan",
+  "startNextSet": "Sonraki seti başlat",
+  "endSession": "Seansı bitir",
+  "sessionSummaryTitle": "Seans özeti",
+  "sessionMeanScore": "Ortalama form skoru",
+  "sessionSets": "Setler",
+  "sessionTotalReps": "Toplam tekrar",
+  "doneForToday": "Bugünlük bu kadar",
+  "setNumber": "Set {index}",
+  "@setNumber": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "skipRest": "Dinlenmeyi atla"
 }

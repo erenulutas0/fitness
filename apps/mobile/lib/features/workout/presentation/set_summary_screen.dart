@@ -7,16 +7,22 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../application/session_controller.dart';
+import 'rest_timer.dart';
 
-/// Set summary (docs/06 §4.4): score, reps, top errors + "why" card.
+/// Set summary (docs/06 §4.4): score, reps, top errors + "why" card, then the
+/// rest timer that leads into the next set.
 class SetSummaryScreen extends ConsumerWidget {
   const SetSummaryScreen({required this.result, super.key});
+
+  static const restSeconds = 60;
 
   final SetResult result;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final session = ref.watch(workoutSessionControllerProvider);
     final content = ref.watch(contentRepositoryProvider).value;
     final def = content?.exercise(result.exerciseId);
     final score = result.formScore;
@@ -96,10 +102,24 @@ class SetSummaryScreen extends ConsumerWidget {
           for (final e in top)
             _ErrorCard(ruleId: e.key, count: e.value, definition: def),
           const SizedBox(height: 32),
-          FilledButton(
-            onPressed: () => context.go(Routes.today),
-            child: Text(l10n.nextSet),
-          ),
+          if (session.isActive && !session.isComplete)
+            RestTimer(
+              seconds: restSeconds,
+              onDone: () => context.pushReplacement(
+                Routes.hud(session.exerciseId!, session.view),
+              ),
+              onSkip: () => context.pushReplacement(Routes.sessionSummary),
+            )
+          else
+            FilledButton(
+              key: const Key('summary_end_session'),
+              onPressed: () => session.isActive
+                  ? context.pushReplacement(Routes.sessionSummary)
+                  : context.go(Routes.today),
+              child: Text(
+                session.isActive ? l10n.sessionSummaryTitle : l10n.backToToday,
+              ),
+            ),
           const SizedBox(height: 12),
           Text(
             l10n.healthDisclaimer,

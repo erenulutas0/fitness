@@ -33,8 +33,6 @@ class HudState {
     this.lastCueAtMs = 0,
     this.highlightRule,
     this.highlightUntilMs = 0,
-    this.setIndex = 1,
-    this.setTotal = 3,
     this.framing,
     this.countdownSeconds = 0,
   });
@@ -53,8 +51,6 @@ class HudState {
   /// Rule whose joints glow orange on the overlay for a moment.
   final String? highlightRule;
   final int highlightUntilMs;
-  final int setIndex;
-  final int setTotal;
 
   /// Live framing verdict, used by the setup step and the out-of-frame hint.
   final FramingResult? framing;
@@ -79,8 +75,6 @@ class HudState {
     int? lastCueAtMs,
     String? highlightRule,
     int? highlightUntilMs,
-    int? setIndex,
-    int? setTotal,
     FramingResult? framing,
     int? countdownSeconds,
   }) => HudState(
@@ -96,8 +90,6 @@ class HudState {
     lastCueAtMs: lastCueAtMs ?? this.lastCueAtMs,
     highlightRule: highlightRule ?? this.highlightRule,
     highlightUntilMs: highlightUntilMs ?? this.highlightUntilMs,
-    setIndex: setIndex ?? this.setIndex,
-    setTotal: setTotal ?? this.setTotal,
     framing: framing ?? this.framing,
     countdownSeconds: countdownSeconds ?? this.countdownSeconds,
   );

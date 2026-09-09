@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../l10n/app_localizations.dart';
+import '../application/session_controller.dart';
 import '../application/workout_controller.dart';
 import 'skeleton_painter.dart';
 
@@ -32,6 +33,11 @@ class _HudScreenState extends ConsumerState<HudScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Entering the HUD for set 2 or 3 keeps the same session; a different
+      // exercise starts a new one rather than averaging squats with push-ups.
+      ref
+          .read(workoutSessionControllerProvider.notifier)
+          .begin(widget.exerciseId, widget.view);
       unawaited(ref.read(_provider.notifier).start());
     });
   }
@@ -39,6 +45,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
   Future<void> _finish() async {
     final result = await ref.read(_provider.notifier).finish();
     if (!mounted || result == null) return;
+    ref.read(workoutSessionControllerProvider.notifier).recordSet(result);
     context.pushReplacement(Routes.summary, extra: result);
   }
 
@@ -46,6 +53,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(_provider);
+    final session = ref.watch(workoutSessionControllerProvider);
     final def = ref.read(_provider.notifier).definition;
     final snap = state.snapshot;
     final isHold = def?.countMode == CountMode.hold;
@@ -97,7 +105,10 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                     ),
                   _TopStrip(
                     exerciseName: def?.name.text(l10n.localeName) ?? '',
-                    setLabel: l10n.setOf(state.setIndex, state.setTotal),
+                    setLabel: l10n.setOf(
+                      session.currentSetIndex,
+                      session.setTotal,
+                    ),
                     badge: state.isFakeEngine
                         ? l10n.engineFakeBadge
                         : l10n.privacyBadge,

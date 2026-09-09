@@ -9,6 +9,7 @@ import '../features/recorder/presentation/recorder_label_screen.dart';
 import '../features/recorder/presentation/recorder_setup_screen.dart';
 import '../features/today/presentation/today_screen.dart';
 import '../features/workout/presentation/hud_screen.dart';
+import '../features/workout/presentation/session_summary_screen.dart';
 import '../features/workout/presentation/set_summary_screen.dart';
 
 part 'router.g.dart';
@@ -18,6 +19,7 @@ abstract final class Routes {
   static String hud(String exerciseId, CameraView view) =>
       '/workout/$exerciseId/${view.name}';
   static const summary = '/summary';
+  static const sessionSummary = '/session-summary';
 
   /// Fixture recorder (debug builds only).
   static const recorder = '/recorder';
@@ -43,6 +45,10 @@ GoRouter router(Ref ref) => GoRouter(
       path: Routes.summary,
       builder: (_, state) =>
           SetSummaryScreen(result: state.extra! as SetResult),
+    ),
+    GoRoute(
+      path: Routes.sessionSummary,
+      builder: (_, _) => const SessionSummaryScreen(),
     ),
     // The recorder ships only in debug builds: it writes joint coordinates to
     // disk and is a founder tool, not a user feature (docs/10 Prompt 3).

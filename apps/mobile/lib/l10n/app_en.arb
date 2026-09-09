@@ -31,13 +31,40 @@
   "noErrors": "Clean set — no errors",
   "whyTitle": "Why did I say that?",
   "sourceLabel": "Source: {id}",
-  "@sourceLabel": { "placeholders": { "id": { "type": "String" } } },
+  "@sourceLabel": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "setOf": "Set {current}/{total}",
-  "@setOf": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@setOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "errorTimes": "{count}×",
-  "@errorTimes": { "placeholders": { "count": { "type": "int" } } },
+  "@errorTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "engineError": "Camera could not start: {message}",
-  "@engineError": { "placeholders": { "message": { "type": "String" } } },
+  "@engineError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "healthDisclaimer": "Stop if you feel pain. If you have a health condition, check with your doctor first.",
   "setupTitle": "Place your phone",
   "setupHintSide": "Side view: your whole body in frame, phone level.",
@@ -53,5 +80,23 @@
   "setupReady": "Ready when you are",
   "setupStartNow": "Start now",
   "setupCancel": "Cancel",
-  "outOfFrame": "Step back a bit"
+  "outOfFrame": "Step back a bit",
+  "restTitle": "Rest",
+  "restSubtitle": "Next set coming up",
+  "startNextSet": "Start next set",
+  "endSession": "End session",
+  "sessionSummaryTitle": "Session summary",
+  "sessionMeanScore": "Average form score",
+  "sessionSets": "Sets",
+  "sessionTotalReps": "Total reps",
+  "doneForToday": "Done for today",
+  "setNumber": "Set {index}",
+  "@setNumber": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "skipRest": "Skip rest"
 }

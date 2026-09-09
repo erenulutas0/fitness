@@ -75,6 +75,43 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Set özeti'), findsOneWidget);
     expect(find.textContaining('knee valgus'), findsOneWidget);
+
+    // Set 1 of 3 is done, so the summary leads into the rest timer rather
+    // than dumping the user back on Today (docs/06 §4.4).
+    String restSeconds() =>
+        tester.widget<Text>(find.byKey(const Key('rest_seconds'))).data!;
+    expect(restSeconds(), '60');
+    await tester.pump(const Duration(seconds: 1));
+    expect(restSeconds(), '59', reason: 'the rest timer counts down');
+
+    // Ending the session early goes to the session summary, which reports the
+    // one set that was actually performed.
+    // Not pumpAndSettle: the rest timer is periodic, so settling would run
+    // the countdown to zero and start set 2 instead.
+    await tester.ensureVisible(find.byKey(const Key('rest_end')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('rest_end')));
+    await tester.pumpAndSettle();
+    expect(find.text('Seans özeti'), findsOneWidget);
+    expect(find.byKey(const Key('session_mean_score')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ListTile),
+        matching: find.textContaining('tekrar'),
+      ),
+      findsWidgets,
+      reason: 'the set row shows what was counted',
+    );
+
+    await tester.dragUntilVisible(
+      find.byKey(const Key('session_done')),
+      find.byType(ListView),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('session_done')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('today_quick_check')), findsOneWidget);
     await fake.dispose();
   });
 }
