@@ -28,8 +28,12 @@
       Model ayağı doğru görüyorsa kuralı taban çizgisiyle yeniden yazarız; göremiyorsa kapalı kalır (D17).
 - [ ] **Etiketleme alışkanlığı**: ilk iki kayıtta hiç etiket işaretlenmedi, dolayısıyla eval "her tekrar temiz"
       varsaydı. Kayıt sonrası gerçekten olan hataları işaretle, yoksa doğruluk ölçümü tek yönlü kalıyor.
-- [ ] `shallow_depth` eşiği (105°) doğrulanacak: 18:16 kaydının 3. tekrarı 109° ölçüldü ve sığ işaretlendi,
-      diğerleri 97-98°. Kurucu onaylarsa eşik doğru, aksi halde 112-115° civarına çekilecek.
+- [ ] `shallow_depth` eşiğinin **alt** ucu belirsiz. İlk etiketli gerçek veriyle tarandı (9 Eylül,
+      `bin/sweep.dart`): 95-105° arası her değer F1 = 1,00; **107,5°'de iki pozitiften biri kaçıyor**, 110°+
+      ikisini de kaçırıyor. Yani "112-115'e çekelim" hipotezi çürüdü — 105 üst sınırda, yükseltmek kaçırmaya
+      başlıyor. Ama korpusta 72° ile 107° arasında hiç tekrar yok, o yüzden 95-105 bandının tamamı aynı skoru
+      veriyor: **alt uç ölçülmedi**. Yarınki çekimde işe yarayacak olan, bilerek "sınırda" tekrarlar —
+      tam paralel civarı (95-105°), sadece apaçık sığ ve apaçık derin olanlar değil.
 - [ ] **Ayak görünürlüğü sorunu**: dört kayıtta da ayak landmark güveni 0.37-0.64. Kamera yüksekliği/mesafesi
       ve ayakkabı etkisini test et; kadraj adımı artık "biraz geri git" diyor ama ayak özelinde bir yönerge yok.
 - [ ] **İlk gerçek kayıt setini topla** (kurucu + Claude birlikte): telefon 2-3 m uzakta, tam vücut kadrajda.
@@ -224,10 +228,13 @@
       çalışıyor; kamera takılırsa ikisi ayrışır. Tek zaman kaynağına indirmeyi düşün.
 - [ ] `SessionConfig.maxShinThighRatio` (1,6) ve `maxBodyHeightFraction` (0,97) 26 kayıtlık küçük bir korpustan
       geldi; kayıt sayısı artınca yeniden ölç. Aynısı `signalLossGraceMs` (300 ms) için de geçerli.
-- [ ] `syn_squat_side_lean_heels` fixture'ı hâlâ 3 tekrarı `heel_rise` ile etiketliyor ama kural kapalı (D17),
-      dolayısıyla o tekrarlar ölçülmüyor. Eval artık uyarı basıyor; etiketi kaldır ya da kural geri açılınca bırak.
-- [ ] Eval'de `n/a` çıkan 5 kural (plank hip_pike/head_drop, push_up hip_pike/shallow_depth,
-      squat shallow_depth_front) hiç ölçülmedi: sentetik fixture setinde bunları tetikleyen kayıt yok.
+- [x] 2026-09-09 — Eval'de hiç ölçülmemiş 5 kural için sentetik fixture eklendi (plank hip_pike/head_drop,
+      push_up hip_pike/shallow_depth, squat shallow_depth_front). Raporda artık **tek bir `n/a` yok**: ürünün
+      gönderdiği 11 kuralın hepsi en az bir fixture tarafından çalıştırılıyor. Sentetik olduğu için "hata varken
+      tetikleniyor mu"yu kanıtlar, "gerçek vücutta çalışıyor mu"yu değil — ama sessizce bozulan bir kuralı yakalar.
+- [x] 2026-09-09 — `syn_squat_side_lean_heels`'in `heel_rise` etiketi **bilerek duruyor**: fixture gerçekten
+      `heelRise: 0.08` ile üretildi, yani etiket doğru. Kural D17 ile kapalı olduğu için o 3 tekrar ölçülmüyor
+      ve eval bunu uyarı olarak basıyor. Kural geri açılırsa yer gerçeği hazır.
 - [ ] FMA kas id'leri (`content/exercises/*.json` primary/secondaryMuscles) doğrulanmadı — anatomi katmanında kontrol.
 - [ ] `explain.source` id'leri yer tutucu (`src_valgus_01` vb.) — `content/sources/` doldurulunca eşle.
 - [ ] Eval: FN sayımı "tespit edilmeyen tekrar"ı da sayıyor; gerçek kayıtlarda tekrar hizalama (index kayması) için DTW/eşleme gerekebilir.

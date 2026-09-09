@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-09T03:03:10.886794",
-  "fixtures": 12,
+  "generatedAt": "2026-09-09T17:47:20.923967",
+  "fixtures": 17,
   "smoothing": true,
   "meetsGate2": true,
   "exercises": {
@@ -30,11 +30,11 @@
     },
     "plank": {
       "exerciseId": "plank",
-      "fixtures": 2,
+      "fixtures": 4,
       "repMae": 0.0,
-      "cuesPerRep": 1.5,
+      "cuesPerRep": 2.0,
       "overall": {
-        "tp": 1,
+        "tp": 3,
         "fp": 0,
         "fn": 0,
         "precision": 1.0,
@@ -51,7 +51,7 @@
           "f1": 1.0
         },
         "hip_pike": {
-          "tp": 0,
+          "tp": 1,
           "fp": 0,
           "fn": 0,
           "precision": 1.0,
@@ -59,7 +59,7 @@
           "f1": 1.0
         },
         "head_drop": {
-          "tp": 0,
+          "tp": 1,
           "fp": 0,
           "fn": 0,
           "precision": 1.0,
@@ -70,11 +70,11 @@
     },
     "push_up": {
       "exerciseId": "push_up",
-      "fixtures": 2,
+      "fixtures": 4,
       "repMae": 0.0,
-      "cuesPerRep": 0.25,
+      "cuesPerRep": 0.42857142857142855,
       "overall": {
-        "tp": 3,
+        "tp": 9,
         "fp": 0,
         "fn": 0,
         "precision": 1.0,
@@ -91,7 +91,7 @@
           "f1": 1.0
         },
         "hip_pike": {
-          "tp": 0,
+          "tp": 3,
           "fp": 0,
           "fn": 0,
           "precision": 1.0,
@@ -99,7 +99,7 @@
           "f1": 1.0
         },
         "shallow_depth": {
-          "tp": 0,
+          "tp": 3,
           "fp": 0,
           "fn": 0,
           "precision": 1.0,
@@ -110,11 +110,11 @@
     },
     "bw_squat": {
       "exerciseId": "bw_squat",
-      "fixtures": 6,
+      "fixtures": 7,
       "repMae": 0.0,
-      "cuesPerRep": 0.23076923076923078,
+      "cuesPerRep": 0.26666666666666666,
       "overall": {
-        "tp": 11,
+        "tp": 15,
         "fp": 0,
         "fn": 0,
         "precision": 1.0,
@@ -131,7 +131,7 @@
           "f1": 1.0
         },
         "shallow_depth_front": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
           "fn": 0,
           "precision": 1.0,
