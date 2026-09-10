@@ -1,6 +1,38 @@
 {
   "@@locale": "tr",
   "appTitle": "FORMA",
+  "onboardingWelcome": "Telefonunu yasla, hareketini yap; formunu anında düzeltiriz.",
+  "onboardingTryCamera": "Kamerayı dene",
+  "onboardingSkip": "Zaten biliyorum, atla",
+  "onboardingStepOf": "Adım {step} / {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingGoalQuestion": "Neden buradasın?",
+  "onboardingGoalMuscle": "Kas kazanmak",
+  "onboardingGoalForm": "Formumu düzeltmek",
+  "onboardingGoalHealth": "Sağlıklı kalmak",
+  "onboardingLevelQuestion": "Ne kadar antrenman yapıyorsun?",
+  "onboardingLevelNew": "Yeniyim",
+  "onboardingLevelOccasional": "Ara sıra",
+  "onboardingLevelRegular": "Düzenli",
+  "onboardingEquipmentQuestion": "Evde ne var?",
+  "onboardingEquipmentNone": "Hiçbir şey",
+  "onboardingEquipmentDumbbell": "Dambıl",
+  "onboardingCameraTitle": "Kamera izni",
+  "onboardingCameraWhy": "Hareketini görmek için; görüntü telefondan çıkmaz.",
+  "onboardingDemoHint": "İzin verince 5 squat yapacaksın; ilk geri bildirimin orada.",
+  "onboardingOpenCamera": "Kamerayı aç",
+  "onboardingCameraDenied": "Kamera izni verilmedi. İzin olmadan hareketini göremeyiz.",
+  "onboardingRetry": "Tekrar dene",
+  "onboardingContinueWithoutCamera": "Kamerasız devam",
   "todayTitle": "Bugün",
   "todaySubtitle": "Kamerayı aç, hareketi yap; koç seni izler.",
   "quickFormCheck": "Hızlı form check",
