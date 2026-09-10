@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
 
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../core/locale/locale_controller.dart';
 import '../../../l10n/app_localizations.dart';
@@ -88,62 +89,59 @@ class _RestTimerState extends ConsumerState<RestTimer> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final left = _left.clamp(0, widget.seconds);
     final progress = widget.seconds == 0
         ? 1.0
         : (widget.seconds - _left) / widget.seconds;
-    return Card(
-      color: FormaColors.surfaceRaised,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text(
-              l10n.restTitle,
-              style: const TextStyle(
-                color: FormaColors.textMuted,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${_left.clamp(0, widget.seconds)}',
+    return FormaCard(
+      raised: true,
+      padding: const EdgeInsets.all(FormaSpacing.page),
+      child: Column(
+        children: [
+          Text(l10n.restTitle, style: text.labelMedium),
+          const SizedBox(height: FormaSpacing.sm),
+          Semantics(
+            container: true,
+            liveRegion: true,
+            label: l10n.holdSecondsSemantics(left),
+            excludeSemantics: true,
+            child: Text(
+              '$left',
               key: const Key('rest_seconds'),
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                color: FormaColors.secondary,
-                fontFeatures: const [FontFeature.tabularFigures()],
+              style: text.displayLarge?.copyWith(color: FormaColors.secondary),
+            ),
+          ),
+          const SizedBox(height: FormaSpacing.md),
+          LinearProgressIndicator(
+            value: progress.clamp(0.0, 1.0),
+            backgroundColor: FormaColors.outline,
+            color: FormaColors.secondary,
+          ),
+          const SizedBox(height: FormaSpacing.lg),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  key: const Key('rest_skip'),
+                  onPressed: _complete,
+                  child: Text(l10n.startNextSet),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              backgroundColor: FormaColors.outline,
-              color: FormaColors.secondary,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton(
-                    key: const Key('rest_skip'),
-                    onPressed: _complete,
-                    child: Text(l10n.startNextSet),
-                  ),
+              const SizedBox(width: FormaSpacing.md),
+              Expanded(
+                child: OutlinedButton(
+                  key: const Key('rest_end'),
+                  onPressed: () {
+                    _timer?.cancel();
+                    widget.onSkip();
+                  },
+                  child: Text(l10n.endSession),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    key: const Key('rest_end'),
-                    onPressed: () {
-                      _timer?.cancel();
-                      widget.onSkip();
-                    },
-                    child: Text(l10n.endSession),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

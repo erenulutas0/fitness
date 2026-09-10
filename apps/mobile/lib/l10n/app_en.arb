@@ -158,5 +158,53 @@
         "type": "int"
       }
     }
-  }
+  },
+  "repCountSemantics": "{count} reps",
+  "@repCountSemantics": {
+    "description": "TalkBack label for the HUD rep counter",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "holdSecondsSemantics": "{count} seconds",
+  "@holdSecondsSemantics": {
+    "description": "TalkBack label for a seconds counter (hold, rest)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "repTargetSemantics": "{count} of {target} reps",
+  "@repTargetSemantics": {
+    "description": "TalkBack label for the counter when the set has a rep target",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "repTargetLabel": "/ {target}",
+  "@repTargetLabel": {
+    "description": "Shown next to the counter when the set has a rep target: 3 / 5",
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "formScoreSemantics": "Form score {score}",
+  "@formScoreSemantics": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "formScoreNoneSemantics": "No form score yet"
 }

@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:forma_pose/forma_pose.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/content/content_repository.dart';
 import '../../../core/locale/locale_controller.dart';
+import '../../../core/settings/app_settings.dart';
+import '../../../core/settings/settings_controller.dart';
 import '../infrastructure/cue_player.dart';
 import '../infrastructure/pose_engine_provider.dart';
 
@@ -16,6 +19,19 @@ part 'workout_controller.g.dart';
 /// camera: closing and reopening it between screens costs about a second and
 /// makes the coach feel slow.
 enum HudStatus { idle, starting, framing, countdown, running, finished, error }
+
+/// Why the controller ended the set on its own. The HUD listens for this and
+/// leaves the screen the same way the Finish button would.
+enum HudExit {
+  none,
+
+  /// `targetReps` was reached (the onboarding demo: five squats and out).
+  targetReached,
+
+  /// The app went to the background (docs/06 §7): the camera is closed and
+  /// whatever was counted is kept.
+  backgrounded,
+}
 
 /// Everything the HUD needs, updated once per pose frame.
 @immutable
@@ -35,6 +51,10 @@ class HudState {
     this.highlightUntilMs = 0,
     this.framing,
     this.countdownSeconds = 0,
+    this.targetReps,
+    this.exit = HudExit.none,
+    this.pendingResult,
+    this.inBackground = false,
   });
 
   final String exerciseId;
@@ -56,11 +76,27 @@ class HudState {
   final FramingResult? framing;
   final int countdownSeconds;
 
+  /// Finish the set by itself once this many reps are counted; null means
+  /// the user decides.
+  final int? targetReps;
+
+  /// Set when the controller, not the user, ended the set.
+  final HudExit exit;
+
+  /// The result of a set that was finished in the background, waiting for
+  /// the HUD to come back and show it.
+  final SetResult? pendingResult;
+
+  /// True between `paused` and `resumed`, so the HUD navigates only once the
+  /// user is looking again.
+  final bool inBackground;
+
   bool get isSetup =>
       status == HudStatus.framing || status == HudStatus.countdown;
 
   int get nowMs => frame?.timestampMs ?? 0;
-  bool get showCue => lastCue != null && nowMs - lastCueAtMs < 3000;
+  bool get showCue =>
+      lastCue != null && nowMs - lastCueAtMs < WorkoutController.cueVisibleMs;
   bool get showHighlight => highlightRule != null && nowMs < highlightUntilMs;
   bool get tracking => snapshot?.tracking ?? false;
 
@@ -77,6 +113,10 @@ class HudState {
     int? highlightUntilMs,
     FramingResult? framing,
     int? countdownSeconds,
+    int? targetReps,
+    HudExit? exit,
+    SetResult? pendingResult,
+    bool? inBackground,
   }) => HudState(
     exerciseId: exerciseId,
     view: view,
@@ -92,12 +132,21 @@ class HudState {
     highlightUntilMs: highlightUntilMs ?? this.highlightUntilMs,
     framing: framing ?? this.framing,
     countdownSeconds: countdownSeconds ?? this.countdownSeconds,
+    targetReps: targetReps ?? this.targetReps,
+    exit: exit ?? this.exit,
+    pendingResult: pendingResult ?? this.pendingResult,
+    inBackground: inBackground ?? this.inBackground,
   );
 }
 
 /// Owns the pose engine subscription and the pure-Dart pipeline for one set.
+///
+/// Also the app-lifecycle observer for the set (docs/06 §7 "arka plana
+/// geçiş"): the camera must never stay open while the app is in the
+/// background, and a set that was under way is finished, not lost.
 @riverpod
-class WorkoutController extends _$WorkoutController {
+class WorkoutController extends _$WorkoutController
+    with WidgetsBindingObserver {
   static const countdownSeconds = 5;
 
   /// The shot has to stay good this long before the countdown starts.
@@ -106,6 +155,10 @@ class WorkoutController extends _$WorkoutController {
 
   /// Minimum gap between any two framing instructions, roughly one utterance.
   static const minFramingCueGapMs = 1500;
+
+  /// docs/06 §5: the cue text stays 3 s, the error joint glows 1 s.
+  static const cueVisibleMs = 3000;
+  static const highlightMs = 1000;
 
   ExerciseSession? _session;
   FeedbackScheduler? _scheduler;
@@ -134,19 +187,34 @@ class WorkoutController extends _$WorkoutController {
   /// until the app was restarted.
   bool _disposed = false;
 
+  /// Same shape of problem as [_disposed], for the background case: the app
+  /// can be paused while the camera is still opening.
+  bool _backgrounded = false;
+
   @override
   HudState build(String exerciseId, CameraView view) {
-    ref.onDispose(_teardown);
+    WidgetsBinding.instance.addObserver(this);
+    ref
+      ..onDispose(_teardown)
+      ..listen(settingsProvider, _onSettings);
     return HudState(exerciseId: exerciseId, view: view);
   }
 
   ExerciseDefinition? get definition => _session?.definition;
 
+  /// Finish the set by itself after [reps] reps (`?reps=N` on the route).
+  /// Only rep-counted exercises have a target; a hold runs until the user
+  /// stops it.
+  void setTargetReps(int reps) {
+    if (reps < 1) return;
+    state = state.copyWith(targetReps: reps);
+  }
+
   Future<void> start() async {
     if (state.status != HudStatus.idle) return;
     state = state.copyWith(status: HudStatus.starting);
     final content = await ref.read(contentRepositoryProvider.future);
-    if (_disposed) return;
+    if (_disposed || _backgrounded) return;
     final def = content.exercise(exerciseId);
     if (def == null) {
       state = state.copyWith(
@@ -161,9 +229,8 @@ class WorkoutController extends _$WorkoutController {
       config: const SessionConfig(detectGestures: true),
     );
     _catalog = content.cues;
-    _scheduler = FeedbackScheduler(
-      catalog: content.cues,
-      locale: ref.read(localeControllerProvider).languageCode,
+    _scheduler = _buildScheduler(
+      quietMode: ref.read(settingsProvider).orDefault.quietMode,
     );
 
     var engine = ref.read(poseEngineProvider);
@@ -193,8 +260,8 @@ class WorkoutController extends _$WorkoutController {
         return;
       }
     }
-    if (_disposed) {
-      // The screen went away while the camera was opening.
+    if (_disposed || _backgrounded) {
+      // The screen went away, or the app did, while the camera was opening.
       await engine.stop();
       if (_ownsEngine && engine is FakeFormaPose) await engine.dispose();
       return;
@@ -214,6 +281,24 @@ class WorkoutController extends _$WorkoutController {
       engine: info.engine,
       isFakeEngine: info.engine == 'fake',
     );
+  }
+
+  /// Settings "az konuş" (docs/06 §5): only the count and the critical
+  /// corrections. Read synchronously — the HUD cannot wait on a preferences
+  /// file — and rebuilt by [_onSettings] if the file lands after the start.
+  FeedbackScheduler _buildScheduler({required bool quietMode}) =>
+      FeedbackScheduler(
+        catalog: _catalog!,
+        locale: ref.read(localeControllerProvider).languageCode,
+        policy: FeedbackPolicy(quietMode: quietMode),
+      );
+
+  void _onSettings(AsyncValue<AppSettings>? _, AsyncValue<AppSettings> next) {
+    final scheduler = _scheduler;
+    if (scheduler == null || _catalog == null) return;
+    final quietMode = next.orDefault.quietMode;
+    if (scheduler.policy.quietMode == quietMode) return;
+    _scheduler = _buildScheduler(quietMode: quietMode);
   }
 
   /// Skip the framing step (the user pressed "start now").
@@ -377,16 +462,24 @@ class WorkoutController extends _$WorkoutController {
       }
       if (c.ruleId != null) {
         highlight = c.ruleId;
-        highlightUntil = frame.timestampMs + 1000;
+        highlightUntil = frame.timestampMs + highlightMs;
       }
     }
+    final snapshot = session.snapshot;
+    final target = state.targetReps;
+    final reached =
+        target != null &&
+        session.definition.countMode != CountMode.hold &&
+        snapshot.repCount >= target &&
+        state.exit == HudExit.none;
     state = state.copyWith(
       frame: frame,
-      snapshot: session.snapshot,
+      snapshot: snapshot,
       lastCue: cue,
       lastCueAtMs: cueAt,
       highlightRule: highlight,
       highlightUntilMs: highlightUntil,
+      exit: reached ? HudExit.targetReached : null,
     );
   }
 
@@ -409,14 +502,57 @@ class WorkoutController extends _$WorkoutController {
     }
   }
 
-  /// Stop the engine and return the set result.
+  /// Stop the engine and return the set result. Null when there is nothing
+  /// to finish, including a set the background handler already closed.
   Future<SetResult?> finish() async {
     final session = _session;
-    if (session == null) return null;
+    if (session == null || state.status == HudStatus.finished) return null;
     await _stopEngine();
     final result = session.finish();
     state = state.copyWith(status: HudStatus.finished);
     return result;
+  }
+
+  @override
+  // The framework calls it `state`, which is the notifier's own state here.
+  // ignore: avoid_renaming_method_parameters
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    switch (lifecycle) {
+      case AppLifecycleState.paused:
+        unawaited(_onPaused());
+      case AppLifecycleState.resumed:
+        if (_backgrounded && state.inBackground) {
+          state = state.copyWith(inBackground: false);
+        }
+      case AppLifecycleState.detached:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
+
+  /// docs/06 §7 "Arka plana geçiş: kamera kapanır, set kaydedilir". The
+  /// engine stops now; the set, if one was running, is finished with what it
+  /// has and parked in [HudState.pendingResult] until the app is back.
+  Future<void> _onPaused() async {
+    if (_disposed || _backgrounded) return;
+    if (state.status == HudStatus.idle ||
+        state.status == HudStatus.finished ||
+        state.status == HudStatus.error) {
+      return;
+    }
+    _backgrounded = true;
+    _countdownTimer?.cancel();
+    final session = state.status == HudStatus.running ? _session : null;
+    await _stopEngine();
+    if (_disposed) return;
+    state = state.copyWith(
+      status: HudStatus.finished,
+      countdownSeconds: 0,
+      exit: HudExit.backgrounded,
+      pendingResult: session?.finish(),
+      inBackground: true,
+    );
   }
 
   Future<void> _stopEngine() async {
@@ -436,6 +572,7 @@ class WorkoutController extends _$WorkoutController {
 
   void _teardown() {
     _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
     unawaited(_stopEngine());
   }

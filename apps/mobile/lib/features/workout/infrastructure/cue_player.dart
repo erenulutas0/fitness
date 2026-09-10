@@ -9,6 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/locale/locale_controller.dart';
+import '../../../core/settings/settings_controller.dart';
 
 part 'cue_player.g.dart';
 
@@ -79,6 +80,10 @@ class VoiceCuePlayer extends CuePlayer {
   final AudioPlayer _player;
   final FlutterTts _tts;
 
+  /// Settings "ses": off means no clip and no speech, but the haptic still
+  /// fires — the phone across the room can still tap out the count.
+  bool soundOn = true;
+
   final List<CueCommand> history = [];
   bool _ready = false;
   int _playingPriority = 0;
@@ -128,6 +133,7 @@ class VoiceCuePlayer extends CuePlayer {
     history.add(cue);
     if (history.length > 200) history.removeAt(0);
     unawaited(HapticCuePlayer.playHaptic(cue.haptic));
+    if (!soundOn) return;
 
     if (!cue.interrupts && cue.priority < _playingPriority && _isBusy) {
       return; // something more important is already speaking
@@ -191,6 +197,11 @@ CuePlayer cuePlayer(Ref ref) {
   if (kIsWeb || _isTest) return HapticCuePlayer();
   final player = VoiceCuePlayer(
     locale: ref.watch(localeControllerProvider).languageCode,
+  )..soundOn = ref.read(settingsProvider).orDefault.soundOn;
+  // A toggle in Settings applies to the next cue, not the next launch.
+  ref.listen(
+    settingsProvider,
+    (_, next) => player.soundOn = next.orDefault.soundOn,
   );
   unawaited(player.prepare());
   ref.onDispose(() => unawaited(player.dispose()));
