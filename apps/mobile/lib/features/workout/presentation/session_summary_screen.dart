@@ -16,6 +16,7 @@ import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../history/domain/stored_session.dart';
 import '../../history/infrastructure/session_store.dart';
+import '../../training/application/rule_label.dart';
 import '../application/session_controller.dart';
 import 'share_card.dart';
 
@@ -61,6 +62,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
     final session = ref.watch(workoutSessionControllerProvider);
     final previous = ref.watch(previousSessionProvider(session.id)).value;
     final content = ref.watch(contentRepositoryProvider).value;
@@ -85,30 +87,30 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
           automaticallyImplyLeading: false,
         ),
         body: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(FormaSpacing.page),
           children: [
             Center(
               child: Column(
                 children: [
-                  Text(
-                    l10n.sessionMeanScore,
-                    style: const TextStyle(color: FormaColors.textMuted),
-                  ),
+                  Text(l10n.sessionMeanScore, style: text.labelMedium),
                   ScoreText(
                     key: const Key('session_mean_score'),
                     score: score,
+                    semanticsLabel: score == null
+                        ? l10n.formScoreNoneSemantics
+                        : l10n.formScoreSemantics(ScoreText.format(score)),
                   ),
                   if (def != null)
                     Text(
                       def.name.text(l10n.localeName),
-                      style: const TextStyle(color: FormaColors.textMuted),
+                      style: text.labelMedium,
                     ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: FormaSpacing.sm),
                   _Comparison(score: score, previous: previous),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: FormaSpacing.lg),
             Row(
               children: [
                 Expanded(
@@ -117,7 +119,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                     value: '${session.sets.length}',
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: FormaSpacing.md),
                 Expanded(
                   child: StatTile(
                     label: isHold ? l10n.holdTime : l10n.sessionTotalReps,
@@ -128,18 +130,21 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: FormaSpacing.xl),
             SectionTitle(l10n.sessionSets),
             for (var i = 0; i < session.sets.length; i++)
               _SetRow(
                 index: i + 1,
                 result: session.sets[i].result,
                 isHold: isHold,
+                bundle: content,
+                exerciseId: session.exerciseId,
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: FormaSpacing.xl),
             SectionTitle(l10n.topErrors),
             if (errors.isEmpty)
-              Card(
+              FormaCard(
+                padding: EdgeInsets.zero,
                 child: ListTile(
                   leading: const Icon(
                     LucideIcons.circleCheck,
@@ -149,17 +154,23 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                 ),
               ),
             for (final e in errors.take(3))
-              Card(
-                child: ListTile(
-                  leading: const Icon(
-                    LucideIcons.triangleAlert,
-                    color: FormaColors.warning,
+              Padding(
+                padding: const EdgeInsets.only(bottom: FormaSpacing.sm),
+                child: FormaCard(
+                  padding: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: const Icon(
+                      LucideIcons.triangleAlert,
+                      color: FormaColors.warning,
+                    ),
+                    title: Text(
+                      _errorLabel(l10n, content, session.exerciseId, e.key),
+                    ),
+                    trailing: Text(l10n.errorTimes(e.value)),
                   ),
-                  title: Text(e.key.replaceAll('_', ' ')),
-                  trailing: Text(l10n.errorTimes(e.value)),
                 ),
               ),
-            const SizedBox(height: 32),
+            const SizedBox(height: FormaSpacing.xl),
             OutlinedButton.icon(
               key: const Key('session_share'),
               onPressed: session.sets.isEmpty
@@ -170,19 +181,16 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               icon: const Icon(LucideIcons.share),
               label: Text(l10n.shareCard),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: FormaSpacing.sm),
             FilledButton(
               key: const Key('session_done'),
               onPressed: _leave,
               child: Text(l10n.doneForToday),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: FormaSpacing.md),
             Text(
               l10n.healthDisclaimer,
-              style: const TextStyle(
-                color: FormaColors.textMuted,
-                fontSize: 12,
-              ),
+              style: text.bodySmall,
               textAlign: TextAlign.center,
             ),
           ],
@@ -239,43 +247,76 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
   }
 }
 
+/// What the coach calls a rule where the user reads it — the cue itself, not
+/// the `knee_valgus` identifier the engine uses.
+String _errorLabel(
+  AppLocalizations l10n,
+  ContentBundle? bundle,
+  String? exerciseId,
+  String ruleId,
+) {
+  if (bundle == null || exerciseId == null) {
+    return ruleId.replaceAll('_', ' ');
+  }
+  return ruleLabel(
+    bundle,
+    exerciseId: exerciseId,
+    ruleId: ruleId,
+    locale: l10n.localeName,
+  );
+}
+
 class _SetRow extends StatelessWidget {
   const _SetRow({
     required this.index,
     required this.result,
     required this.isHold,
+    required this.bundle,
+    required this.exerciseId,
   });
 
   final int index;
   final SetResult result;
   final bool isHold;
+  final ContentBundle? bundle;
+  final String? exerciseId;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
     final score = result.formScore;
     final errors = result.errorCounts.keys.toList();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: FormaColors.surfaceRaised,
-          child: Text(
-            '$index',
-            style: const TextStyle(fontWeight: FontWeight.w700),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FormaSpacing.sm),
+      child: FormaCard(
+        padding: EdgeInsets.zero,
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: FormaColors.surfaceRaised,
+            child: Text('$index', style: text.titleSmall),
           ),
-        ),
-        title: Text(
-          isHold
-              ? '${(result.totalHoldMs / 1000).round()} ${l10n.seconds}'
-              : '${result.repCount} ${l10n.reps}',
-        ),
-        subtitle: errors.isEmpty
-            ? Text(l10n.noErrors)
-            : Text(errors.map((e) => e.replaceAll('_', ' ')).join(', ')),
-        trailing: ScoreText(
-          score: score,
-          style: Theme.of(context).textTheme.titleLarge,
+          title: Text(
+            isHold
+                ? '${(result.totalHoldMs / 1000).round()} ${l10n.seconds}'
+                : '${result.repCount} ${l10n.reps}',
+          ),
+          subtitle: errors.isEmpty
+              ? Text(l10n.noErrors)
+              : Text(
+                  errors
+                      .map(
+                        (e) => _errorLabel(l10n, bundle, exerciseId, e),
+                      )
+                      .join(' · '),
+                ),
+          trailing: ScoreText(
+            score: score,
+            style: text.titleLarge,
+            semanticsLabel: score == null
+                ? l10n.formScoreNoneSemantics
+                : l10n.formScoreSemantics(ScoreText.format(score)),
+          ),
         ),
       ),
     );
@@ -293,6 +334,7 @@ class _Comparison extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
     final before = previous?.meanScore;
     if (score == null) return const SizedBox.shrink();
     if (previous == null || before == null) {
@@ -300,16 +342,17 @@ class _Comparison extends StatelessWidget {
         l10n.firstSession,
         key: const Key('session_first'),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: FormaColors.textMuted, fontSize: 12),
+        style: text.bodySmall,
       );
     }
     final delta = score!.round() - before.round();
+    // The sign is in the text, so the colour only reinforces it; a reader who
+    // cannot tell green from grey still reads "+5".
     return Text(
       l10n.vsLastSession(delta >= 0 ? '+$delta' : '$delta'),
       key: const Key('session_vs_last'),
-      style: TextStyle(
+      style: text.labelLarge?.copyWith(
         color: delta >= 0 ? FormaColors.success : FormaColors.textMuted,
-        fontWeight: FontWeight.w600,
       ),
     );
   }

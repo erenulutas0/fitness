@@ -7,4 +7,5 @@ export 'privacy_badge.dart';
 export 'score_ring.dart';
 export 'score_text.dart';
 export 'section_title.dart';
+export 'sheet_header.dart';
 export 'stat_tile.dart';

@@ -51,8 +51,9 @@ class OnboardingScaffold extends StatelessWidget {
   }
 }
 
-/// Lucide back arrow for the onboarding app bars. The default [BackButton]
-/// draws a Material glyph, which the brief rules out.
+/// Back arrow for the onboarding app bars. The glyph is the same one the
+/// theme's `actionIconTheme` gives every other AppBar; this widget exists so
+/// the first step, which has nothing to pop, shows no arrow at all.
 class OnboardingBackButton extends StatelessWidget {
   const OnboardingBackButton({super.key});
 

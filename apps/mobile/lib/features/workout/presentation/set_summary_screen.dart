@@ -9,6 +9,7 @@ import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../training/application/rule_label.dart';
 import '../application/session_controller.dart';
 import 'rest_timer.dart';
 
@@ -24,6 +25,7 @@ class SetSummaryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
     final session = ref.watch(workoutSessionControllerProvider);
     final content = ref.watch(contentRepositoryProvider).value;
     final def = content?.exercise(result.exerciseId);
@@ -43,20 +45,22 @@ class SetSummaryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.setSummaryTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(FormaSpacing.page),
         children: [
           Center(
             child: Column(
               children: [
-                Text(
-                  l10n.formScore,
-                  style: const TextStyle(color: FormaColors.textMuted),
+                Text(l10n.formScore, style: text.labelMedium),
+                ScoreText(
+                  score: score,
+                  semanticsLabel: score == null
+                      ? l10n.formScoreNoneSemantics
+                      : l10n.formScoreSemantics(ScoreText.format(score)),
                 ),
-                ScoreText(score: score),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: FormaSpacing.lg),
           Row(
             children: [
               Expanded(
@@ -67,7 +71,7 @@ class SetSummaryScreen extends ConsumerWidget {
                       : '${result.repCount}',
                 ),
               ),
-              if (!isHold) const SizedBox(width: 12),
+              if (!isHold) const SizedBox(width: FormaSpacing.md),
               if (!isHold)
                 Expanded(
                   child: StatTile(
@@ -77,21 +81,32 @@ class SetSummaryScreen extends ConsumerWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: FormaSpacing.xl),
           SectionTitle(l10n.topErrors),
           if (top.isEmpty)
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  LucideIcons.circleCheck,
-                  color: FormaColors.success,
-                ),
-                title: Text(l10n.noErrors),
+            FormaCard(
+              child: Row(
+                children: [
+                  const Icon(
+                    LucideIcons.circleCheck,
+                    color: FormaColors.success,
+                  ),
+                  const SizedBox(width: FormaSpacing.md),
+                  Expanded(child: Text(l10n.noErrors, style: text.bodyLarge)),
+                ],
               ),
             ),
           for (final e in top)
-            _ErrorCard(ruleId: e.key, count: e.value, definition: def),
-          const SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(bottom: FormaSpacing.md),
+              child: _ErrorCard(
+                ruleId: e.key,
+                count: e.value,
+                definition: def,
+                bundle: content,
+              ),
+            ),
+          const SizedBox(height: FormaSpacing.md),
           if (session.isActive && !session.isComplete)
             RestTimer(
               seconds: restSeconds,
@@ -110,10 +125,10 @@ class SetSummaryScreen extends ConsumerWidget {
                 session.isActive ? l10n.sessionSummaryTitle : l10n.backToToday,
               ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: FormaSpacing.md),
           Text(
             l10n.healthDisclaimer,
-            style: const TextStyle(color: FormaColors.textMuted, fontSize: 12),
+            style: text.bodySmall,
             textAlign: TextAlign.center,
           ),
         ],
@@ -122,71 +137,73 @@ class SetSummaryScreen extends ConsumerWidget {
   }
 }
 
+/// One thing that went wrong in the set: what the coach said, how often, and
+/// why it says it.
+///
+/// The heading is the cue itself ("Dizlerini dışa aç"), not the rule id: the
+/// exercise detail and Today already read that way, and `knee_valgus` is a
+/// debug identifier, not Turkish.
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({
     required this.ruleId,
     required this.count,
     required this.definition,
+    required this.bundle,
   });
 
   final String ruleId;
   final int count;
   final ExerciseDefinition? definition;
+  final ContentBundle? bundle;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
     final rule = definition?.rules.where((r) => r.id == ruleId).firstOrNull;
     final explain = rule?.explain;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  LucideIcons.triangleAlert,
-                  color: FormaColors.warning,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    ruleId.replaceAll('_', ' '),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                Text(
-                  l10n.errorTimes(count),
-                  style: const TextStyle(color: FormaColors.textMuted),
-                ),
-              ],
+    // No source catalogue yet (content/sources/ holds only a README), so
+    // there is nothing to resolve an id against.
+    const String? sourceName = null;
+    final title = bundle == null
+        ? ruleId.replaceAll('_', ' ')
+        : ruleLabel(
+            bundle!,
+            exerciseId: definition?.id ?? '',
+            ruleId: ruleId,
+            locale: l10n.localeName,
+          );
+    return FormaCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(LucideIcons.triangleAlert, color: FormaColors.warning),
+              const SizedBox(width: FormaSpacing.sm),
+              Expanded(child: Text(title, style: text.titleSmall)),
+              const SizedBox(width: FormaSpacing.sm),
+              Text(l10n.errorTimes(count), style: text.labelMedium),
+            ],
+          ),
+          if (explain != null) ...[
+            const SizedBox(height: FormaSpacing.md),
+            Text(
+              l10n.whyTitle,
+              style: text.labelMedium?.copyWith(color: FormaColors.secondary),
             ),
-            if (explain != null) ...[
-              const SizedBox(height: 10),
-              Text(
-                l10n.whyTitle,
-                style: const TextStyle(
-                  color: FormaColors.secondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(explain.text.text(l10n.localeName)),
-              if (explain.sourceId != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  l10n.sourceLabel(explain.sourceId!),
-                  style: const TextStyle(
-                    color: FormaColors.textMuted,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            const SizedBox(height: FormaSpacing.xs),
+            Text(explain.text.text(l10n.localeName), style: text.bodyMedium),
+            // The source line stays hidden until content/sources/ exists:
+            // explain.sourceId is a placeholder like "src_valgus_01", and
+            // printing it would put a debug identifier in the one place the
+            // product is meant to be showing its evidence (docs/06 §4.6).
+            if (explain.sourceId != null && sourceName != null) ...[
+              const SizedBox(height: FormaSpacing.sm),
+              Text(l10n.sourceLabel(sourceName), style: text.labelSmall),
             ],
           ],
-        ),
+        ],
       ),
     );
   }

@@ -102,29 +102,24 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    return Material(
-      color: FormaColors.surfaceRaised,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(FormaRadius.sheet)),
-        side: BorderSide(color: FormaColors.outline),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(FormaSpacing.xl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.todayTitle, style: text.headlineMedium),
-            const SizedBox(height: FormaSpacing.xs),
-            Text(l10n.todaySubtitle, style: text.bodyMedium),
-            const SizedBox(height: FormaSpacing.xl),
-            FilledButton.icon(
-              key: const Key('today_quick_check'),
-              onPressed: onQuickCheck,
-              icon: const Icon(LucideIcons.video),
-              label: Text(l10n.quickFormCheck),
-            ),
-          ],
-        ),
+    return FormaCard(
+      raised: true,
+      cornerRadius: FormaRadius.sheet,
+      padding: const EdgeInsets.all(FormaSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.todayTitle, style: text.headlineMedium),
+          const SizedBox(height: FormaSpacing.xs),
+          Text(l10n.todaySubtitle, style: text.bodyMedium),
+          const SizedBox(height: FormaSpacing.xl),
+          FilledButton.icon(
+            key: const Key('today_quick_check'),
+            onPressed: onQuickCheck,
+            icon: const Icon(LucideIcons.video),
+            label: Text(l10n.quickFormCheck),
+          ),
+        ],
       ),
     );
   }

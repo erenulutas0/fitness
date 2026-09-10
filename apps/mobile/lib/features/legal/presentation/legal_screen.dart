@@ -114,7 +114,9 @@ class LegalScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: FormaSpacing.md),
-          FilledButton.icon(
+          // Outlined, not lime: the one thing worth the eye on this screen is
+          // the privacy promise above, not the dependency dump (brief §1).
+          OutlinedButton.icon(
             key: const Key('legal_all_licenses'),
             onPressed: () => showLicensePage(
               context: context,

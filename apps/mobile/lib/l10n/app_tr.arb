@@ -1,7 +1,7 @@
 {
   "@@locale": "tr",
   "appTitle": "FORMA",
-  "onboardingWelcome": "Telefonunu yasla, hareketini yap; formunu anında düzeltiriz.",
+  "onboardingWelcome": "Telefonunu yasla, hareketini yap; formunu anında düzelt.",
   "onboardingTryCamera": "Kamerayı dene",
   "onboardingSkip": "Zaten biliyorum, atla",
   "onboardingStepOf": "Adım {step} / {total}",
@@ -34,10 +34,9 @@
   "onboardingRetry": "Tekrar dene",
   "onboardingContinueWithoutCamera": "Kamerasız devam",
   "todayTitle": "Bugün",
-  "todaySubtitle": "Kamerayı aç, hareketi yap; koç seni izler.",
+  "todaySubtitle": "Tek egzersiz, birkaç tekrar; formunu hemen görürsün.",
   "quickFormCheck": "Hızlı form check",
-  "exercisesSection": "Egzersizler",
-  "draftBadge": "taslak",
+  "draftBadge": "Taslak",
   "chooseView": "Kamera açısı",
   "viewFront": "Ön",
   "viewSide": "Yan",
@@ -45,11 +44,9 @@
   "engineFakeBadge": "Kamera yok · sentetik demo",
   "finish": "Bitir",
   "skip": "Atla",
-  "nextSet": "Sonraki set",
   "backToToday": "Bugüne dön",
   "starting": "Başlıyor…",
   "cantSeeYou": "Seni net göremiyorum",
-  "handsUpToStart": "Başlamak için ellerini kaldır",
   "reps": "tekrar",
   "seconds": "sn",
   "form": "form",
@@ -99,8 +96,8 @@
   },
   "healthDisclaimer": "Ağrı hissedersen dur. Sağlık sorunun varsa önce doktoruna danış.",
   "setupTitle": "Kamerayı yerleştir",
-  "setupHintSide": "Yandan çekim: tüm vücudun görünsün, telefonu yere paralel tut.",
-  "setupHintFront": "Önden çekim: tüm vücudun görünsün, kameraya dön.",
+  "setupHintSide": "Yandan çekim: tüm vücudun görünsün, telefonu eğmeden dik tut.",
+  "setupHintFront": "Önden çekim: tüm vücudun görünsün, kameraya dönük dur.",
   "framingOk": "Kadraj tamam",
   "framingNoPose": "Kadraja gir",
   "framingLowConfidence": "Seni net göremiyorum",
@@ -114,7 +111,6 @@
   "setupCancel": "Vazgeç",
   "outOfFrame": "Biraz geri git",
   "restTitle": "Dinlen",
-  "restSubtitle": "Sonraki set birazdan",
   "startNextSet": "Sonraki set",
   "endSession": "Seansı bitir",
   "sessionSummaryTitle": "Seans özeti",
@@ -122,15 +118,6 @@
   "sessionSets": "Setler",
   "sessionTotalReps": "Toplam tekrar",
   "doneForToday": "Bugünlük bu kadar",
-  "setNumber": "Set {index}",
-  "@setNumber": {
-    "placeholders": {
-      "index": {
-        "type": "int"
-      }
-    }
-  },
-  "skipRest": "Dinlenmeyi atla",
   "shareCard": "Kartı paylaş",
   "shareCardBody": "{exercise} · form skoru {score}",
   "@shareCardBody": {
@@ -168,18 +155,22 @@
   },
   "firstSession": "İlk seansın — bundan sonrası buna göre ölçülecek",
   "progressTitle": "İlerleme",
-  "progressEmpty": "Henüz seans yok. Bir set yap, buraya düşsün.",
+  "progressEmpty": "Bir set yap, form skoru trendin buradan başlasın.",
   "scoreTrend": "Form skoru trendi",
-  "sessionHistory": "Seans geçmişi",
-  "sessionsThisWeek": "Bu hafta",
-  "sessionCount": "{count} seans",
-  "@sessionCount": {
+  "scoreTrendSemantics": "Form skoru trendi: ilk seans {first}, son seans {last}",
+  "@scoreTrendSemantics": {
+    "description": "TalkBack label for the progress trend line, which is otherwise shape and colour only",
     "placeholders": {
-      "count": {
-        "type": "int"
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
       }
     }
   },
+  "sessionHistory": "Seans geçmişi",
+  "sessionsThisWeek": "Bu hafta",
   "setsAndReps": "{sets} set · {reps} tekrar",
   "@setsAndReps": {
     "placeholders": {
@@ -242,7 +233,7 @@
   "trainingTitle": "Antrenman",
   "profileTitle": "Profil",
   "settingsTitle": "Ayarlar",
-  "legalTitle": "Gizlilik & Lisanslar",
+  "legalTitle": "Gizlilik ve lisanslar",
   "lastSession": "Son seans",
   "lastSessionTopError": "Geçen seansta en sık: {error}",
   "@lastSessionTopError": {
@@ -254,13 +245,14 @@
   },
   "lastSessionClean": "Geçen seans temizdi, hata yok",
   "todayEmpty": "İlk seansını yap, skorun burada görünecek",
-  "trainingEmpty": "Bu ekipmanla uygun egzersiz yok",
+  "trainingEmpty": "Bu ekipmanla yapılabilecek egzersiz yok",
+  "changeEquipment": "Ekipmanı değiştir",
   "detectedErrors": "Tespit ettiği hatalar",
   "noRulesForView": "Bu açıda henüz kural yok",
   "start": "Başla",
   "exerciseNotFound": "Egzersiz bulunamadı",
   "settingSound": "Ses",
-  "settingSoundHint": "Sesli komutlar; kapalıyken titreşim kalır",
+  "settingSoundHint": "Sesli geri bildirim; kapalıyken titreşim kalır",
   "settingQuiet": "Az konuş",
   "settingQuietHint": "Yalnızca sayım ve kritik düzeltmeler",
   "settingOverlay": "İskelet çizimi",

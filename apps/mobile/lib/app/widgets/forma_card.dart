@@ -12,6 +12,7 @@ class FormaCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(FormaSpacing.lg),
     this.raised = false,
+    this.cornerRadius = FormaRadius.card,
     this.onTap,
     super.key,
   });
@@ -21,17 +22,21 @@ class FormaCard extends StatelessWidget {
 
   /// Elevation is colour in the dark theme: a raised card is simply lighter.
   final bool raised;
+
+  /// [FormaRadius.card] for a list row, [FormaRadius.sheet] for a hero card —
+  /// the two radii the brief allows, and nothing in between.
+  final double cornerRadius;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    const radius = BorderRadius.all(Radius.circular(FormaRadius.card));
+    final radius = BorderRadius.all(Radius.circular(cornerRadius));
     final body = Padding(padding: padding, child: child);
     return Material(
       color: raised ? FormaColors.surfaceRaised : FormaColors.surface,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: BorderSide(color: FormaColors.outline),
+        side: const BorderSide(color: FormaColors.outline),
       ),
       clipBehavior: Clip.antiAlias,
       child: onTap == null

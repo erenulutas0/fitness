@@ -106,7 +106,7 @@ void main() {
       const Offset(0, -120),
     );
     await tester.pumpAndSettle();
-    expect(find.text('taslak'), findsOneWidget, reason: 'the draft badge');
+    expect(find.text('Taslak'), findsOneWidget, reason: 'the draft badge');
     await tester.dragUntilVisible(
       find.byKey(const Key('exercise_bw_squat')),
       find.byType(ListView),

@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "appTitle": "FORMA",
-  "onboardingWelcome": "Prop up your phone, do the move; we correct your form right away.",
+  "onboardingWelcome": "Prop up your phone, do the move, fix your form on the spot.",
   "onboardingTryCamera": "Try the camera",
   "onboardingSkip": "I know this, skip",
   "onboardingStepOf": "Step {step} of {total}",
@@ -34,10 +34,9 @@
   "onboardingRetry": "Try again",
   "onboardingContinueWithoutCamera": "Continue without camera",
   "todayTitle": "Today",
-  "todaySubtitle": "Open the camera, do the move; the coach watches you.",
+  "todaySubtitle": "One exercise, a few reps; you see your form right away.",
   "quickFormCheck": "Quick form check",
-  "exercisesSection": "Exercises",
-  "draftBadge": "draft",
+  "draftBadge": "Draft",
   "chooseView": "Camera angle",
   "viewFront": "Front",
   "viewSide": "Side",
@@ -45,11 +44,9 @@
   "engineFakeBadge": "No camera · synthetic demo",
   "finish": "Finish",
   "skip": "Skip",
-  "nextSet": "Next set",
   "backToToday": "Back to Today",
   "starting": "Starting…",
   "cantSeeYou": "I can't see you clearly",
-  "handsUpToStart": "Raise your hands to start",
   "reps": "reps",
   "seconds": "s",
   "form": "form",
@@ -99,8 +96,8 @@
   },
   "healthDisclaimer": "Stop if you feel pain. If you have a health condition, check with your doctor first.",
   "setupTitle": "Place your phone",
-  "setupHintSide": "Side view: your whole body in frame, phone level.",
-  "setupHintFront": "Front view: your whole body in frame, face the camera.",
+  "setupHintSide": "Side view: your whole body in frame, phone upright and untilted.",
+  "setupHintFront": "Front view: your whole body in frame, facing the camera.",
   "framingOk": "Framing looks good",
   "framingNoPose": "Step into the frame",
   "framingLowConfidence": "I can't see you clearly",
@@ -114,7 +111,6 @@
   "setupCancel": "Cancel",
   "outOfFrame": "Step back a bit",
   "restTitle": "Rest",
-  "restSubtitle": "Next set coming up",
   "startNextSet": "Next set",
   "endSession": "End session",
   "sessionSummaryTitle": "Session summary",
@@ -122,15 +118,6 @@
   "sessionSets": "Sets",
   "sessionTotalReps": "Total reps",
   "doneForToday": "Done for today",
-  "setNumber": "Set {index}",
-  "@setNumber": {
-    "placeholders": {
-      "index": {
-        "type": "int"
-      }
-    }
-  },
-  "skipRest": "Skip rest",
   "shareCard": "Share card",
   "shareCardBody": "{exercise} · form score {score}",
   "@shareCardBody": {
@@ -168,18 +155,22 @@
   },
   "firstSession": "Your first session — later ones compare to this",
   "progressTitle": "Progress",
-  "progressEmpty": "No sessions yet. Do a set and it lands here.",
+  "progressEmpty": "Do one set and your form score trend starts here.",
   "scoreTrend": "Form score trend",
-  "sessionHistory": "Session history",
-  "sessionsThisWeek": "This week",
-  "sessionCount": "{count} sessions",
-  "@sessionCount": {
+  "scoreTrendSemantics": "Form score trend: first session {first}, latest session {last}",
+  "@scoreTrendSemantics": {
+    "description": "TalkBack label for the progress trend line, which is otherwise shape and colour only",
     "placeholders": {
-      "count": {
-        "type": "int"
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
       }
     }
   },
+  "sessionHistory": "Session history",
+  "sessionsThisWeek": "This week",
   "setsAndReps": "{sets} sets · {reps} reps",
   "@setsAndReps": {
     "placeholders": {
@@ -242,7 +233,7 @@
   "trainingTitle": "Training",
   "profileTitle": "Profile",
   "settingsTitle": "Settings",
-  "legalTitle": "Privacy & Licences",
+  "legalTitle": "Privacy and licences",
   "lastSession": "Last session",
   "lastSessionTopError": "Most frequent last session: {error}",
   "@lastSessionTopError": {
@@ -254,13 +245,14 @@
   },
   "lastSessionClean": "Last session was clean, no errors",
   "todayEmpty": "Do your first session and your score will show here",
-  "trainingEmpty": "No exercise fits this equipment",
+  "trainingEmpty": "No exercise matches this equipment",
+  "changeEquipment": "Change equipment",
   "detectedErrors": "Errors it detects",
   "noRulesForView": "No rules for this angle yet",
   "start": "Start",
   "exerciseNotFound": "Exercise not found",
   "settingSound": "Sound",
-  "settingSoundHint": "Voice cues; haptics stay on when off",
+  "settingSoundHint": "Voice feedback; haptics stay on when it is off",
   "settingQuiet": "Speak less",
   "settingQuietHint": "Only the count and critical corrections",
   "settingOverlay": "Skeleton overlay",

@@ -252,7 +252,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                 SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: FormaSpacing.lg,
+                      horizontal: FormaSpacing.page,
                       vertical: FormaSpacing.sm,
                     ),
                     child: Column(
@@ -285,7 +285,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                       right: false,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: FormaSpacing.lg,
+                          horizontal: FormaSpacing.page,
                           vertical: FormaSpacing.sm,
                         ),
                         child: Align(
@@ -305,7 +305,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                     left: false,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: FormaSpacing.lg,
+                        horizontal: FormaSpacing.page,
                         vertical: FormaSpacing.sm,
                       ),
                       child: Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 
 /// One choice in an [showOptionSheet].
 class SheetOption<T> {
@@ -29,15 +30,7 @@ Future<T?> showOptionSheet<T>(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              FormaSpacing.page,
-              FormaSpacing.sm,
-              FormaSpacing.page,
-              FormaSpacing.md,
-            ),
-            child: Text(title, style: Theme.of(ctx).textTheme.titleLarge),
-          ),
+          SheetHeader(title),
           for (final o in options)
             ListTile(
               key: o.key,

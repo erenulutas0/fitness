@@ -45,6 +45,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    # The OFL requires the licence text to travel with the font, so the two
+    # .txt files ship too and are registered in LicenseRegistry at startup.
+    - assets/fonts/OFL-Manrope.txt
+    - assets/fonts/OFL-Inter.txt
   # Manrope (headings, tabular figures) and Inter (body) — both SIL OFL 1.1,
   # licence texts next to the files in assets/fonts/.
   fonts:

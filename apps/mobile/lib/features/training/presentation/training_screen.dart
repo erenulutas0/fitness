@@ -48,10 +48,14 @@ class TrainingScreen extends ConsumerWidget {
                 e,
           ];
           if (exercises.isEmpty) {
+            // The only thing that fills this list is a different answer to
+            // the equipment question, so the empty state offers that.
             return EmptyState(
               key: const Key('training_empty'),
               icon: LucideIcons.dumbbell,
               message: l10n.trainingEmpty,
+              actionLabel: l10n.changeEquipment,
+              onAction: () => context.go(Routes.profile),
             );
           }
           return ListView(

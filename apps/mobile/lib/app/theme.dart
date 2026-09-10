@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Design tokens from docs/06 §6 and the 10 Sept UI brief §1. Dark-first:
 /// the HUD must be readable from 2–3 m away in a living room.
@@ -127,6 +128,10 @@ abstract final class FormaType {
   );
 }
 
+Widget _backIcon(BuildContext context) => const Icon(LucideIcons.arrowLeft);
+Widget _closeIcon(BuildContext context) => const Icon(LucideIcons.x);
+Widget _menuIcon(BuildContext context) => const Icon(LucideIcons.menu);
+
 abstract final class FormaTheme {
   /// Kept for existing call sites; new code uses [FormaRadius].
   static const double radius = FormaRadius.card;
@@ -174,6 +179,16 @@ abstract final class FormaTheme {
     return base.copyWith(
       splashFactory: InkSparkle.splashFactory,
       dividerColor: FormaColors.outline,
+      // Every AppBar the framework gives a leading button — exercise detail,
+      // settings, licences, the set summary — drew a Material glyph while
+      // onboarding drew a Lucide one. One builder settles it app-wide
+      // (brief §1: no `Icons.*` anywhere).
+      actionIconTheme: const ActionIconThemeData(
+        backButtonIconBuilder: _backIcon,
+        closeButtonIconBuilder: _closeIcon,
+        drawerButtonIconBuilder: _menuIcon,
+        endDrawerButtonIconBuilder: _menuIcon,
+      ),
       iconTheme: const IconThemeData(color: FormaColors.text, size: 24),
       // Elevation is colour in the dark theme: no shadows anywhere.
       cardTheme: const CardThemeData(

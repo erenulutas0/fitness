@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// The label for a camera angle ("Ön" / "Yan").
@@ -33,18 +34,7 @@ Future<CameraView?> chooseCameraView(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              FormaSpacing.page,
-              FormaSpacing.sm,
-              FormaSpacing.page,
-              FormaSpacing.md,
-            ),
-            child: Text(
-              l10n.chooseView,
-              style: Theme.of(ctx).textTheme.titleLarge,
-            ),
-          ),
+          SheetHeader(l10n.chooseView),
           for (final v in def.cameraViews)
             ListTile(
               key: Key('view_${v.name}'),

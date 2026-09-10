@@ -1,65 +1,684 @@
 {
   "version": 1,
   "cues": {
-    "knees_out": { "category": "correction", "haptic": "pulse", "priority": 3, "tr": ["Dizlerini dışa aç", "Dizler dışarı", "Kalçayı dışa it"], "en": ["Knees out", "Push your knees out", "Drive the knees outward"] },
-    "knee_out_front": { "category": "correction", "haptic": "pulse", "priority": 3, "tr": ["Ön dizini dışa it", "Ön diz dışarı"], "en": ["Front knee out", "Front knee outward"] },
-    "go_deeper": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Daha derin in", "Biraz daha in", "Kalçayı daha aşağı"], "en": ["Go deeper", "A bit lower", "Sit lower"] },
-    "chest_up": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Göğsünü dik tut", "Göğüs yukarı", "Öne eğilme"], "en": ["Chest up", "Keep your chest up", "Stay tall"] },
-    "torso_upright": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Gövdeni dik tut", "Dik dur"], "en": ["Stay upright", "Torso tall"] },
-    "heels_down": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Topukları bas", "Topuklar yerde", "Ağırlık topuklara"], "en": ["Heels down", "Keep your heels down", "Weight in the heels"] },
-    "hips_up": { "category": "correction", "haptic": "pulse", "priority": 3, "tr": ["Kalçayı yukarı al", "Belini çökertme", "Karnı sık"], "en": ["Hips up", "Keep your hips up", "Brace your core"] },
-    "hips_down": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Kalçayı indir", "Düz bir çizgi ol"], "en": ["Hips down", "Make a straight line"] },
-    "lower_more": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Daha aşağı in", "Göğüs yere yaklaşsın"], "en": ["Lower more", "Chest to the floor"] },
-    "elbows_in": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Dirsekleri topla", "Dirsekler içeri"], "en": ["Elbows in", "Tuck your elbows"] },
-    "head_neutral": { "category": "correction", "haptic": "pulse", "priority": 1, "tr": ["Başını düz tut", "Yere bak"], "en": ["Head neutral", "Look at the floor"] },
-    "squeeze_glutes": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Kalçayı sık", "Üstte kalçayı sık", "Biraz daha yukarı"], "en": ["Squeeze your glutes", "Squeeze at the top", "A bit higher"] },
-    "dont_arch": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Belini bükme", "Kaburgaları indir"], "en": ["Don't arch", "Ribs down"] },
-    "step_longer": { "category": "correction", "haptic": "pulse", "priority": 2, "tr": ["Adımı uzat", "Daha uzun adım"], "en": ["Longer step", "Step further back"] },
-
-    "nice": { "category": "positive", "haptic": "success", "priority": 1, "tr": ["İşte bu", "Temiz", "Böyle devam", "Güzel", "Harika"], "en": ["That's it", "Clean", "Keep it up", "Nice", "Great"] },
-    "set_done": { "category": "positive", "haptic": "success", "priority": 4, "tr": ["Set bitti", "Harika set", "Bu kadar, dinlen"], "en": ["Set done", "Great set", "That's it, rest"] },
-
-    "count_1": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["bir"], "en": ["one"] },
-    "count_2": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["iki"], "en": ["two"] },
-    "count_3": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["üç"], "en": ["three"] },
-    "count_4": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["dört"], "en": ["four"] },
-    "count_5": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["beş"], "en": ["five"] },
-    "count_6": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["altı"], "en": ["six"] },
-    "count_7": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["yedi"], "en": ["seven"] },
-    "count_8": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["sekiz"], "en": ["eight"] },
-    "count_9": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["dokuz"], "en": ["nine"] },
-    "count_10": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on"], "en": ["ten"] },
-    "count_11": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on bir"], "en": ["eleven"] },
-    "count_12": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on iki"], "en": ["twelve"] },
-    "count_13": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on üç"], "en": ["thirteen"] },
-    "count_14": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on dört"], "en": ["fourteen"] },
-    "count_15": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on beş"], "en": ["fifteen"] },
-    "count_16": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on altı"], "en": ["sixteen"] },
-    "count_17": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on yedi"], "en": ["seventeen"] },
-    "count_18": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on sekiz"], "en": ["eighteen"] },
-    "count_19": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["on dokuz"], "en": ["nineteen"] },
-    "count_20": { "category": "count", "haptic": "tick", "priority": 3, "tr": ["yirmi"], "en": ["twenty"] },
-    "two_left": { "category": "count", "haptic": "none", "priority": 3, "tr": ["İki kaldı"], "en": ["Two left"] },
-    "last_one": { "category": "count", "haptic": "none", "priority": 3, "tr": ["Son tekrar"], "en": ["Last one"] },
-    "halfway": { "category": "count", "haptic": "none", "priority": 3, "tr": ["Yarısı bitti"], "en": ["Halfway there"] },
-    "ten_seconds": { "category": "count", "haptic": "none", "priority": 3, "tr": ["On saniye"], "en": ["Ten seconds"] },
-    "hold_steady": { "category": "count", "haptic": "none", "priority": 2, "tr": ["Sabit kal", "Nefes al, sabit"], "en": ["Hold steady", "Breathe, hold"] },
-
-    "cant_see_you": { "category": "system", "haptic": "none", "priority": 4, "tr": ["Seni net göremiyorum"], "en": ["I can't see you clearly"] },
-    "step_back": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Biraz geri git"], "en": ["Step back a bit"] },
-    "step_closer": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Biraz yaklaş"], "en": ["Come a bit closer"] },
-    "move_left": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Biraz sola"], "en": ["A bit to the left"] },
-    "move_right": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Biraz sağa"], "en": ["A bit to the right"] },
-    "raise_phone": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Telefonu biraz yükselt"], "en": ["Raise the phone a bit"] },
-    "more_light": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Biraz daha ışık lazım"], "en": ["I need a bit more light"] },
-    "in_frame": { "category": "setup", "haptic": "success", "priority": 4, "tr": ["Harika, seni görüyorum"], "en": ["Great, I can see you"] },
-    "hands_up_to_start": { "category": "setup", "haptic": "none", "priority": 4, "tr": ["Başlamak için ellerini kaldır"], "en": ["Raise your hands to start"] },
-    "ready_3": { "category": "setup", "haptic": "tick", "priority": 5, "tr": ["üç"], "en": ["three"] },
-    "ready_2": { "category": "setup", "haptic": "tick", "priority": 5, "tr": ["iki"], "en": ["two"] },
-    "ready_1": { "category": "setup", "haptic": "tick", "priority": 5, "tr": ["bir"], "en": ["one"] },
-    "go": { "category": "setup", "haptic": "success", "priority": 5, "tr": ["Başla"], "en": ["Go"] },
-    "rest": { "category": "system", "haptic": "none", "priority": 4, "tr": ["Dinlen"], "en": ["Rest"] },
-    "paused": { "category": "system", "haptic": "none", "priority": 5, "tr": ["Durduruldu"], "en": ["Paused"] },
-    "resume": { "category": "system", "haptic": "none", "priority": 5, "tr": ["Devam"], "en": ["Resume"] }
+    "knees_out": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 3,
+      "tr": [
+        "Dizlerini dışa aç",
+        "Dizler dışarı",
+        "Kalçayı dışa it"
+      ],
+      "en": [
+        "Knees out",
+        "Push your knees out",
+        "Drive the knees outward"
+      ]
+    },
+    "knee_out_front": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 3,
+      "tr": [
+        "Ön dizini dışa it",
+        "Ön diz dışarı"
+      ],
+      "en": [
+        "Front knee out",
+        "Front knee outward"
+      ]
+    },
+    "go_deeper": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Daha derin in",
+        "Biraz daha in",
+        "Kalçayı daha aşağı"
+      ],
+      "en": [
+        "Go deeper",
+        "A bit lower",
+        "Sit lower"
+      ]
+    },
+    "chest_up": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Göğsünü dik tut",
+        "Göğüs yukarı",
+        "Öne eğilme"
+      ],
+      "en": [
+        "Chest up",
+        "Keep your chest up",
+        "Stay tall"
+      ]
+    },
+    "torso_upright": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Gövdeni dik tut",
+        "Dik dur"
+      ],
+      "en": [
+        "Stay upright",
+        "Torso tall"
+      ]
+    },
+    "heels_down": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Topukları bas",
+        "Topuklar yerde",
+        "Ağırlık topuklara"
+      ],
+      "en": [
+        "Heels down",
+        "Keep your heels down",
+        "Weight in the heels"
+      ]
+    },
+    "hips_up": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 3,
+      "tr": [
+        "Kalçayı yukarı al",
+        "Belini çökertme",
+        "Karnı sık"
+      ],
+      "en": [
+        "Hips up",
+        "Keep your hips up",
+        "Brace your core"
+      ]
+    },
+    "hips_down": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Kalçayı indir",
+        "Düz bir çizgi ol"
+      ],
+      "en": [
+        "Hips down",
+        "Make a straight line"
+      ]
+    },
+    "lower_more": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Daha aşağı in",
+        "Göğüs yere yaklaşsın"
+      ],
+      "en": [
+        "Lower more",
+        "Chest to the floor"
+      ]
+    },
+    "elbows_in": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Dirsekleri topla",
+        "Dirsekler içeri"
+      ],
+      "en": [
+        "Elbows in",
+        "Tuck your elbows"
+      ]
+    },
+    "head_neutral": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 1,
+      "tr": [
+        "Başını düz tut",
+        "Yere bak"
+      ],
+      "en": [
+        "Head neutral",
+        "Look at the floor"
+      ]
+    },
+    "squeeze_glutes": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Kalçayı sık",
+        "Üstte kalçayı sık",
+        "Biraz daha yukarı"
+      ],
+      "en": [
+        "Squeeze your glutes",
+        "Squeeze at the top",
+        "A bit higher"
+      ]
+    },
+    "dont_arch": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Belini bükme",
+        "Kaburgaları indir"
+      ],
+      "en": [
+        "Don't arch",
+        "Ribs down"
+      ]
+    },
+    "step_longer": {
+      "category": "correction",
+      "haptic": "pulse",
+      "priority": 2,
+      "tr": [
+        "Adımı uzat",
+        "Daha uzun adım"
+      ],
+      "en": [
+        "Longer step",
+        "Step further back"
+      ]
+    },
+    "nice": {
+      "category": "positive",
+      "haptic": "success",
+      "priority": 1,
+      "tr": [
+        "İşte bu",
+        "Temiz",
+        "Böyle devam",
+        "Güzel"
+      ],
+      "en": [
+        "That's it",
+        "Clean",
+        "Keep it up",
+        "Nice"
+      ]
+    },
+    "set_done": {
+      "category": "positive",
+      "haptic": "success",
+      "priority": 4,
+      "tr": [
+        "Set bitti",
+        "Temiz set",
+        "Bu kadar, dinlen"
+      ],
+      "en": [
+        "Set done",
+        "Clean set",
+        "That's it, rest"
+      ]
+    },
+    "count_1": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "bir"
+      ],
+      "en": [
+        "one"
+      ]
+    },
+    "count_2": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "iki"
+      ],
+      "en": [
+        "two"
+      ]
+    },
+    "count_3": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "üç"
+      ],
+      "en": [
+        "three"
+      ]
+    },
+    "count_4": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "dört"
+      ],
+      "en": [
+        "four"
+      ]
+    },
+    "count_5": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "beş"
+      ],
+      "en": [
+        "five"
+      ]
+    },
+    "count_6": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "altı"
+      ],
+      "en": [
+        "six"
+      ]
+    },
+    "count_7": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "yedi"
+      ],
+      "en": [
+        "seven"
+      ]
+    },
+    "count_8": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "sekiz"
+      ],
+      "en": [
+        "eight"
+      ]
+    },
+    "count_9": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "dokuz"
+      ],
+      "en": [
+        "nine"
+      ]
+    },
+    "count_10": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on"
+      ],
+      "en": [
+        "ten"
+      ]
+    },
+    "count_11": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on bir"
+      ],
+      "en": [
+        "eleven"
+      ]
+    },
+    "count_12": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on iki"
+      ],
+      "en": [
+        "twelve"
+      ]
+    },
+    "count_13": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on üç"
+      ],
+      "en": [
+        "thirteen"
+      ]
+    },
+    "count_14": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on dört"
+      ],
+      "en": [
+        "fourteen"
+      ]
+    },
+    "count_15": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on beş"
+      ],
+      "en": [
+        "fifteen"
+      ]
+    },
+    "count_16": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on altı"
+      ],
+      "en": [
+        "sixteen"
+      ]
+    },
+    "count_17": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on yedi"
+      ],
+      "en": [
+        "seventeen"
+      ]
+    },
+    "count_18": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on sekiz"
+      ],
+      "en": [
+        "eighteen"
+      ]
+    },
+    "count_19": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "on dokuz"
+      ],
+      "en": [
+        "nineteen"
+      ]
+    },
+    "count_20": {
+      "category": "count",
+      "haptic": "tick",
+      "priority": 3,
+      "tr": [
+        "yirmi"
+      ],
+      "en": [
+        "twenty"
+      ]
+    },
+    "two_left": {
+      "category": "count",
+      "haptic": "none",
+      "priority": 3,
+      "tr": [
+        "İki kaldı"
+      ],
+      "en": [
+        "Two left"
+      ]
+    },
+    "last_one": {
+      "category": "count",
+      "haptic": "none",
+      "priority": 3,
+      "tr": [
+        "Son tekrar"
+      ],
+      "en": [
+        "Last one"
+      ]
+    },
+    "halfway": {
+      "category": "count",
+      "haptic": "none",
+      "priority": 3,
+      "tr": [
+        "Yarısı bitti"
+      ],
+      "en": [
+        "Halfway there"
+      ]
+    },
+    "ten_seconds": {
+      "category": "count",
+      "haptic": "none",
+      "priority": 3,
+      "tr": [
+        "On saniye"
+      ],
+      "en": [
+        "Ten seconds"
+      ]
+    },
+    "hold_steady": {
+      "category": "count",
+      "haptic": "none",
+      "priority": 2,
+      "tr": [
+        "Sabit kal",
+        "Nefes al, sabit"
+      ],
+      "en": [
+        "Hold steady",
+        "Breathe, hold"
+      ]
+    },
+    "cant_see_you": {
+      "category": "system",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Seni net göremiyorum"
+      ],
+      "en": [
+        "I can't see you clearly"
+      ]
+    },
+    "step_back": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Biraz geri git"
+      ],
+      "en": [
+        "Step back a bit"
+      ]
+    },
+    "step_closer": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Biraz yaklaş"
+      ],
+      "en": [
+        "Come a bit closer"
+      ]
+    },
+    "move_left": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Biraz sola"
+      ],
+      "en": [
+        "A bit to the left"
+      ]
+    },
+    "move_right": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Biraz sağa"
+      ],
+      "en": [
+        "A bit to the right"
+      ]
+    },
+    "raise_phone": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Telefonu biraz yükselt"
+      ],
+      "en": [
+        "Raise the phone a bit"
+      ]
+    },
+    "more_light": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Biraz daha ışık lazım"
+      ],
+      "en": [
+        "I need a bit more light"
+      ]
+    },
+    "in_frame": {
+      "category": "setup",
+      "haptic": "success",
+      "priority": 4,
+      "tr": [
+        "Seni görüyorum"
+      ],
+      "en": [
+        "I can see you"
+      ]
+    },
+    "hands_up_to_start": {
+      "category": "setup",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Başlamak için ellerini kaldır"
+      ],
+      "en": [
+        "Raise your hands to start"
+      ]
+    },
+    "ready_3": {
+      "category": "setup",
+      "haptic": "tick",
+      "priority": 5,
+      "tr": [
+        "üç"
+      ],
+      "en": [
+        "three"
+      ]
+    },
+    "ready_2": {
+      "category": "setup",
+      "haptic": "tick",
+      "priority": 5,
+      "tr": [
+        "iki"
+      ],
+      "en": [
+        "two"
+      ]
+    },
+    "ready_1": {
+      "category": "setup",
+      "haptic": "tick",
+      "priority": 5,
+      "tr": [
+        "bir"
+      ],
+      "en": [
+        "one"
+      ]
+    },
+    "go": {
+      "category": "setup",
+      "haptic": "success",
+      "priority": 5,
+      "tr": [
+        "Başla"
+      ],
+      "en": [
+        "Go"
+      ]
+    },
+    "rest": {
+      "category": "system",
+      "haptic": "none",
+      "priority": 4,
+      "tr": [
+        "Dinlen"
+      ],
+      "en": [
+        "Rest"
+      ]
+    },
+    "paused": {
+      "category": "system",
+      "haptic": "none",
+      "priority": 5,
+      "tr": [
+        "Durduruldu"
+      ],
+      "en": [
+        "Paused"
+      ]
+    },
+    "resume": {
+      "category": "system",
+      "haptic": "none",
+      "priority": 5,
+      "tr": [
+        "Devam"
+      ],
+      "en": [
+        "Resume"
+      ]
+    }
   }
 }

@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../today/presentation/today_screen.dart';
+import '../../training/presentation/camera_view_sheet.dart';
 import '../domain/stored_session.dart';
 import '../infrastructure/session_store.dart';
 
@@ -21,23 +26,44 @@ class ProgressScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final sessions = ref.watch(sessionHistoryProvider);
+    // The empty screen offers the thing that fills it (docs/06 §7: "İlk
+    // seansını yap" + the quick form check button), so a first-time user is
+    // not told to go and look for it.
+    final quickCheck = ref
+        .watch(contentRepositoryProvider)
+        .value
+        ?.exercise(quickCheckExerciseId);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.progressTitle)),
       body: sessions.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
-          child: Text('$e', style: const TextStyle(color: FormaColors.warning)),
+          child: Text(
+            '$e',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: FormaColors.warning),
+          ),
         ),
         data: (all) => all.isEmpty
             ? EmptyState(
                 key: const Key('progress_empty'),
+                icon: LucideIcons.trendingUp,
                 message: l10n.progressEmpty,
+                actionLabel: quickCheck == null ? null : l10n.quickFormCheck,
+                onAction: quickCheck == null
+                    ? null
+                    : () => unawaited(startExercise(context, quickCheck)),
               )
             : _Body(sessions: all),
       ),
     );
   }
 }
+
+/// Height of the trend plot: tall enough that a 10-point move is visible,
+/// short enough that the session list starts above the fold.
+const _trendHeight = 140.0;
 
 class _Body extends ConsumerWidget {
   const _Body({required this.sessions});
@@ -59,7 +85,7 @@ class _Body extends ConsumerWidget {
     ];
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(FormaSpacing.page),
       children: [
         Row(
           children: [
@@ -69,7 +95,7 @@ class _Body extends ConsumerWidget {
                 value: '$thisWeek',
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: FormaSpacing.md),
             Expanded(
               child: StatTile(
                 label: l10n.sessionHistory,
@@ -78,24 +104,27 @@ class _Body extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: FormaSpacing.xl),
         SectionTitle(l10n.scoreTrend),
         if (trend.length < 2)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                l10n.firstSession,
-                style: const TextStyle(color: FormaColors.textMuted),
-              ),
+          FormaCard(
+            child: Text(
+              l10n.firstSession,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           )
         else
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          FormaCard(
+            // A line is shape and colour only; TalkBack gets the two numbers
+            // that carry the meaning instead (docs/06 §8).
+            child: Semantics(
+              label: l10n.scoreTrendSemantics(
+                ScoreText.format(trend.first),
+                ScoreText.format(trend.last),
+              ),
+              excludeSemantics: true,
               child: SizedBox(
-                height: 140,
+                height: _trendHeight,
                 width: double.infinity,
                 child: CustomPaint(
                   key: const Key('progress_trend'),
@@ -104,7 +133,7 @@ class _Body extends ConsumerWidget {
               ),
             ),
           ),
-        const SizedBox(height: 24),
+        const SizedBox(height: FormaSpacing.xl),
         SectionTitle(l10n.sessionHistory),
         for (final s in sessions)
           _SessionRow(
@@ -132,17 +161,25 @@ class _SessionRow extends StatelessWidget {
     final date = DateFormat.MMMEd(
       l10n.localeName,
     ).add_Hm().format(session.startedAt.toLocal());
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(
-          '$date · ${l10n.setsAndReps(session.sets.length, session.totalReps)}',
-          style: const TextStyle(fontSize: 12),
-        ),
-        trailing: ScoreText(
-          score: score,
-          style: Theme.of(context).textTheme.titleLarge,
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FormaSpacing.sm),
+      child: FormaCard(
+        padding: EdgeInsets.zero,
+        child: ListTile(
+          title: Text(title),
+          subtitle: Text(
+            '$date · '
+            '${l10n.setsAndReps(session.sets.length, session.totalReps)}',
+            style: text.bodySmall,
+          ),
+          trailing: ScoreText(
+            score: score,
+            style: text.titleLarge,
+            semanticsLabel: score == null
+                ? l10n.formScoreNoneSemantics
+                : l10n.formScoreSemantics(ScoreText.format(score)),
+          ),
         ),
       ),
     );

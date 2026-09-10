@@ -101,7 +101,9 @@ void main() {
     await tester.tap(find.byKey(const Key('hud_finish')));
     await tester.pumpAndSettle();
     expect(find.text('Set özeti'), findsOneWidget);
-    expect(find.textContaining('knee valgus'), findsOneWidget);
+    // The summary names the error the way the coach said it, not by the
+    // engine's `knee_valgus` identifier.
+    expect(find.textContaining('Dizlerini dışa aç'), findsOneWidget);
 
     // Set 1 of 3 is done, so the summary leads into the rest timer rather
     // than dumping the user back on Today (docs/06 §4.4).
