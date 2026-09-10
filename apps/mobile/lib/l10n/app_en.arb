@@ -1,6 +1,38 @@
 {
   "@@locale": "en",
   "appTitle": "FORMA",
+  "onboardingWelcome": "Prop up your phone, do the move; we correct your form right away.",
+  "onboardingTryCamera": "Try the camera",
+  "onboardingSkip": "I know this, skip",
+  "onboardingStepOf": "Step {step} of {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingGoalQuestion": "Why are you here?",
+  "onboardingGoalMuscle": "Build muscle",
+  "onboardingGoalForm": "Fix my form",
+  "onboardingGoalHealth": "Stay healthy",
+  "onboardingLevelQuestion": "How often do you train?",
+  "onboardingLevelNew": "I am new",
+  "onboardingLevelOccasional": "Now and then",
+  "onboardingLevelRegular": "Regularly",
+  "onboardingEquipmentQuestion": "What do you have at home?",
+  "onboardingEquipmentNone": "Nothing",
+  "onboardingEquipmentDumbbell": "Dumbbells",
+  "onboardingCameraTitle": "Camera access",
+  "onboardingCameraWhy": "To see your movement; the image never leaves your phone.",
+  "onboardingDemoHint": "After that, five squats; your first feedback is there.",
+  "onboardingOpenCamera": "Open the camera",
+  "onboardingCameraDenied": "Camera access was not granted. Without it we cannot see your movement.",
+  "onboardingRetry": "Try again",
+  "onboardingContinueWithoutCamera": "Continue without camera",
   "todayTitle": "Today",
   "todaySubtitle": "Open the camera, do the move; the coach watches you.",
   "quickFormCheck": "Quick form check",
