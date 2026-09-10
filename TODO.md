@@ -7,7 +7,7 @@
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 128 test · `forma_eval` 26 test · `forma_pose` 3 test · `apps/mobile` 3 test · `flutter analyze` + `custom_lint` +
+- Yeşil: `forma_rules` 128 test · `forma_eval` 26 test · `forma_pose` 3 test · `apps/mobile` 49 test · `flutter analyze` + `custom_lint` +
   `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
@@ -191,7 +191,9 @@
 - [ ] Kapı 2 raporu: precision ≥ %80, recall ≥ %70, cue gecikmesi ≤ 400 ms, 10 dk thermal test (cihaz matrisi docs/05 §10).
       Cue gecikmesinin **yazılım payı ölçüldü: 100 ms** (bütçenin dörtte biri, tamamı `minConsecutiveFrames: 3`
       kapısından). Kalan 300 ms konuşma motoru + hoparlör; cihazda uçtan uca ölçüm yapılmadı ve asıl risk orada.
-- [ ] HUD: yatay mod, overlay aç/kapa ayarı, "az konuş" modu (`FeedbackPolicy.quietMode` hazır), düşük güvende gri sayaç (var) + tek seferlik cue (var).
+- [x] 2026-09-10 — HUD: yatay mod, overlay aç/kapa, "az konuş", ses aç/kapa (hepsi `settingsProvider`'dan),
+      hareket (sayaç 120 ms pulse, cue 200 ms fade, hepsi reduce-motion'a saygılı), arka plana geçince kamera
+      kapanıp set kaydediliyor, `?reps=N` ile otomatik bitiş, semantics etiketleri.
 - [x] 2026-09-10 — **Set/seans akışı** (docs/06 §4.4-4.5): set özeti → **sesli dinlenme sayacı** (son 3 saniye
       sesli, telefon karşı duvarda olduğu için sessiz sayaç sayaç değil) → sonraki set → seans özeti
       (ortalama skor, set set döküm, seansın en sık 3 hatası). `WorkoutSessionController` seansı tutuyor;
@@ -221,14 +223,20 @@
       antrenman kaybolmasın diye) ve **"geçen seansa göre +5"** satırını gösteriyor; ilk seansta bunu söylüyor.
       6 test.
 - [ ] iOS plugin (docs/10 Prompt 8): MediaPipe Tasks iOS ya da Apple Vision → 33-nokta eşleme; RN'e geçiş karar noktası 3. hafta sonu.
-- [ ] Figma 6 ekran + 5 kişilik kullanılabilirlik testi (docs/06 §10). Küçük bir tasarım borcu: dinlenme
-      kartındaki iki buton ("Sonraki set" / "Seansı bitir") hâlâ iki satıra sarıyor — dengeli duruyor ama
-      tasarım geçişinde bakılmalı.
+- [ ] **5 kişilik kullanılabilirlik testi** (docs/06 §10). Figma adımı atlandı: ekranlar doğrudan kodda
+      tasarlandı (docs/06 §6 token'ları + 10 Eylül brief'i). Test görevi hazır: "ilk seansı yap" —
+      ölçülecekler kurulum tamamlama, ilk cue'ya tepki, HUD'daki sayıyı 2-3 m'den okuma.
+- [ ] **Cihazda görsel doğrulama**: yeni UI (14 ekran) telefonda hiç görülmedi — 10 Eylül gecesi ADB düştü.
+      Testte render edilip PNG alındı ama test fontuyla, yani **tipografi doğrulanmadı** (Manrope/Inter,
+      tabular rakam, 2-3 m okunabilirlik). Telefon bağlanınca ilk iş.
 - [ ] Fontlar: Manrope + Inter (SIL OFL) paketle; tabular rakam sayaç.
 
 ## Hafta 5-6 — Beta (Kapı 3)
 
-- [ ] Onboarding ≤ 60 sn (3 soru + kamera izni + 5 squat demo = aha anı).
+- [x] 2026-09-10 — **Onboarding** (docs/06 §4.1): hoş geldin → 3 tek-dokunuşluk soru (hedef/seviye/ekipman) →
+      kamera izni (nedeniyle + gizlilik rozeti, reddedilirse "kamerasız devam") → **5 squat demo** (aha anı).
+      Profil demo öncesi yazılıyor. 5 dokunuş (brief ≤4 diyordu; docs/06 §4.1'in kendi adım listesi bunu
+      gerektiriyor — akış kısaltılmadı, not düşüldü).
 - [x] 2026-09-10 — **İlerleme ekranı**: form skoru trendi (son seansların çizgisi, **sabit 0-100 ekseni** —
       kendini ölçeklendiren eksen iki puanlık salınımı ilerleme gibi gösterir, bir ilerleme ekranının
       yapmaması gereken tek şey bu) + seans geçmişi (tarih, set, tekrar, renk kodlu skor) + bu hafta sayacı.

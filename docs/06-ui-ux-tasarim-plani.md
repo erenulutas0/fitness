@@ -142,6 +142,14 @@ Aydınlık tema: v1.x, karanlık öncelikli.
 
 Splash/bootstrap · Onboarding ×4 · Kamera izni · Kamera kurulum · HUD · Set özeti · Seans özeti · Bugün · Antrenman listesi · Egzersiz detay (açı, hatalar, kaslar, video) · Program (v0.3) · Kaynak kartı · İlerleme · Vücut/anatomi (v0.2) · Profil · Ayarlar (ses/dil/overlay/az konuş) · Paywall · Gizlilik & lisanslar · Veri silme.
 
+**Durum (10 Eylül 2026).** Var: Onboarding ×4 (hoş geldin + 3 soru) · Kamera izni · Kamera kurulum (HUD içinde
+adım) · HUD (dikey + yatay) · Set özeti · Seans özeti · Bugün · Antrenman listesi · Egzersiz detay · İlerleme ·
+Profil · Ayarlar · Gizlilik & lisanslar · Veri silme. Ayrıca alt sekme kabuğu (Bugün · Antrenman · İlerleme ·
+Profil) ve paylaşılabilir seans kartı.
+Yok: Splash/bootstrap (uygulama doğrudan açılıyor), Program (v0.3), Kaynak kartı (content/sources/ boş —
+kaynak satırı id çözülene kadar gizli), Vücut/anatomi (v0.2), Paywall (v0.3, gelir fazı).
+Egzersiz detayda kaslar bölümü gizli: FMA id'lerinin okunur ada eşlemesi anatomi katmanıyla gelecek.
+
 ## 10. Prototip ve kullanılabilirlik testi planı
 
 1. **Hafta 1:** Figma'da 6 ana ekran (onboarding, kurulum, HUD, set özeti, seans özeti, paywall) — düşük sadakat.
