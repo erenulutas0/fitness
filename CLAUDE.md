@@ -55,6 +55,7 @@ cd packages/forma_rules && dart test          # kural motoru testleri
 cd apps/mobile && flutter analyze && flutter test
 cd apps/mobile && dart run build_runner build -d   # riverpod/freezed/json codegen
 cd tools/eval && dart run bin/eval.dart --fixtures ../../packages/forma_rules/test/fixtures
+cd apps/mobile && flutter test test/screenshots_test.dart --dart-define=SCREENSHOT_DIR=<dir>  # ekranlar, gerçek fontla PNG
 ```
 
 ## Çalışma şekli
