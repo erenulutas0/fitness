@@ -30,6 +30,15 @@ public class FormaPosePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
       result(FlutterError(code: "NOT_SUPPORTED", message: "iOS engine not implemented", details: nil))
     case "hasCameraPermission", "requestCameraPermission":
       result(false)
+    case "openAppSettings":
+      // A user who declined the camera prompt cannot be asked again by the
+      // app itself; Settings is the only way back.
+      guard let url = URL(string: UIApplication.openSettingsURLString),
+            UIApplication.shared.canOpenURL(url) else {
+        result(false)
+        return
+      }
+      UIApplication.shared.open(url, options: [:]) { opened in result(opened) }
     default:
       result(FlutterMethodNotImplemented)
     }

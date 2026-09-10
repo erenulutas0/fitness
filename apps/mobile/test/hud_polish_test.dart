@@ -65,6 +65,41 @@ class _MemoryProfile extends ProfileStore {
   Future<void> delete() async => profile = null;
 }
 
+/// An engine that refuses the camera, the way Android does after the user
+/// taps "Don't allow". [allow] flips when the user comes back from the OS
+/// settings page having granted it.
+class _DenyingPose extends FakeFormaPose {
+  _DenyingPose(FakeFormaPose real) : super(source: real.source);
+
+  bool allow = false;
+  int settingsOpened = 0;
+
+  @override
+  Future<PoseEngineInfo> start([
+    PoseStartOptions options = const PoseStartOptions(),
+  ]) {
+    if (allow) return super.start(options);
+    throw const PoseEngineException(
+      PoseErrorCode.permissionDenied,
+      'camera permission not granted',
+    );
+  }
+
+  @override
+  Future<bool> hasCameraPermission() async => allow;
+
+  @override
+  Future<bool> requestCameraPermission() async => allow;
+
+  @override
+  Future<bool> openAppSettings() async {
+    settingsOpened++;
+    // The user allows the camera on the settings page and comes back.
+    allow = true;
+    return true;
+  }
+}
+
 const _hud = '/workout/bw_squat/front';
 
 final Finder _skeleton = find.byWidgetPredicate(
@@ -180,6 +215,31 @@ void main() {
     await _tearDownApp(tester, fake);
   });
 
+  testWidgets('back from a HUD nothing pushed goes to Today, not out', (
+    tester,
+  ) async {
+    // Onboarding opens the demo with `go`, leaving nothing to pop; before the
+    // PopScope, back closed the app on a first-run user's first screen after
+    // granting the camera.
+    final fake = squat();
+    final c = await pumpApp(tester, fake);
+    await _openHud(tester, c, _hud);
+    await _startSet(tester);
+    await _stream(tester, 5);
+    expect(find.byKey(const Key('hud_counter')), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(
+      find.byKey(const Key('today_quick_check')),
+      findsOneWidget,
+      reason: 'back lands on Today instead of leaving the app',
+    );
+    await _tearDownApp(tester, fake);
+  });
+
   testWidgets('overlay off draws no skeleton, overlay on draws one', (
     tester,
   ) async {
@@ -261,6 +321,45 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Set özeti'), findsOneWidget);
+    await _tearDownApp(tester, fake);
+  });
+
+  testWidgets('a refused camera is explained in Turkish, not in engine words', (
+    tester,
+  ) async {
+    // The device showed "Kamera başlatılamadı: camera permission not granted":
+    // half the sentence was the plugin's English log line.
+    final fake = _DenyingPose(squat());
+    final c = await pumpApp(tester, fake);
+    c.read(routerProvider).go(_hud);
+    await _stream(tester, 40);
+
+    final error = find.byKey(const Key('hud_error'));
+    expect(error, findsOneWidget);
+    expect(
+      tester.widget<Text>(error).data,
+      'Kamera izni verilmedi. Formunu görebilmem için kameraya izin vermen '
+      'gerekiyor.',
+    );
+    expect(
+      find.textContaining('permission'),
+      findsNothing,
+      reason: 'the engine message never reaches the screen',
+    );
+
+    // Settings, not a retry: Android stops showing the dialog after two
+    // denials, so a retry button alone would be a dead end.
+    expect(find.byKey(const Key('hud_error_retry')), findsNothing);
+    await tester.tap(find.byKey(const Key('hud_error_settings')));
+    await _stream(tester, 5);
+    expect(fake.settingsOpened, 1);
+
+    // Coming back with the permission granted starts the camera by itself.
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await _stream(tester, 40);
+    expect(error, findsNothing);
+    expect(find.byKey(const Key('hud_framing_message')), findsOneWidget);
+    await _startSet(tester);
     await _tearDownApp(tester, fake);
   });
 }

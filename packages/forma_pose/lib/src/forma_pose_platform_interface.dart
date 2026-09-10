@@ -140,6 +140,12 @@ abstract class FormaPosePlatform extends PlatformInterface {
 
   Future<bool> requestCameraPermission();
 
+  /// Opens this app's page in the OS settings, so a user who denied the
+  /// camera twice (Android then stops showing the dialog at all) has a way
+  /// back. Returns false when the platform cannot do it, so the caller can
+  /// leave the button out rather than offer a dead one.
+  Future<bool> openAppSettings() async => false;
+
   bool get isRunning;
 
   /// Whether [previewViewType] can be embedded as a platform view.

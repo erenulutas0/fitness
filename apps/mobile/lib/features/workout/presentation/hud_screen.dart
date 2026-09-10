@@ -12,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
+import '../../../core/pose/pose_error.dart';
 import '../../../core/settings/settings_controller.dart';
 import '../../../l10n/app_localizations.dart';
 import '../application/session_controller.dart';
@@ -103,6 +104,15 @@ class _HudScreenState extends ConsumerState<HudScreen> {
     context.pushReplacement(Routes.summary, extra: result);
   }
 
+  /// The permission error is the one the user cannot solve from inside the
+  /// app. If the platform cannot open its settings page (iOS stub, tests),
+  /// fall back to asking the camera again rather than doing nothing visible.
+  Future<void> _openSettings() async {
+    final opened = await ref.read(_provider.notifier).openAppSettings();
+    if (!mounted || opened) return;
+    await ref.read(_provider.notifier).retry();
+  }
+
   Future<void> _skip() async {
     await ref.read(_provider.notifier).finish();
     if (!mounted || _left) return;
@@ -186,13 +196,36 @@ class _HudScreenState extends ConsumerState<HudScreen> {
       if (state.status == HudStatus.starting)
         Text(l10n.starting, style: text.titleLarge),
       if (state.status == HudStatus.error)
-        Text(
-          l10n.engineError(state.errorMessage ?? '?'),
-          style: text.bodyMedium?.copyWith(color: FormaColors.warning),
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.only(bottom: FormaSpacing.md),
+          child: Column(
+            children: [
+              const Icon(
+                LucideIcons.cameraOff,
+                color: FormaColors.warning,
+                size: 32,
+              ),
+              const SizedBox(height: FormaSpacing.sm),
+              Text(
+                // Never `errorMessage`: that is the engine's English
+                // developer string ("camera permission not granted") and it
+                // was being shown to Turkish users as if it were copy.
+                (state.error ?? PoseError.unknown).text(l10n),
+                key: const Key('hud_error'),
+                style: text.titleMedium?.copyWith(color: FormaColors.warning),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
     ];
-    final buttons = state.isSetup
+    final buttons = state.status == HudStatus.error
+        ? _ErrorActions(
+            error: state.error ?? PoseError.unknown,
+            onRetry: () => unawaited(ref.read(_provider.notifier).retry()),
+            onSettings: _openSettings,
+          )
+        : state.isSetup
         ? Row(
             children: [
               Expanded(
@@ -232,77 +265,39 @@ class _HudScreenState extends ConsumerState<HudScreen> {
             ],
           );
 
-    return Scaffold(
-      backgroundColor: FormaColors.background,
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          final landscape = orientation == Orientation.landscape;
-          final readout = state.isSetup
-              ? _SetupPanel(state: state, view: widget.view)
-              : _LiveReadout(
-                  state: state,
-                  definition: def,
-                  landscape: landscape,
-                );
-          if (!landscape) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                stage,
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: FormaSpacing.page,
-                      vertical: FormaSpacing.sm,
-                    ),
-                    child: Column(
-                      children: [
-                        topStrip(stacked: false),
-                        const Spacer(),
-                        ...statusLines,
-                        readout,
-                        const Spacer(),
-                        const SizedBox(height: FormaSpacing.md),
-                        buttons,
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }
-          // Landscape (docs/06 §4.3 "yatayda sayaç sağda"): the camera fills
-          // the left, everything the user reads sits on the right.
-          return Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    stage,
-                    SafeArea(
-                      right: false,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: FormaSpacing.page,
-                          vertical: FormaSpacing.sm,
-                        ),
-                        child: Align(
-                          alignment: Alignment.topLeft,
-                          child: topStrip(stacked: true),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: ColoredBox(
-                  color: FormaColors.background,
-                  child: SafeArea(
-                    left: false,
+    return PopScope(
+      // The onboarding demo opens the HUD with `go`, which leaves nothing to
+      // pop: back used to close the app on a first-run user's very first
+      // screen after granting the camera. Send them to Today instead.
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || _left) return;
+        _left = true;
+        unawaited(ref.read(_provider.notifier).finish());
+        context.go(Routes.today);
+      },
+      child: Scaffold(
+        backgroundColor: FormaColors.background,
+        body: OrientationBuilder(
+          builder: (context, orientation) {
+            final landscape = orientation == Orientation.landscape;
+            // A failed camera has no reps, no form score and no tempo; the
+            // error and its two buttons are the whole screen.
+            final readout = state.status == HudStatus.error
+                ? const SizedBox.shrink()
+                : state.isSetup
+                ? _SetupPanel(state: state, view: widget.view)
+                : _LiveReadout(
+                    state: state,
+                    definition: def,
+                    landscape: landscape,
+                  );
+            if (!landscape) {
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  stage,
+                  SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: FormaSpacing.page,
@@ -310,6 +305,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                       ),
                       child: Column(
                         children: [
+                          topStrip(stacked: false),
                           const Spacer(),
                           ...statusLines,
                           readout,
@@ -320,11 +316,64 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                       ),
                     ),
                   ),
+                ],
+              );
+            }
+            // Landscape (docs/06 §4.3 "yatayda sayaç sağda"): the camera fills
+            // the left, everything the user reads sits on the right.
+            return Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      stage,
+                      SafeArea(
+                        right: false,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: FormaSpacing.page,
+                            vertical: FormaSpacing.sm,
+                          ),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: topStrip(stacked: true),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+                Expanded(
+                  flex: 2,
+                  child: ColoredBox(
+                    color: FormaColors.background,
+                    child: SafeArea(
+                      left: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FormaSpacing.page,
+                          vertical: FormaSpacing.sm,
+                        ),
+                        child: Column(
+                          children: [
+                            const Spacer(),
+                            ...statusLines,
+                            readout,
+                            const Spacer(),
+                            const SizedBox(height: FormaSpacing.md),
+                            buttons,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -333,6 +382,51 @@ class _HudScreenState extends ConsumerState<HudScreen> {
 /// The camera preview (or the dark stage of the synthetic engine) with the
 /// skeleton over it. Settings "overlay" off means nothing is drawn — not
 /// even the error joint; some users find the skeleton unsettling.
+/// The way out of a failed camera. A retry is enough for most codes; the
+/// permission one needs the OS settings page, because Android stops showing
+/// the dialog after the second denial.
+class _ErrorActions extends StatelessWidget {
+  const _ErrorActions({
+    required this.error,
+    required this.onRetry,
+    required this.onSettings,
+  });
+
+  final PoseError error;
+  final VoidCallback onRetry;
+  final VoidCallback onSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: error.needsSettings
+              ? FilledButton(
+                  key: const Key('hud_error_settings'),
+                  onPressed: onSettings,
+                  child: Text(l10n.openAppSettings),
+                )
+              : FilledButton(
+                  key: const Key('hud_error_retry'),
+                  onPressed: onRetry,
+                  child: Text(l10n.retry),
+                ),
+        ),
+        const SizedBox(width: FormaSpacing.md),
+        Expanded(
+          child: OutlinedButton(
+            key: const Key('hud_error_cancel'),
+            onPressed: () => context.go(Routes.today),
+            child: Text(l10n.setupCancel),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _Stage extends StatelessWidget {
   const _Stage({
     required this.state,
@@ -409,59 +503,83 @@ class _LiveReadout extends StatelessWidget {
         ? l10n.formScoreNoneSemantics
         : l10n.formScoreSemantics(ScoreText.format(lastScore));
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Semantics(
-          key: const Key('hud_counter'),
-          container: true,
-          liveRegion: true,
-          label: counterSemantics,
-          excludeSemantics: true,
-          child: _RepCounter(
-            count: count,
-            target: target,
-            unit: isHold ? l10n.seconds : l10n.reps,
-            tracking: tracking,
-            landscape: landscape,
-          ),
+    // The skeleton is drawn behind this block and its lines were running
+    // straight through the labels — on a screen meant to be read from 2-3 m
+    // that costs more than the overlay gains. A soft scrim keeps the camera
+    // visible and the numbers legible.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            FormaColors.background.withValues(alpha: 0),
+            FormaColors.background.withValues(alpha: 0.72),
+            FormaColors.background.withValues(alpha: 0.72),
+            FormaColors.background.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.16, 0.84, 1],
         ),
-        const SizedBox(height: FormaSpacing.sm),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: FormaSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            ScoreRing(
-              score: lastScore,
-              label: l10n.form,
-              semanticsLabel: scoreSemantics,
+            Semantics(
+              key: const Key('hud_counter'),
+              container: true,
+              liveRegion: true,
+              label: counterSemantics,
+              excludeSemantics: true,
+              child: _RepCounter(
+                count: count,
+                target: target,
+                unit: isHold ? l10n.seconds : l10n.reps,
+                tracking: tracking,
+                landscape: landscape,
+              ),
             ),
-            const SizedBox(width: FormaSpacing.xl),
-            if (!isHold) _TempoLabel(rep: snap, label: l10n.tempo),
+            const SizedBox(height: FormaSpacing.sm),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ScoreRing(
+                  score: lastScore,
+                  label: l10n.form,
+                  semanticsLabel: scoreSemantics,
+                ),
+                const SizedBox(width: FormaSpacing.xl),
+                if (!isHold) _TempoLabel(rep: snap, label: l10n.tempo),
+              ],
+            ),
+            const SizedBox(height: FormaSpacing.md),
+            // A single space keeps the line's height while there is no cue, so
+            // the layout does not jump when the first one arrives.
+            Semantics(
+              liveRegion: true,
+              child: AnimatedOpacity(
+                opacity: state.showCue ? 1 : 0,
+                duration: FormaMotion.of(context, FormaMotion.cueFade),
+                curve: FormaMotion.curve,
+                child: Text(
+                  state.lastCue?.text ?? ' ',
+                  style: text.headlineSmall?.copyWith(
+                    color: FormaColors.warning,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            if (!tracking && state.status == HudStatus.running)
+              Text(
+                (snap?.bodyInFrame ?? true) ? l10n.cantSeeYou : l10n.outOfFrame,
+                style: text.bodyMedium?.copyWith(color: FormaColors.textMuted),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
-        const SizedBox(height: FormaSpacing.md),
-        // A single space keeps the line's height while there is no cue, so
-        // the layout does not jump when the first one arrives.
-        Semantics(
-          liveRegion: true,
-          child: AnimatedOpacity(
-            opacity: state.showCue ? 1 : 0,
-            duration: FormaMotion.of(context, FormaMotion.cueFade),
-            curve: FormaMotion.curve,
-            child: Text(
-              state.lastCue?.text ?? ' ',
-              style: text.headlineSmall?.copyWith(color: FormaColors.warning),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-        if (!tracking && state.status == HudStatus.running)
-          Text(
-            (snap?.bodyInFrame ?? true) ? l10n.cantSeeYou : l10n.outOfFrame,
-            style: text.bodyMedium?.copyWith(color: FormaColors.textMuted),
-            textAlign: TextAlign.center,
-          ),
-      ],
+      ),
     );
   }
 }

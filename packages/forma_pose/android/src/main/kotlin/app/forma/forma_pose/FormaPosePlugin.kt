@@ -3,9 +3,12 @@ package app.forma.forma_pose
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -21,7 +24,8 @@ import io.flutter.plugin.common.PluginRegistry
  * FORMA pose plugin — Android entry point.
  *
  * Channels:
- *  - `forma_pose/methods`: start / stop / setModel / hasCameraPermission / requestCameraPermission
+ *  - `forma_pose/methods`: start / stop / setModel / hasCameraPermission / requestCameraPermission /
+ *    openAppSettings
  *  - `forma_pose/frames`:  binary [PoseFrame]s (see [FrameEncoder] / Dart `PoseFrameCodec`)
  *  - platform view `forma_pose/preview`: CameraX PreviewView
  *
@@ -113,6 +117,7 @@ class FormaPosePlugin :
             }
             "hasCameraPermission" -> result.success(hasCameraPermission())
             "requestCameraPermission" -> requestCameraPermission(result)
+            "openAppSettings" -> result.success(openAppSettings())
             else -> result.notImplemented()
         }
     }
@@ -213,6 +218,27 @@ class FormaPosePlugin :
         }
         pendingPermission = result
         ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), PERMISSION_REQUEST_CODE)
+    }
+
+    /**
+     * Android stops showing the permission dialog after the second denial, so
+     * without a route into the system settings a user who tapped "Don't allow"
+     * twice can never use the app again.
+     */
+    private fun openAppSettings(): Boolean = try {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", context.packageName, null),
+        )
+        val activity = activityBinding?.activity
+        if (activity != null) {
+            activity.startActivity(intent)
+        } else {
+            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+        true
+    } catch (t: Throwable) {
+        false
     }
 
     override fun onRequestPermissionsResult(

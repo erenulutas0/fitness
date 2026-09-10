@@ -133,4 +133,15 @@ class MethodChannelFormaPose extends FormaPosePlatform {
       return false;
     }
   }
+
+  @override
+  Future<bool> openAppSettings() async {
+    try {
+      return await _methods.invokeMethod<bool>('openAppSettings') ?? false;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
 }

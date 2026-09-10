@@ -86,14 +86,18 @@
       }
     }
   },
-  "engineError": "Camera could not start: {message}",
-  "@engineError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
+  "poseErrorPermission": "Camera access is off. I need the camera to see your form.",
+  "@poseErrorPermission": {
+    "description": "Shown on the HUD when the pose engine reports PERMISSION_DENIED."
   },
+  "poseErrorCamera": "The camera could not be opened. Another app may be using it.",
+  "poseErrorModel": "The pose model could not be loaded. Close the app and open it again.",
+  "poseErrorUnsupported": "Camera analysis does not run on this device.",
+  "poseErrorBusy": "The camera is still open. Try again in a few seconds.",
+  "poseErrorUnknownExercise": "This exercise could not be found.",
+  "poseErrorUnknown": "The camera could not be started.",
+  "retry": "Try again",
+  "openAppSettings": "Open settings",
   "healthDisclaimer": "Stop if you feel pain. If you have a health condition, check with your doctor first.",
   "setupTitle": "Place your phone",
   "setupHintSide": "Side view: your whole body in frame, phone upright and untilted.",

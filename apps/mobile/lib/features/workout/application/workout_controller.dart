@@ -8,6 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/content/content_repository.dart';
 import '../../../core/locale/locale_controller.dart';
+import '../../../core/pose/pose_error.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/settings_controller.dart';
 import '../infrastructure/cue_player.dart';
@@ -42,6 +43,7 @@ class HudState {
     this.status = HudStatus.idle,
     this.engine,
     this.isFakeEngine = false,
+    this.error,
     this.errorMessage,
     this.frame,
     this.snapshot,
@@ -62,6 +64,12 @@ class HudState {
   final HudStatus status;
   final String? engine;
   final bool isFakeEngine;
+
+  /// Set with [HudStatus.error]; what the user is told.
+  final PoseError? error;
+
+  /// The engine's own words, for the debug strip and the logs only — it is
+  /// an English developer string and never reaches the screen.
   final String? errorMessage;
   final PoseFrame? frame;
   final SessionSnapshot? snapshot;
@@ -104,6 +112,7 @@ class HudState {
     HudStatus? status,
     String? engine,
     bool? isFakeEngine,
+    PoseError? error,
     String? errorMessage,
     PoseFrame? frame,
     SessionSnapshot? snapshot,
@@ -123,6 +132,7 @@ class HudState {
     status: status ?? this.status,
     engine: engine ?? this.engine,
     isFakeEngine: isFakeEngine ?? this.isFakeEngine,
+    error: error ?? this.error,
     errorMessage: errorMessage ?? this.errorMessage,
     frame: frame ?? this.frame,
     snapshot: snapshot ?? this.snapshot,
@@ -210,6 +220,25 @@ class WorkoutController extends _$WorkoutController
     state = state.copyWith(targetReps: reps);
   }
 
+  /// Try the camera again after an error, from a clean state: the usual
+  /// path is the user allowing the camera in the OS settings and coming
+  /// back, and [start] does nothing unless the status is idle.
+  Future<void> retry() async {
+    if (state.status != HudStatus.error) return;
+    state = HudState(
+      exerciseId: state.exerciseId,
+      view: state.view,
+      targetReps: state.targetReps,
+    );
+    await start();
+  }
+
+  /// Opens this app's OS settings page. Android stops showing the camera
+  /// dialog after two denials, so without this the permission error is a
+  /// dead end. False when the platform could not open it.
+  Future<bool> openAppSettings() =>
+      ref.read(poseEngineProvider).openAppSettings();
+
   Future<void> start() async {
     if (state.status != HudStatus.idle) return;
     state = state.copyWith(status: HudStatus.starting);
@@ -219,6 +248,7 @@ class WorkoutController extends _$WorkoutController
     if (def == null) {
       state = state.copyWith(
         status: HudStatus.error,
+        error: PoseError.unknownExercise,
         errorMessage: 'unknown exercise $exerciseId',
       );
       return;
@@ -253,8 +283,10 @@ class WorkoutController extends _$WorkoutController
         _ownsEngine = true;
         info = await engine.start();
       } else {
+        debugPrint('[hud] engine start failed: ${e.code.name}: ${e.message}');
         state = state.copyWith(
           status: HudStatus.error,
+          error: PoseError.fromCode(e.code),
           errorMessage: e.message,
         );
         return;
@@ -270,8 +302,12 @@ class WorkoutController extends _$WorkoutController
     _sub = engine.frames.listen(
       _onFrame,
       onError: (Object e) {
+        debugPrint('[hud] engine stream failed: $e');
         state = state.copyWith(
           status: HudStatus.error,
+          error: e is PoseEngineException
+              ? PoseError.fromCode(e.code)
+              : PoseError.unknown,
           errorMessage: e.toString(),
         );
       },
@@ -523,6 +559,13 @@ class WorkoutController extends _$WorkoutController
       case AppLifecycleState.resumed:
         if (_backgrounded && state.inBackground) {
           state = state.copyWith(inBackground: false);
+        }
+        // Coming back from the OS settings page is the whole point of the
+        // permission error's button; the user allowed the camera there and
+        // should not have to tap anything else.
+        if (state.status == HudStatus.error &&
+            (state.error?.needsSettings ?? false)) {
+          unawaited(retry());
         }
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:

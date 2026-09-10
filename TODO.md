@@ -226,9 +226,12 @@
 - [ ] **5 kişilik kullanılabilirlik testi** (docs/06 §10). Figma adımı atlandı: ekranlar doğrudan kodda
       tasarlandı (docs/06 §6 token'ları + 10 Eylül brief'i). Test görevi hazır: "ilk seansı yap" —
       ölçülecekler kurulum tamamlama, ilk cue'ya tepki, HUD'daki sayıyı 2-3 m'den okuma.
-- [ ] **Cihazda görsel doğrulama**: yeni UI (14 ekran) telefonda hiç görülmedi — 10 Eylül gecesi ADB düştü.
-      Testte render edilip PNG alındı ama test fontuyla, yani **tipografi doğrulanmadı** (Manrope/Inter,
-      tabular rakam, 2-3 m okunabilirlik). Telefon bağlanınca ilk iş.
+- [ ] **Cihazda görsel doğrulama** (yarısı bitti, 10 Eylül): Galaxy S23'te görülen ve onaylanan ekranlar —
+      onboarding'in beş adımı, Bugün, HUD (kadraj + sayaç + cue), set özeti, seans özeti, kamera hatası.
+      Manrope/Inter cihazda doğru render ediliyor. Dört hata bulundu ve düzeltildi: geçmiş önbelleği,
+      iskeletin yazıların içinden geçmesi, geri tuşunun uygulamadan çıkması, ham İngilizce motor hatası.
+      **Kalan ekranlar**: Ayarlar, Yasal (OFL listesi burada görünüyor), Profil, egzersiz detayı,
+      veriyle dolu İlerleme, yatay HUD, dinlenme sayacı.
 - [ ] Fontlar: Manrope + Inter (SIL OFL) paketle; tabular rakam sayaç.
 
 ## Hafta 5-6 — Beta (Kapı 3)

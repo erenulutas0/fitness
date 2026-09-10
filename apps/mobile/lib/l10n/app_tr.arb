@@ -86,14 +86,15 @@
       }
     }
   },
-  "engineError": "Kamera başlatılamadı: {message}",
-  "@engineError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
+  "poseErrorPermission": "Kamera izni verilmedi. Formunu görebilmem için kameraya izin vermen gerekiyor.",
+  "poseErrorCamera": "Kamera açılamadı. Başka bir uygulama kullanıyor olabilir.",
+  "poseErrorModel": "Poz modeli yüklenemedi. Uygulamayı kapatıp yeniden aç.",
+  "poseErrorUnsupported": "Bu cihazda kamera analizi çalışmıyor.",
+  "poseErrorBusy": "Kamera hâlâ açık. Birkaç saniye sonra tekrar dene.",
+  "poseErrorUnknownExercise": "Bu egzersiz bulunamadı.",
+  "poseErrorUnknown": "Kamera başlatılamadı.",
+  "retry": "Tekrar dene",
+  "openAppSettings": "Ayarları aç",
   "healthDisclaimer": "Ağrı hissedersen dur. Sağlık sorunun varsa önce doktoruna danış.",
   "setupTitle": "Kamerayı yerleştir",
   "setupHintSide": "Yandan çekim: tüm vücudun görünsün, telefonu eğmeden dik tut.",
