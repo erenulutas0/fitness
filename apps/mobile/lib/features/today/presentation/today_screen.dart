@@ -25,6 +25,12 @@ class TodayScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          IconButton(
+            key: const Key('today_progress'),
+            tooltip: 'İlerleme',
+            icon: const Icon(Icons.show_chart),
+            onPressed: () => unawaited(context.push(Routes.progress)),
+          ),
           // Run the workout on the synthetic engine, so the screens after
           // "a rep was counted" can be reached without doing squats at the
           // phone. Debug only, like the recorder next to it.

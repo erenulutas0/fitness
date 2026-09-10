@@ -134,5 +134,29 @@
       }
     }
   },
-  "firstSession": "Your first session — later ones compare to this"
+  "firstSession": "Your first session — later ones compare to this",
+  "progressTitle": "Progress",
+  "progressEmpty": "No sessions yet. Do a set and it lands here.",
+  "scoreTrend": "Form score trend",
+  "sessionHistory": "Session history",
+  "sessionsThisWeek": "This week",
+  "sessionCount": "{count} sessions",
+  "@sessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setsAndReps": "{sets} sets · {reps} reps",
+  "@setsAndReps": {
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  }
 }

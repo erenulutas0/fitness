@@ -92,6 +92,11 @@ class SessionStore {
 @Riverpod(keepAlive: true)
 SessionStore sessionStore(Ref ref) => const SessionStore();
 
+/// Every stored session, newest first — the progress screen reads this.
+@riverpod
+Future<List<StoredSession>> sessionHistory(Ref ref) =>
+    ref.watch(sessionStoreProvider).list();
+
 /// The session before the one on screen, for "today vs last" (docs/06 §4.5).
 @riverpod
 Future<StoredSession?> previousSession(Ref ref, String currentId) =>

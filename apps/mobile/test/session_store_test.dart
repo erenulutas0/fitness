@@ -35,13 +35,13 @@ void main() {
   tearDown(() => root.deleteSync(recursive: true));
 
   test('a session survives a round trip through disk', () async {
-    final result = SetResult(
+    const result = SetResult(
       exerciseId: 'bw_squat',
       view: CameraView.side,
       startedAtMs: 0,
       endedAtMs: 40000,
-      reps: const [],
-      holds: const [],
+      reps: [],
+      holds: [],
     );
     final session = StoredSession(
       id: 'bw_squat_1',
@@ -94,22 +94,22 @@ void main() {
       startedAt: DateTime(2026, 9, 10),
       endedAt: DateTime(2026, 9, 10, 0, 20),
       sets: [
-        StoredSet(
+        const StoredSet(
           exerciseId: 'bw_squat',
           view: CameraView.side,
           durationMs: 1,
           repCount: 10,
           holdMs: 0,
-          errorCounts: const {'shallow_depth': 2},
+          errorCounts: {'shallow_depth': 2},
           formScore: 60,
         ),
-        StoredSet(
+        const StoredSet(
           exerciseId: 'bw_squat',
           view: CameraView.side,
           durationMs: 1,
           repCount: 8,
           holdMs: 0,
-          errorCounts: const {'shallow_depth': 1, 'torso_lean': 3},
+          errorCounts: {'shallow_depth': 1, 'torso_lean': 3},
           formScore: 80,
         ),
       ],

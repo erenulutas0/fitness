@@ -11,6 +11,8 @@
   `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
+- MVP durumu (docs/01): kamera kurulum ✓, HUD ✓, set özeti ✓, **ilerleme ✓ (10 Eylül)** · eksik: onboarding,
+  basit program.
 - Kırmızı/bilinmeyen: önceden üretilmiş ses klipleri hâlâ yok (cihaz TTS'i yedek olarak çalışıyor ama robotik ve
   ilk kelimesi gecikebiliyor); iOS plugin stub; gerçek "telefon 2-3 m uzakta" senaryosu yapılmadı; termal test
   yalnızca kısmen (kadrajda kimse yokken 7,5 dk).
@@ -227,7 +229,10 @@
 ## Hafta 5-6 — Beta (Kapı 3)
 
 - [ ] Onboarding ≤ 60 sn (3 soru + kamera izni + 5 squat demo = aha anı).
-- [ ] İlerleme ekranı: form skoru trendi, seans geçmişi.
+- [x] 2026-09-10 — **İlerleme ekranı**: form skoru trendi (son seansların çizgisi, **sabit 0-100 ekseni** —
+      kendini ölçeklendiren eksen iki puanlık salınımı ilerleme gibi gösterir, bir ilerleme ekranının
+      yapmaması gereken tek şey bu) + seans geçmişi (tarih, set, tekrar, renk kodlu skor) + bu hafta sayacı.
+      Boş durumda "bir set yap, buraya düşsün" diyor. Cihazda doğrulandı.
 - [ ] Basit program (3 gün/hafta) — Bugün sekmesi gerçek içerik.
 - [ ] PostHog olayları (docs/05 §13) + Sentry; görüntü/landmark asla olaya girmez.
 - [ ] Anatomi viewer çekirdeği (WebView + three.js, Z-Anatomy türevi ≤ 20 MB, NC parçalar hariç) — v0.2.

@@ -3,6 +3,7 @@ import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../features/history/presentation/progress_screen.dart';
 import '../features/recorder/application/recorder_controller.dart';
 import '../features/recorder/presentation/recorder_capture_screen.dart';
 import '../features/recorder/presentation/recorder_label_screen.dart';
@@ -20,6 +21,7 @@ abstract final class Routes {
       '/workout/$exerciseId/${view.name}';
   static const summary = '/summary';
   static const sessionSummary = '/session-summary';
+  static const progress = '/progress';
 
   /// Fixture recorder (debug builds only).
   static const recorder = '/recorder';
@@ -45,6 +47,10 @@ GoRouter router(Ref ref) => GoRouter(
       path: Routes.summary,
       builder: (_, state) =>
           SetSummaryScreen(result: state.extra! as SetResult),
+    ),
+    GoRoute(
+      path: Routes.progress,
+      builder: (_, _) => const ProgressScreen(),
     ),
     GoRoute(
       path: Routes.sessionSummary,

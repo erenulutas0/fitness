@@ -134,5 +134,29 @@
       }
     }
   },
-  "firstSession": "İlk seansın — bundan sonrası buna göre ölçülecek"
+  "firstSession": "İlk seansın — bundan sonrası buna göre ölçülecek",
+  "progressTitle": "İlerleme",
+  "progressEmpty": "Henüz seans yok. Bir set yap, buraya düşsün.",
+  "scoreTrend": "Form skoru trendi",
+  "sessionHistory": "Seans geçmişi",
+  "sessionsThisWeek": "Bu hafta",
+  "sessionCount": "{count} seans",
+  "@sessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setsAndReps": "{sets} set · {reps} tekrar",
+  "@setsAndReps": {
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  }
 }
