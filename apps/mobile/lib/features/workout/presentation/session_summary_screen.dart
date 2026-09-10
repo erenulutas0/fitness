@@ -57,6 +57,11 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
             ],
           ),
         );
+    if (!mounted) return;
+    // History is cached, so without this Today and Progress keep showing the
+    // empty state until the app is restarted — someone finishing their first
+    // workout would go back and be told to do their first workout.
+    ref.invalidate(sessionHistoryProvider);
   }
 
   @override
