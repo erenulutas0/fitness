@@ -232,7 +232,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                 child: FilledButton(
                   key: const Key('hud_start_now'),
                   onPressed: ref.read(_provider.notifier).startNow,
-                  child: Text(l10n.setupStartNow),
+                  child: ButtonLabel(l10n.setupStartNow),
                 ),
               ),
               const SizedBox(width: FormaSpacing.md),
@@ -240,7 +240,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                 child: OutlinedButton(
                   key: const Key('hud_setup_cancel'),
                   onPressed: () => context.go(Routes.today),
-                  child: Text(l10n.setupCancel),
+                  child: ButtonLabel(l10n.setupCancel),
                 ),
               ),
             ],
@@ -251,7 +251,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                 child: FilledButton(
                   key: const Key('hud_finish'),
                   onPressed: state.status == HudStatus.running ? _finish : null,
-                  child: Text(l10n.finish),
+                  child: ButtonLabel(l10n.finish),
                 ),
               ),
               const SizedBox(width: FormaSpacing.md),
@@ -259,7 +259,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                 child: OutlinedButton(
                   key: const Key('hud_skip'),
                   onPressed: _skip,
-                  child: Text(l10n.skip),
+                  child: ButtonLabel(l10n.skip),
                 ),
               ),
             ],
@@ -306,10 +306,11 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                       child: Column(
                         children: [
                           topStrip(stacked: false),
-                          const Spacer(),
-                          ...statusLines,
-                          readout,
-                          const Spacer(),
+                          Expanded(
+                            child: _FitHeight(
+                              children: [...statusLines, readout],
+                            ),
+                          ),
                           const SizedBox(height: FormaSpacing.md),
                           buttons,
                         ],
@@ -358,10 +359,11 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                         ),
                         child: Column(
                           children: [
-                            const Spacer(),
-                            ...statusLines,
-                            readout,
-                            const Spacer(),
+                            Expanded(
+                              child: _FitHeight(
+                                children: [...statusLines, readout],
+                              ),
+                            ),
                             const SizedBox(height: FormaSpacing.md),
                             buttons,
                           ],
@@ -382,6 +384,50 @@ class _HudScreenState extends ConsumerState<HudScreen> {
 /// The camera preview (or the dark stage of the synthetic engine) with the
 /// skeleton over it. Settings "overlay" off means nothing is drawn — not
 /// even the error joint; some users find the skeleton unsettling.
+/// The soft band behind anything the user reads over the camera. The
+/// skeleton is drawn underneath and its lines were running straight through
+/// the labels — first the rep counter, then the framing instructions. On a
+/// screen meant to be read from 2-3 m that costs more than the overlay gains;
+/// the scrim keeps the camera visible and the words legible.
+final BoxDecoration _scrim = BoxDecoration(
+  gradient: LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      FormaColors.background.withValues(alpha: 0),
+      FormaColors.background.withValues(alpha: 0.72),
+      FormaColors.background.withValues(alpha: 0.72),
+      FormaColors.background.withValues(alpha: 0),
+    ],
+    stops: const [0, 0.16, 0.84, 1],
+  ),
+);
+
+/// Centres the readout in whatever height is left between the top strip and
+/// the buttons, and scales it down when that is not enough. A phone on its
+/// side has 360 dp of height: the counter, the ring and the scrim's padding
+/// pushed Finish and Skip 46 px off the screen, and a HUD whose buttons
+/// cannot be reached is worse than a smaller counter. The width stays the
+/// available width, so text still wraps instead of shrinking to one line.
+class _FitHeight extends StatelessWidget {
+  const _FitHeight({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: SizedBox(
+          width: constraints.maxWidth,
+          child: Column(mainAxisSize: MainAxisSize.min, children: children),
+        ),
+      ),
+    ),
+  );
+}
+
 /// The way out of a failed camera. A retry is enough for most codes; the
 /// permission one needs the OS settings page, because Android stops showing
 /// the dialog after the second denial.
@@ -406,12 +452,12 @@ class _ErrorActions extends StatelessWidget {
               ? FilledButton(
                   key: const Key('hud_error_settings'),
                   onPressed: onSettings,
-                  child: Text(l10n.openAppSettings),
+                  child: ButtonLabel(l10n.openAppSettings),
                 )
               : FilledButton(
                   key: const Key('hud_error_retry'),
                   onPressed: onRetry,
-                  child: Text(l10n.retry),
+                  child: ButtonLabel(l10n.retry),
                 ),
         ),
         const SizedBox(width: FormaSpacing.md),
@@ -419,7 +465,7 @@ class _ErrorActions extends StatelessWidget {
           child: OutlinedButton(
             key: const Key('hud_error_cancel'),
             onPressed: () => context.go(Routes.today),
-            child: Text(l10n.setupCancel),
+            child: ButtonLabel(l10n.setupCancel),
           ),
         ),
       ],
@@ -503,24 +549,8 @@ class _LiveReadout extends StatelessWidget {
         ? l10n.formScoreNoneSemantics
         : l10n.formScoreSemantics(ScoreText.format(lastScore));
 
-    // The skeleton is drawn behind this block and its lines were running
-    // straight through the labels — on a screen meant to be read from 2-3 m
-    // that costs more than the overlay gains. A soft scrim keeps the camera
-    // visible and the numbers legible.
     return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            FormaColors.background.withValues(alpha: 0),
-            FormaColors.background.withValues(alpha: 0.72),
-            FormaColors.background.withValues(alpha: 0.72),
-            FormaColors.background.withValues(alpha: 0),
-          ],
-          stops: const [0, 0.16, 0.84, 1],
-        ),
-      ),
+      decoration: _scrim,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: FormaSpacing.xl),
         child: Column(
@@ -802,44 +832,54 @@ class _SetupPanel extends StatelessWidget {
     final ready = state.framing?.isReady ?? false;
     final counting = state.status == HudStatus.countdown;
     final accent = ready ? FormaColors.success : FormaColors.warning;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          l10n.setupTitle,
-          style: text.bodyMedium?.copyWith(color: FormaColors.textMuted),
+    return DecoratedBox(
+      decoration: _scrim,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: FormaSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.setupTitle,
+              style: text.bodyMedium?.copyWith(color: FormaColors.textMuted),
+            ),
+            const SizedBox(height: FormaSpacing.xs),
+            Text(
+              view == CameraView.front
+                  ? l10n.setupHintFront
+                  : l10n.setupHintSide,
+              style: text.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: FormaSpacing.xl),
+            if (counting)
+              Text(
+                '${state.countdownSeconds}',
+                key: const Key('hud_countdown'),
+                style: text.displayLarge?.copyWith(
+                  color: FormaColors.secondary,
+                ),
+              )
+            else
+              Icon(
+                ready ? LucideIcons.circleCheck : LucideIcons.focus,
+                size: _setupIconSize,
+                color: accent,
+                semanticLabel: counting ? l10n.setupReady : _message(l10n),
+              ),
+            const SizedBox(height: FormaSpacing.md),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                counting ? l10n.setupReady : _message(l10n),
+                key: const Key('hud_framing_message'),
+                style: text.headlineSmall?.copyWith(color: accent),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: FormaSpacing.xs),
-        Text(
-          view == CameraView.front ? l10n.setupHintFront : l10n.setupHintSide,
-          style: text.bodySmall,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: FormaSpacing.xl),
-        if (counting)
-          Text(
-            '${state.countdownSeconds}',
-            key: const Key('hud_countdown'),
-            style: text.displayLarge?.copyWith(color: FormaColors.secondary),
-          )
-        else
-          Icon(
-            ready ? LucideIcons.circleCheck : LucideIcons.focus,
-            size: _setupIconSize,
-            color: accent,
-            semanticLabel: counting ? l10n.setupReady : _message(l10n),
-          ),
-        const SizedBox(height: FormaSpacing.md),
-        Semantics(
-          liveRegion: true,
-          child: Text(
-            counting ? l10n.setupReady : _message(l10n),
-            key: const Key('hud_framing_message'),
-            style: text.headlineSmall?.copyWith(color: accent),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -132,7 +132,7 @@
     }
   },
   "shareFailed": "Kart oluşturulamadı",
-  "shareCardStats": "{sets} set · {reps} {unit}",
+  "shareCardStats": "{sets}\u00a0set · {reps}\u00a0{unit}",
   "@shareCardStats": {
     "placeholders": {
       "sets": {
@@ -171,8 +171,9 @@
     }
   },
   "sessionHistory": "Seans geçmişi",
+  "totalSessions": "Toplam seans",
   "sessionsThisWeek": "Bu hafta",
-  "setsAndReps": "{sets} set · {reps} tekrar",
+  "setsAndReps": "{sets}\u00a0set\u00a0·\u00a0{reps}\u00a0tekrar",
   "@setsAndReps": {
     "placeholders": {
       "sets": {

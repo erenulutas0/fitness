@@ -125,7 +125,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
                 child: FilledButton(
                   key: const Key('rest_skip'),
                   onPressed: _complete,
-                  child: Text(l10n.startNextSet),
+                  child: ButtonLabel(l10n.startNextSet),
                 ),
               ),
               const SizedBox(width: FormaSpacing.md),
@@ -136,7 +136,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
                     _timer?.cancel();
                     widget.onSkip();
                   },
-                  child: Text(l10n.endSession),
+                  child: ButtonLabel(l10n.endSession),
                 ),
               ),
             ],

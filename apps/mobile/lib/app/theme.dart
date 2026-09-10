@@ -205,6 +205,9 @@ abstract final class FormaTheme {
           disabledForegroundColor: FormaColors.textMuted,
           elevation: 0,
           minimumSize: const Size.fromHeight(64),
+          // Two buttons share a 360 dp row; Material's 24 dp sides left
+          // "Sonraki set" and "Open settings" breaking onto two lines.
+          padding: const EdgeInsets.symmetric(horizontal: FormaSpacing.lg),
           textStyle: text.titleMedium,
           shape: _buttonShape,
         ),
@@ -214,6 +217,7 @@ abstract final class FormaTheme {
           foregroundColor: FormaColors.text,
           disabledForegroundColor: FormaColors.textMuted,
           minimumSize: const Size.fromHeight(56),
+          padding: const EdgeInsets.symmetric(horizontal: FormaSpacing.lg),
           side: const BorderSide(color: FormaColors.outline, width: 2),
           textStyle: text.titleMedium,
           shape: _buttonShape,

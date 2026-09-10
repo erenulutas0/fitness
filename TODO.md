@@ -2,12 +2,12 @@
 
 > **Kural:** Her Claude Code oturumu buradan başlar ve burayı günceller. Biten madde `[x]` + tarih. Yeni iş ilgili
 > bölüme. Kararlar buraya değil `docs/00-README.md` Decision Log'a. Kod-dışı işler "Kurucu" bölümünde.
-> Son güncelleme: **2026-09-09, oturum 7** (Claude, ses + kadraj adımı + anatomik makullük + CI/AAB + 18 hata avı). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
+> Son güncelleme: **2026-09-10, oturum 8** (Claude, UI/UX geçişi + cihazda ve render'da görsel doğrulama). Takvim: docs/09 — Hafta 0 = 15 Eylül 2026.
 
 ## Durum özeti
 
 - Faz: **Hafta 1-2 "Motor"** kod olarak bitti ve **gerçek cihazda uçtan uca çalıştı** (Galaxy S23, Android 16).
-- Yeşil: `forma_rules` 128 test · `forma_eval` 26 test · `forma_pose` 3 test · `apps/mobile` 49 test · `flutter analyze` + `custom_lint` +
+- Yeşil: `forma_rules` 128 test · `forma_eval` 26 test · `forma_pose` 3 test · `apps/mobile` 51 test · `flutter analyze` + `custom_lint` +
   `dart format` temiz · cihazda 30 fps / 21-24 ms landmark gecikmesi / tekrar sayımı / kural + cue + overlay vurgusu ·
   **kayıt ekranı** (cihazda kayıt → JSON → `tools/eval` döngüsü kapalı) · **koç sesli konuşuyor** ·
   **set kadraj adımı + geri sayımla açılıyor** (ikisi de cihazda doğrulandı).
@@ -226,13 +226,16 @@
 - [ ] **5 kişilik kullanılabilirlik testi** (docs/06 §10). Figma adımı atlandı: ekranlar doğrudan kodda
       tasarlandı (docs/06 §6 token'ları + 10 Eylül brief'i). Test görevi hazır: "ilk seansı yap" —
       ölçülecekler kurulum tamamlama, ilk cue'ya tepki, HUD'daki sayıyı 2-3 m'den okuma.
-- [ ] **Cihazda görsel doğrulama** (yarısı bitti, 10 Eylül): Galaxy S23'te görülen ve onaylanan ekranlar —
-      onboarding'in beş adımı, Bugün, HUD (kadraj + sayaç + cue), set özeti, seans özeti, kamera hatası.
-      Manrope/Inter cihazda doğru render ediliyor. Dört hata bulundu ve düzeltildi: geçmiş önbelleği,
-      iskeletin yazıların içinden geçmesi, geri tuşunun uygulamadan çıkması, ham İngilizce motor hatası.
-      **Kalan ekranlar**: Ayarlar, Yasal (OFL listesi burada görünüyor), Profil, egzersiz detayı,
-      veriyle dolu İlerleme, yatay HUD, dinlenme sayacı.
-- [ ] Fontlar: Manrope + Inter (SIL OFL) paketle; tabular rakam sayaç.
+- [x] 2026-09-10 — **Görsel doğrulama**: Galaxy S23'te görülen ekranlar — onboarding'in beş adımı, Bugün,
+      HUD (kadraj + sayaç + cue), set özeti, seans özeti, kamera hatası; dört hata bulundu ve düzeltildi.
+      Kalanlar (Ayarlar, Yasal, Profil, egzersiz detayı, dolu İlerleme, yatay HUD, dinlenme) telefon
+      meşgulken **gerçek fontlarla, S23 ölçüsünde (360×780 dp), TR + EN render edildi** — altı hata daha
+      çıktı ve düzeltildi (en ciddisi: yatay HUD'da Bitir/Atla ekranın dışındaydı). Araç:
+      `flutter test test/screenshots_test.dart --dart-define=SCREENSHOT_DIR=<klasör>`.
+- [ ] Yatay HUD'u gerçek telefonda bir kez döndürerek gör: render'da doğrulandı, kamera önizlemesiyle
+      cihazda görülmedi.
+- [x] 2026-09-10 — Fontlar: Manrope + Inter (SIL OFL) paketlendi, OFL metinleri lisans sayfasında; sayaçta
+      tabular rakam.
 
 ## Hafta 5-6 — Beta (Kapı 3)
 
@@ -356,3 +359,13 @@
   105 üst sınırda, yükseltmek kaçırmaya başlıyor.
   Testler: **128 + 26 + 3 + 3 yeşil**.
   Kalan tek blokaj: kasten hatalı kayıt (kurucu yarın çekecek).
+- **2026-09-10 / oturum 8 (Claude):** UI/UX geçişi çoklu ajanla (brief: `docs/plans/2026-09-10-ui-ux-brief.md`):
+  tasarım token'ları, Manrope/Inter + Lucide, ekranlar yeniden; onboarding, ilerleme ekranı, yerel geçmiş (D19),
+  "Hızlı form kontrolü" (D20). Galaxy S23'te doğrulama dört hata buldu (geçmiş önbelleği, iskeletin yazıların
+  içinden geçmesi, geri tuşunun uygulamadan çıkması, ham İngilizce kamera hatası); hepsi düzeltildi, kamera
+  izni reddinde artık Ayarlar'a götüren buton ve dönüşte kendiliğinden yeniden deneme var. Telefon meşgulken
+  kalan ekranlar gerçek fontlarla S23 ölçüsünde render edildi (`test/screenshots_test.dart`) ve altı hata daha
+  çıkardı: yatay HUD'da Bitir/Atla 46 px ekran dışındaydı (eski yatay test 800 dp yükseklikte çalışıyordu),
+  kadraj yönergeleri iskeletin altında kalıyordu, iki butonlu satırlarda etiketler ikiye bölünüyordu, bir sayının
+  etiketi "Seans geçmişi"ydi, EN'de "Most frequent last session", istatistik satırı "27 / tekrar" diye
+  kırılıyordu. Testler: 51 + 1 atlanan (render aracı, klasör verilmezse çalışmaz).

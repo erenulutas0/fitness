@@ -98,7 +98,9 @@ class _Body extends ConsumerWidget {
             const SizedBox(width: FormaSpacing.md),
             Expanded(
               child: StatTile(
-                label: l10n.sessionHistory,
+                // A count, so not the section title below it: "6 · Seans
+                // geçmişi" read as a heading with a number stuck to it.
+                label: l10n.totalSessions,
                 value: '${sessions.length}',
               ),
             ),

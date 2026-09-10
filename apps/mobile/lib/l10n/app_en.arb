@@ -135,7 +135,7 @@
     }
   },
   "shareFailed": "Could not build the card",
-  "shareCardStats": "{sets} sets · {reps} {unit}",
+  "shareCardStats": "{sets}\u00a0sets · {reps}\u00a0{unit}",
   "@shareCardStats": {
     "placeholders": {
       "sets": {
@@ -174,8 +174,9 @@
     }
   },
   "sessionHistory": "Session history",
+  "totalSessions": "Total sessions",
   "sessionsThisWeek": "This week",
-  "setsAndReps": "{sets} sets · {reps} reps",
+  "setsAndReps": "{sets}\u00a0sets\u00a0·\u00a0{reps}\u00a0reps",
   "@setsAndReps": {
     "placeholders": {
       "sets": {
@@ -239,7 +240,7 @@
   "settingsTitle": "Settings",
   "legalTitle": "Privacy and licences",
   "lastSession": "Last session",
-  "lastSessionTopError": "Most frequent last session: {error}",
+  "lastSessionTopError": "Most common last time: {error}",
   "@lastSessionTopError": {
     "placeholders": {
       "error": {

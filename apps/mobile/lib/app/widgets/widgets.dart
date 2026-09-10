@@ -1,6 +1,7 @@
 /// Shared FORMA widgets (brief Faz 1 §3). Import this, not the files.
 library;
 
+export 'button_label.dart';
 export 'empty_state.dart';
 export 'forma_card.dart';
 export 'privacy_badge.dart';
