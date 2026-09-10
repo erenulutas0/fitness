@@ -36,11 +36,7 @@ class ShareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scoreColor = score == null
-        ? FormaColors.textMuted
-        : (score! >= 85
-              ? FormaColors.success
-              : (score! >= 60 ? FormaColors.primary : FormaColors.warning));
+    final scoreColor = FormaColors.forScore(score);
     return SizedBox(
       width: size.width,
       height: size.height,

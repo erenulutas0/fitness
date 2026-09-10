@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
@@ -167,7 +168,7 @@ class _RecorderLabelScreenState extends ConsumerState<RecorderLabelScreen> {
           const SizedBox(height: 10),
           OutlinedButton.icon(
             onPressed: _saving ? null : () => _save(share: true),
-            icon: const Icon(Icons.ios_share),
+            icon: const Icon(LucideIcons.share),
             label: const Text('Kaydet ve paylaş'),
           ),
         ],
@@ -244,7 +245,7 @@ class _Stepper extends StatelessWidget {
       IconButton(
         key: const Key('recorder_unit_minus'),
         onPressed: value - step >= 0 ? () => onChanged(value - step) : null,
-        icon: const Icon(Icons.remove_circle_outline),
+        icon: const Icon(LucideIcons.circleMinus),
       ),
       SizedBox(
         width: 52,
@@ -257,7 +258,7 @@ class _Stepper extends StatelessWidget {
       IconButton(
         key: const Key('recorder_unit_plus'),
         onPressed: () => onChanged(value + step),
-        icon: const Icon(Icons.add_circle_outline),
+        icon: const Icon(LucideIcons.circlePlus),
       ),
     ],
   );
@@ -363,7 +364,7 @@ class _UnitCard extends StatelessWidget {
                     selected: selected.contains(r.id),
                     onSelected: (on) => onToggle(r.id, on: on),
                     avatar: engineRules.contains(r.id)
-                        ? const Icon(Icons.smart_toy_outlined, size: 16)
+                        ? const Icon(LucideIcons.bot, size: 16)
                         : null,
                   ),
               ],

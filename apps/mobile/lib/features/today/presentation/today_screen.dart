@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
@@ -28,7 +29,7 @@ class TodayScreen extends ConsumerWidget {
           IconButton(
             key: const Key('today_progress'),
             tooltip: 'İlerleme',
-            icon: const Icon(Icons.show_chart),
+            icon: const Icon(LucideIcons.trendingUp),
             onPressed: () => unawaited(context.push(Routes.progress)),
           ),
           // Run the workout on the synthetic engine, so the screens after
@@ -39,9 +40,7 @@ class TodayScreen extends ConsumerWidget {
               key: const Key('today_demo_mode'),
               tooltip: 'Demo motoru (sentetik tekrarlar)',
               icon: Icon(
-                ref.watch(demoModeProvider)
-                    ? Icons.smart_toy
-                    : Icons.smart_toy_outlined,
+                LucideIcons.bot,
                 color: ref.watch(demoModeProvider)
                     ? FormaColors.secondary
                     : null,
@@ -55,7 +54,7 @@ class TodayScreen extends ConsumerWidget {
             IconButton(
               key: const Key('today_recorder'),
               tooltip: 'Kayıt (fixture)',
-              icon: const Icon(Icons.fiber_manual_record_outlined),
+              icon: const Icon(LucideIcons.circleDot),
               onPressed: () => unawaited(context.push(Routes.recorder)),
             ),
         ],
@@ -80,7 +79,7 @@ class TodayScreen extends ConsumerWidget {
               FilledButton.icon(
                 key: const Key('today_quick_check'),
                 onPressed: () => _start(context, bundle.exercise('bw_squat')!),
-                icon: const Icon(Icons.videocam_rounded),
+                icon: const Icon(LucideIcons.video),
                 label: Text(l10n.quickFormCheck),
               ),
               const SizedBox(height: 28),
@@ -110,7 +109,7 @@ class TodayScreen extends ConsumerWidget {
                               label: Text(l10n.draftBadge),
                               visualDensity: VisualDensity.compact,
                             )
-                          : const Icon(Icons.chevron_right),
+                          : const Icon(LucideIcons.chevronRight),
                       onTap: () => _start(context, e),
                     ),
                   ),

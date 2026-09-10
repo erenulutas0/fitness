@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/stored_session.dart';
@@ -28,16 +29,9 @@ class ProgressScreen extends ConsumerWidget {
           child: Text('$e', style: const TextStyle(color: FormaColors.warning)),
         ),
         data: (all) => all.isEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Text(
-                    l10n.progressEmpty,
-                    key: const Key('progress_empty'),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: FormaColors.textMuted),
-                  ),
-                ),
+            ? EmptyState(
+                key: const Key('progress_empty'),
+                message: l10n.progressEmpty,
               )
             : _Body(sessions: all),
       ),
@@ -70,14 +64,14 @@ class _Body extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _Stat(
+              child: StatTile(
                 label: l10n.sessionsThisWeek,
                 value: '$thisWeek',
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _Stat(
+              child: StatTile(
                 label: l10n.sessionHistory,
                 value: '${sessions.length}',
               ),
@@ -85,8 +79,7 @@ class _Body extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 24),
-        Text(l10n.scoreTrend, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
+        SectionTitle(l10n.scoreTrend),
         if (trend.length < 2)
           Card(
             child: Padding(
@@ -112,11 +105,7 @@ class _Body extends ConsumerWidget {
             ),
           ),
         const SizedBox(height: 24),
-        Text(
-          l10n.sessionHistory,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 8),
+        SectionTitle(l10n.sessionHistory),
         for (final s in sessions)
           _SessionRow(
             session: s,
@@ -151,19 +140,9 @@ class _SessionRow extends StatelessWidget {
           '$date · ${l10n.setsAndReps(session.sets.length, session.totalReps)}',
           style: const TextStyle(fontSize: 12),
         ),
-        trailing: Text(
-          score == null ? '–' : score.round().toString(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: score == null
-                ? FormaColors.textMuted
-                : (score >= 85
-                      ? FormaColors.success
-                      : (score >= 60
-                            ? FormaColors.primary
-                            : FormaColors.warning)),
-          ),
+        trailing: ScoreText(
+          score: score,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
     );
@@ -215,31 +194,4 @@ class _TrendPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_TrendPainter old) => old.scores != scores;
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
-          ),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: FormaColors.textMuted, fontSize: 12),
-          ),
-        ],
-      ),
-    ),
-  );
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_pose/forma_pose.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
@@ -184,7 +185,7 @@ class RecorderSetupScreen extends ConsumerWidget {
                   Routes.recorderCapture,
                   extra: config.copyWith(view: view),
                 ),
-                icon: const Icon(Icons.fiber_manual_record),
+                icon: const Icon(LucideIcons.circleDot),
                 label: const Text('Kaydı başlat'),
               ),
               const SizedBox(height: 28),
@@ -201,7 +202,7 @@ class RecorderSetupScreen extends ConsumerWidget {
                         : TextButton.icon(
                             onPressed: () =>
                                 ref.read(fixtureStoreProvider).share(list),
-                            icon: const Icon(Icons.ios_share, size: 18),
+                            icon: const Icon(LucideIcons.share, size: 18),
                             label: Text('Hepsini paylaş (${list.length})'),
                           ),
                     orElse: () => const SizedBox.shrink(),
@@ -237,7 +238,7 @@ class RecorderSetupScreen extends ConsumerWidget {
                                   children: [
                                     IconButton(
                                       icon: const Icon(
-                                        Icons.ios_share,
+                                        LucideIcons.share,
                                         size: 20,
                                       ),
                                       onPressed: () => ref
@@ -246,7 +247,7 @@ class RecorderSetupScreen extends ConsumerWidget {
                                     ),
                                     IconButton(
                                       icon: const Icon(
-                                        Icons.delete_outline,
+                                        LucideIcons.trash2,
                                         size: 20,
                                       ),
                                       onPressed: () async {

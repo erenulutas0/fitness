@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_pose/forma_pose.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
@@ -124,7 +125,7 @@ class _RecorderCaptureScreenState extends ConsumerState<RecorderCaptureScreen> {
                     onPressed: state.status == RecorderStatus.error
                         ? () => context.pop()
                         : _stop,
-                    icon: const Icon(Icons.stop),
+                    icon: const Icon(LucideIcons.square),
                     label: Text(
                       state.isRecording ? 'Durdur ve etiketle' : 'Vazgeç',
                     ),
@@ -211,7 +212,7 @@ class _RecordingReadout extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.fiber_manual_record, color: FormaColors.warning),
+            const Icon(LucideIcons.circleDot, color: FormaColors.warning),
             const SizedBox(width: 8),
             Text(
               '${seconds.toStringAsFixed(1)} s',

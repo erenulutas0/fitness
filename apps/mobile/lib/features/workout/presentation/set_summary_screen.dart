@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../application/session_controller.dart';
@@ -50,18 +52,7 @@ class SetSummaryScreen extends ConsumerWidget {
                   l10n.formScore,
                   style: const TextStyle(color: FormaColors.textMuted),
                 ),
-                Text(
-                  score == null ? '–' : score.round().toString(),
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    color: score == null
-                        ? FormaColors.textMuted
-                        : (score >= 85
-                              ? FormaColors.success
-                              : (score >= 60
-                                    ? FormaColors.primary
-                                    : FormaColors.warning)),
-                  ),
-                ),
+                ScoreText(score: score),
               ],
             ),
           ),
@@ -69,7 +60,7 @@ class SetSummaryScreen extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: _Stat(
+                child: StatTile(
                   label: isHold ? l10n.holdTime : l10n.repCount,
                   value: isHold
                       ? '${(result.totalHoldMs / 1000).round()} ${l10n.seconds}'
@@ -79,7 +70,7 @@ class SetSummaryScreen extends ConsumerWidget {
               if (!isHold) const SizedBox(width: 12),
               if (!isHold)
                 Expanded(
-                  child: _Stat(
+                  child: StatTile(
                     label: l10n.avgTempo,
                     value: tempo == null ? '–' : '${tempo.toStringAsFixed(1)}s',
                   ),
@@ -87,13 +78,12 @@ class SetSummaryScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
-          Text(l10n.topErrors, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
+          SectionTitle(l10n.topErrors),
           if (top.isEmpty)
             Card(
               child: ListTile(
                 leading: const Icon(
-                  Icons.check_circle,
+                  LucideIcons.circleCheck,
                   color: FormaColors.success,
                 ),
                 title: Text(l10n.noErrors),
@@ -132,29 +122,6 @@ class SetSummaryScreen extends ConsumerWidget {
   }
 }
 
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
-          ),
-          Text(label, style: const TextStyle(color: FormaColors.textMuted)),
-        ],
-      ),
-    ),
-  );
-}
-
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({
     required this.ruleId,
@@ -180,7 +147,7 @@ class _ErrorCard extends StatelessWidget {
             Row(
               children: [
                 const Icon(
-                  Icons.warning_amber_rounded,
+                  LucideIcons.triangleAlert,
                   color: FormaColors.warning,
                 ),
                 const SizedBox(width: 8),

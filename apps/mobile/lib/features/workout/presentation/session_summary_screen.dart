@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../history/domain/stored_session.dart';
@@ -92,18 +94,9 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                     l10n.sessionMeanScore,
                     style: const TextStyle(color: FormaColors.textMuted),
                   ),
-                  Text(
-                    score == null ? '–' : score.round().toString(),
+                  ScoreText(
                     key: const Key('session_mean_score'),
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: score == null
-                          ? FormaColors.textMuted
-                          : (score >= 85
-                                ? FormaColors.success
-                                : (score >= 60
-                                      ? FormaColors.primary
-                                      : FormaColors.warning)),
-                    ),
+                    score: score,
                   ),
                   if (def != null)
                     Text(
@@ -119,14 +112,14 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _Stat(
+                  child: StatTile(
                     label: l10n.sessionSets,
                     value: '${session.sets.length}',
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _Stat(
+                  child: StatTile(
                     label: isHold ? l10n.holdTime : l10n.sessionTotalReps,
                     value: isHold
                         ? '${(session.totalHoldMs / 1000).round()} ${l10n.seconds}'
@@ -136,11 +129,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Text(
-              l10n.sessionSets,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
+            SectionTitle(l10n.sessionSets),
             for (var i = 0; i < session.sets.length; i++)
               _SetRow(
                 index: i + 1,
@@ -148,13 +137,12 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                 isHold: isHold,
               ),
             const SizedBox(height: 24),
-            Text(l10n.topErrors, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
+            SectionTitle(l10n.topErrors),
             if (errors.isEmpty)
               Card(
                 child: ListTile(
                   leading: const Icon(
-                    Icons.check_circle,
+                    LucideIcons.circleCheck,
                     color: FormaColors.success,
                   ),
                   title: Text(l10n.noErrors),
@@ -164,7 +152,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               Card(
                 child: ListTile(
                   leading: const Icon(
-                    Icons.warning_amber_rounded,
+                    LucideIcons.triangleAlert,
                     color: FormaColors.warning,
                   ),
                   title: Text(e.key.replaceAll('_', ' ')),
@@ -179,7 +167,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                   : () => unawaited(
                       _share(l10n, session, def, isHold: isHold),
                     ),
-              icon: const Icon(Icons.ios_share),
+              icon: const Icon(LucideIcons.share),
               label: Text(l10n.shareCard),
             ),
             const SizedBox(height: 10),
@@ -285,36 +273,13 @@ class _SetRow extends StatelessWidget {
         subtitle: errors.isEmpty
             ? Text(l10n.noErrors)
             : Text(errors.map((e) => e.replaceAll('_', ' ')).join(', ')),
-        trailing: Text(
-          score == null ? '–' : score.round().toString(),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        trailing: ScoreText(
+          score: score,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
     );
   }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
-          ),
-          Text(label, style: const TextStyle(color: FormaColors.textMuted)),
-        ],
-      ),
-    ),
-  );
 }
 
 /// "vs last session +5", or a note that this is the first one. Comparing a

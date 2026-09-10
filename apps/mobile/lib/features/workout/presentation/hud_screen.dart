@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forma_pose/forma_pose.dart';
 import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../application/session_controller.dart';
 import '../application/workout_controller.dart';
@@ -142,7 +144,7 @@ class _HudScreenState extends ConsumerState<HudScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _ScoreRing(score: lastScore, label: l10n.form),
+                        ScoreRing(score: lastScore, label: l10n.form),
                         const SizedBox(width: 28),
                         if (!isHold) _TempoLabel(rep: snap, label: l10n.tempo),
                       ],
@@ -246,27 +248,7 @@ class _TopStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: FormaColors.surface.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.circle, size: 10, color: badgeColor),
-              const SizedBox(width: 6),
-              Text(
-                badge,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: FormaColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-        ),
+        PrivacyBadge(label: badge, color: badgeColor),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -317,58 +299,6 @@ class _RepCounter extends StatelessWidget {
           unit,
           style: const TextStyle(color: FormaColors.textMuted, fontSize: 18),
         ),
-      ],
-    );
-  }
-}
-
-class _ScoreRing extends StatelessWidget {
-  const _ScoreRing({required this.score, required this.label});
-
-  final double? score;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = score;
-    final color = s == null
-        ? FormaColors.outline
-        : (s >= 85
-              ? FormaColors.success
-              : (s >= 60 ? FormaColors.primary : FormaColors.warning));
-    return Column(
-      children: [
-        SizedBox(
-          width: 72,
-          height: 72,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              TweenAnimationBuilder<double>(
-                tween: Tween(end: (s ?? 0) / 100),
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOut,
-                builder: (_, v, _) => CircularProgressIndicator(
-                  value: v,
-                  strokeWidth: 7,
-                  color: color,
-                  backgroundColor: FormaColors.outline,
-                ),
-              ),
-              Center(
-                child: Text(
-                  s == null ? '–' : s.round().toString(),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: FormaColors.textMuted)),
       ],
     );
   }
@@ -492,7 +422,7 @@ class _SetupPanel extends StatelessWidget {
           )
         else
           Icon(
-            ready ? Icons.check_circle : Icons.center_focus_weak,
+            ready ? LucideIcons.circleCheck : LucideIcons.focus,
             size: 72,
             color: ready ? FormaColors.success : FormaColors.warning,
           ),
