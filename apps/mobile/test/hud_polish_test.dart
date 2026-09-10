@@ -74,6 +74,12 @@ class _DenyingPose extends FakeFormaPose {
   bool allow = false;
   int settingsOpened = 0;
 
+  /// Whether the user allows the camera on the settings page.
+  bool grantInSettings = true;
+
+  /// How many times the system dialog was asked for.
+  int requests = 0;
+
   @override
   Future<PoseEngineInfo> start([
     PoseStartOptions options = const PoseStartOptions(),
@@ -89,13 +95,15 @@ class _DenyingPose extends FakeFormaPose {
   Future<bool> hasCameraPermission() async => allow;
 
   @override
-  Future<bool> requestCameraPermission() async => allow;
+  Future<bool> requestCameraPermission() async {
+    requests++;
+    return allow;
+  }
 
   @override
   Future<bool> openAppSettings() async {
     settingsOpened++;
-    // The user allows the camera on the settings page and comes back.
-    allow = true;
+    if (grantInSettings) allow = true;
     return true;
   }
 }
@@ -360,6 +368,32 @@ void main() {
     expect(error, findsNothing);
     expect(find.byKey(const Key('hud_framing_message')), findsOneWidget);
     await _startSet(tester);
+    await _tearDownApp(tester, fake);
+  });
+
+  testWidgets('back from settings still refused: no new request, no loop', (
+    tester,
+  ) async {
+    // Asking again on resume would flash the system dialog, and its closing
+    // is itself a resume: a camera refused for good would be asked for, fail
+    // and be asked for again, forever.
+    final fake = _DenyingPose(squat())..grantInSettings = false;
+    final c = await pumpApp(tester, fake);
+    c.read(routerProvider).go(_hud);
+    await _stream(tester, 40);
+    expect(find.byKey(const Key('hud_error')), findsOneWidget);
+    final asked = fake.requests;
+
+    await tester.tap(find.byKey(const Key('hud_error_settings')));
+    await _stream(tester, 5);
+    for (var i = 0; i < 3; i++) {
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await _stream(tester, 10);
+    }
+    expect(fake.requests, asked, reason: 'a resume checks, it never asks');
+    expect(find.byKey(const Key('hud_error')), findsOneWidget);
     await _tearDownApp(tester, fake);
   });
 }

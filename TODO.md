@@ -363,7 +363,7 @@
   tasarım token'ları, Manrope/Inter + Lucide, ekranlar yeniden; onboarding, ilerleme ekranı, yerel geçmiş (D19),
   "Hızlı form kontrolü" (D20). Galaxy S23'te doğrulama dört hata buldu (geçmiş önbelleği, iskeletin yazıların
   içinden geçmesi, geri tuşunun uygulamadan çıkması, ham İngilizce kamera hatası); hepsi düzeltildi, kamera
-  izni reddinde artık Ayarlar'a götüren buton ve dönüşte kendiliğinden yeniden deneme var. Telefon meşgulken
+  izni reddinde artık Ayarlar'a götüren buton ve dönüşte, izin verildiyse, kendiliğinden yeniden deneme var (yeniden sormuyor: sistem penceresinin kapanışı da bir dönüş olduğu için sormak döngüye sokuyordu). Telefon meşgulken
   kalan ekranlar gerçek fontlarla S23 ölçüsünde render edildi (`test/screenshots_test.dart`) ve altı hata daha
   çıkardı: yatay HUD'da Bitir/Atla 46 px ekran dışındaydı (eski yatay test 800 dp yükseklikte çalışıyordu),
   kadraj yönergeleri iskeletin altında kalıyordu, iki butonlu satırlarda etiketler ikiye bölünüyordu, bir sayının

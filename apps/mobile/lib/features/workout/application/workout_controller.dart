@@ -239,6 +239,15 @@ class WorkoutController extends _$WorkoutController
   Future<bool> openAppSettings() =>
       ref.read(poseEngineProvider).openAppSettings();
 
+  /// A check, never a request. Asking again from here would flash the system
+  /// dialog, and that dialog closing is itself a resume: with the camera
+  /// refused for good, the HUD would ask, fail and ask again in a loop.
+  Future<void> _retryIfAllowed() async {
+    final allowed = await ref.read(poseEngineProvider).hasCameraPermission();
+    if (_disposed || !allowed) return;
+    await retry();
+  }
+
   Future<void> start() async {
     if (state.status != HudStatus.idle) return;
     state = state.copyWith(status: HudStatus.starting);
@@ -561,11 +570,11 @@ class WorkoutController extends _$WorkoutController
           state = state.copyWith(inBackground: false);
         }
         // Coming back from the OS settings page is the whole point of the
-        // permission error's button; the user allowed the camera there and
-        // should not have to tap anything else.
+        // permission error's button: if the camera was allowed there, start
+        // it without another tap.
         if (state.status == HudStatus.error &&
             (state.error?.needsSettings ?? false)) {
-          unawaited(retry());
+          unawaited(_retryIfAllowed());
         }
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:
