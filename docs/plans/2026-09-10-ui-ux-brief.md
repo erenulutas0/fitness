@@ -141,7 +141,7 @@ parametresi ekleyecek; sözleşme: query anahtarı `reps`).
   onboarding kabuk dışında tam ekran. Lucide ikonlar + etiket.
 - Router: `redirect` → `hasProfileProvider` false ve konum `/onboarding` ile başlamıyorsa `/onboarding`.
   `...onboardingRoutes` bağla. `Routes.hud(exerciseId, view, {int? targetReps})` → `?reps=` query.
-- Bugün: "Hızlı form check" hero (tek limon buton), bugünün seansı yer tutucusu (program v0.3 — "program
+- Bugün: "Hızlı form kontrolü" hero (tek limon buton), bugünün seansı yer tutucusu (program v0.3 — "program
   yakında" **deme**, sadece hızlı form check + son seansın tek cümlelik bulgusu: "Geçen seansta en sık: diz içe
   çökme" — `sessionHistoryProvider`'dan), egzersiz listesi Antrenman sekmesine taşınır.
 - Antrenman: egzersiz listesi, kamera açısı rozetleri (ön/yan), `status == draft` rozeti, ekipmana göre

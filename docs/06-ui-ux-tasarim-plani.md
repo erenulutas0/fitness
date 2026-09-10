@@ -20,7 +20,7 @@
 
 Alt sekmeler: **Bugün** · **Antrenman** · **Vücut** (anatomi, v0.2) · **İlerleme** · **Profil**
 
-- Bugün: programın bugünkü seansı, "Hızlı form check" (tek egzersiz, 10 tekrar), haftanın bulgusu.
+- Bugün: programın bugünkü seansı, "Hızlı form kontrolü" (tek egzersiz, 10 tekrar), haftanın bulgusu.
 - Antrenman: egzersiz listesi (kamera açısı rozetleri), program seçimi.
 - Vücut: 3D model, bu hafta çalışan/ihmal edilen kaslar, egzersiz → kas.
 - İlerleme: form skoru trendi, asimetri (v0.2), seans geçmişi.

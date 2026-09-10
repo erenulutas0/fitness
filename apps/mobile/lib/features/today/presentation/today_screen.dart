@@ -18,7 +18,7 @@ import '../../training/application/rule_label.dart';
 import '../../training/presentation/camera_view_sheet.dart';
 import '../../workout/infrastructure/pose_engine_provider.dart';
 
-/// The exercise behind "Hızlı form check" (docs/06 §3: one exercise, the one
+/// The exercise behind "Hızlı form kontrolü" (docs/06 §3: one exercise, the one
 /// the whole MVP is built around).
 const quickCheckExerciseId = 'bw_squat';
 
