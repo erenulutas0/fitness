@@ -238,5 +238,73 @@
       }
     }
   },
-  "formScoreNoneSemantics": "Henüz form skoru yok"
+  "formScoreNoneSemantics": "Henüz form skoru yok",
+  "trainingTitle": "Antrenman",
+  "profileTitle": "Profil",
+  "settingsTitle": "Ayarlar",
+  "legalTitle": "Gizlilik & Lisanslar",
+  "lastSession": "Son seans",
+  "lastSessionTopError": "Geçen seansta en sık: {error}",
+  "@lastSessionTopError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "lastSessionClean": "Geçen seans temizdi, hata yok",
+  "todayEmpty": "İlk seansını yap, skorun burada görünecek",
+  "trainingEmpty": "Bu ekipmanla uygun egzersiz yok",
+  "detectedErrors": "Tespit ettiği hatalar",
+  "noRulesForView": "Bu açıda henüz kural yok",
+  "start": "Başla",
+  "exerciseNotFound": "Egzersiz bulunamadı",
+  "settingSound": "Ses",
+  "settingSoundHint": "Sesli komutlar; kapalıyken titreşim kalır",
+  "settingQuiet": "Az konuş",
+  "settingQuietHint": "Yalnızca sayım ve kritik düzeltmeler",
+  "settingOverlay": "İskelet çizimi",
+  "settingOverlayHint": "Kamera görüntüsünün üstünde eklemler",
+  "settingLanguage": "Dil",
+  "languageTr": "Türkçe",
+  "languageEn": "English",
+  "languageSystem": "Cihaz dili",
+  "deleteData": "Verilerimi sil",
+  "deleteDataTitle": "Verilerin silinsin mi?",
+  "deleteDataBody": "Ayarlar, profil ve seans geçmişi bu telefondan silinir. Geri alınamaz.",
+  "cancel": "Vazgeç",
+  "delete": "Sil",
+  "profileGoal": "Hedef",
+  "profileLevel": "Seviye",
+  "profileEquipment": "Ekipman",
+  "profileGoalMuscle": "Kas",
+  "profileGoalForm": "Form",
+  "profileGoalHealth": "Sağlık",
+  "profileLevelNew": "Yeni",
+  "profileLevelOccasional": "Ara sıra",
+  "profileLevelRegular": "Düzenli",
+  "profileEquipmentNone": "Yok",
+  "profileEquipmentDumbbell": "Dambıl",
+  "profileEmpty": "Profil henüz yok",
+  "appVersion": "Sürüm {version}",
+  "@appVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyTitle": "Gizlilik",
+  "privacyCamera": "Kamera görüntüsü telefondan çıkmaz. Poz tahmini cihazda çalışır; hiçbir kare kaydedilmez, hiçbir sunucuya gitmez.",
+  "privacyStoredTitle": "Bu telefonda saklananlar",
+  "privacyStoredSettings": "Ayarların (settings.json)",
+  "privacyStoredProfile": "Hedef, seviye ve ekipman (profile.json)",
+  "privacyStoredSessions": "Seans özetleri: skor, tekrar ve hata sayıları (sessions/)",
+  "privacyNotStored": "Video yok, eklem verisi yok, sağlık verisi yok.",
+  "licensesTitle": "Lisanslar",
+  "allLicenses": "Tüm lisanslar",
+  "licenseMediaPipeDesc": "Poz tahmini",
+  "licenseCameraXDesc": "Android kamera",
+  "licenseFontsDesc": "Yazı tipleri",
+  "licenseLucideDesc": "İkonlar"
 }

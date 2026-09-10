@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:forma_mobile/app/app.dart';
 import 'package:forma_mobile/core/content/content_repository.dart';
 import 'package:forma_mobile/core/locale/locale_controller.dart';
+import 'package:forma_mobile/core/profile/profile_controller.dart';
+import 'package:forma_mobile/core/profile/profile_store.dart';
+import 'package:forma_mobile/core/settings/settings_store.dart';
+import 'package:forma_mobile/features/history/infrastructure/session_store.dart';
 import 'package:forma_mobile/features/workout/infrastructure/pose_engine_provider.dart';
 import 'package:forma_pose/forma_pose.dart';
 import 'package:forma_rules/forma_rules.dart';
@@ -17,6 +23,15 @@ class _TurkishLocale extends LocaleController {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late Directory tempRoot;
+
+  setUp(() {
+    tempRoot = Directory.systemTemp.createTempSync('forma_hud');
+  });
+
+  tearDown(() {
+    if (tempRoot.existsSync()) tempRoot.deleteSync(recursive: true);
+  });
 
   testWidgets('quick form check counts synthetic reps and shows a cue', (
     tester,
@@ -36,6 +51,18 @@ void main() {
           poseEngineProvider.overrideWithValue(fake),
           contentRepositoryProvider.overrideWith((ref) async => content),
           localeControllerProvider.overrideWith(_TurkishLocale.new),
+          // The stores point at a scratch directory, and the profile is
+          // "already there" so the router lands on Today, not onboarding.
+          settingsStoreProvider.overrideWithValue(
+            SettingsStore(rootOverride: tempRoot),
+          ),
+          profileStoreProvider.overrideWithValue(
+            ProfileStore(rootOverride: tempRoot),
+          ),
+          sessionStoreProvider.overrideWithValue(
+            SessionStore(rootOverride: tempRoot),
+          ),
+          hasProfileProvider.overrideWith((ref) async => true),
         ],
         child: const FormaApp(),
       ),
