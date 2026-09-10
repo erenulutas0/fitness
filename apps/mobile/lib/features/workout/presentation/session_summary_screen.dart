@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../history/domain/stored_session.dart';
+import '../../history/infrastructure/session_store.dart';
 import '../application/session_controller.dart';
 import 'share_card.dart';
 
@@ -18,13 +21,46 @@ import 'share_card.dart';
 ///
 /// "Today vs last session" is not here yet — it needs the sets to survive the
 /// app being closed, and that storage decision is still open (see TODO).
-class SessionSummaryScreen extends ConsumerWidget {
+class SessionSummaryScreen extends ConsumerStatefulWidget {
   const SessionSummaryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SessionSummaryScreen> createState() =>
+      _SessionSummaryScreenState();
+}
+
+class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Save as soon as the summary opens, not when the user leaves it: the
+    // session is already over, and a workout that vanishes because the app
+    // was killed on this screen is the worst possible moment to lose one.
+    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_persist()));
+  }
+
+  Future<void> _persist() async {
+    final session = ref.read(workoutSessionControllerProvider);
+    if (session.sets.isEmpty || session.startedAt == null) return;
+    await ref
+        .read(sessionStoreProvider)
+        .save(
+          StoredSession(
+            id: session.id,
+            startedAt: session.startedAt!,
+            endedAt: DateTime.now(),
+            sets: [
+              for (final s in session.sets) StoredSet.fromResult(s.result),
+            ],
+          ),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final session = ref.watch(workoutSessionControllerProvider);
+    final previous = ref.watch(previousSessionProvider(session.id)).value;
     final content = ref.watch(contentRepositoryProvider).value;
     final def = session.exerciseId == null
         ? null
@@ -39,7 +75,7 @@ class SessionSummaryScreen extends ConsumerWidget {
       // summary; the session is over, so the only way out is Today.
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _leave(context, ref);
+        if (!didPop) _leave();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -74,6 +110,8 @@ class SessionSummaryScreen extends ConsumerWidget {
                       def.name.text(l10n.localeName),
                       style: const TextStyle(color: FormaColors.textMuted),
                     ),
+                  const SizedBox(height: 6),
+                  _Comparison(score: score, previous: previous),
                 ],
               ),
             ),
@@ -138,14 +176,16 @@ class SessionSummaryScreen extends ConsumerWidget {
               key: const Key('session_share'),
               onPressed: session.sets.isEmpty
                   ? null
-                  : () => _share(context, l10n, session, def, isHold: isHold),
+                  : () => unawaited(
+                      _share(l10n, session, def, isHold: isHold),
+                    ),
               icon: const Icon(Icons.ios_share),
               label: Text(l10n.shareCard),
             ),
             const SizedBox(height: 10),
             FilledButton(
               key: const Key('session_done'),
-              onPressed: () => _leave(context, ref),
+              onPressed: _leave,
               child: Text(l10n.doneForToday),
             ),
             const SizedBox(height: 12),
@@ -164,7 +204,6 @@ class SessionSummaryScreen extends ConsumerWidget {
   }
 
   Future<void> _share(
-    BuildContext context,
     AppLocalizations l10n,
     WorkoutSessionState session,
     ExerciseDefinition? def, {
@@ -199,14 +238,14 @@ class SessionSummaryScreen extends ConsumerWidget {
       );
     } on Object catch (e) {
       debugPrint('[share] $e');
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.shareFailed)));
     }
   }
 
-  void _leave(BuildContext context, WidgetRef ref) {
+  void _leave() {
     ref.read(workoutSessionControllerProvider.notifier).reset();
     context.go(Routes.today);
   }
@@ -276,4 +315,37 @@ class _Stat extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// "vs last session +5", or a note that this is the first one. Comparing a
+/// score to nothing is worse than saying there is nothing to compare to.
+class _Comparison extends StatelessWidget {
+  const _Comparison({required this.score, required this.previous});
+
+  final double? score;
+  final StoredSession? previous;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final before = previous?.meanScore;
+    if (score == null) return const SizedBox.shrink();
+    if (previous == null || before == null) {
+      return Text(
+        l10n.firstSession,
+        key: const Key('session_first'),
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: FormaColors.textMuted, fontSize: 12),
+      );
+    }
+    final delta = score!.round() - before.round();
+    return Text(
+      l10n.vsLastSession(delta >= 0 ? '+$delta' : '$delta'),
+      key: const Key('session_vs_last'),
+      style: TextStyle(
+        color: delta >= 0 ? FormaColors.success : FormaColors.textMuted,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
 }

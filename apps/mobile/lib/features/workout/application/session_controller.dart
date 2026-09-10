@@ -28,6 +28,8 @@ class WorkoutSessionState {
     this.view = CameraView.side,
     this.sets = const [],
     this.setTotal = defaultSetTotal,
+    this.id = '',
+    this.startedAt,
   });
 
   static const defaultSetTotal = 3;
@@ -36,6 +38,11 @@ class WorkoutSessionState {
   final CameraView view;
   final List<SessionSet> sets;
   final int setTotal;
+
+  /// Identity and start time, fixed when the session begins so the stored
+  /// record and the "vs last session" lookup agree on which one is which.
+  final String id;
+  final DateTime? startedAt;
 
   /// 1-based number of the set about to be performed.
   int get currentSetIndex => sets.length + 1;
@@ -93,6 +100,8 @@ class WorkoutSessionState {
     view: view ?? this.view,
     sets: sets ?? this.sets,
     setTotal: setTotal ?? this.setTotal,
+    id: id,
+    startedAt: startedAt,
   );
 }
 
@@ -108,7 +117,13 @@ class WorkoutSessionController extends _$WorkoutSessionController {
   /// mixing squats and push-ups into one score.
   void begin(String exerciseId, CameraView view) {
     if (state.exerciseId == exerciseId && state.view == view) return;
-    state = WorkoutSessionState(exerciseId: exerciseId, view: view);
+    final now = DateTime.now();
+    state = WorkoutSessionState(
+      exerciseId: exerciseId,
+      view: view,
+      id: '${exerciseId}_${now.millisecondsSinceEpoch}',
+      startedAt: now,
+    );
   }
 
   /// Record a finished set. Empty sets (nothing counted) are dropped: they

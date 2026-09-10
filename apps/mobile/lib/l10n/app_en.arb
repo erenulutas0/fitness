@@ -125,5 +125,14 @@
         "type": "String"
       }
     }
-  }
+  },
+  "vsLastSession": "vs last session {delta}",
+  "@vsLastSession": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "firstSession": "Your first session — later ones compare to this"
 }

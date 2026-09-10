@@ -125,5 +125,14 @@
         "type": "String"
       }
     }
-  }
+  },
+  "vsLastSession": "Geçen seansa göre {delta}",
+  "@vsLastSession": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "firstSession": "İlk seansın — bundan sonrası buna göre ölçülecek"
 }

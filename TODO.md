@@ -212,13 +212,12 @@
       "Tekrar sayıldı"dan sonraki her ekrana (dinlenme, seans özeti, kart) ulaşmak yoksa telefonun karşısında
       squat yapmayı gerektiriyor. `kDebugMode` arkasında, release'de yok.
 - [ ] "Bugünün skoru vs geçen seans" — kalıcı depolama gerektiriyor, aşağıdaki Drift maddesine bağlı.
-- [ ] Yerel DB: Session/SetResult/Rep şeması (docs/05 §9). **Şu an kurulamıyor:** `drift_dev` analyzer ≥13
-      istiyor, `custom_lint` 0.8.1 ve `freezed` 3.2.3 bizi analyzer 8'de tutuyor (10 Eylül'de denendi, pubspec
-      geri alındı). Üç seçenek: (a) toolchain'i topluca yükselt — riverpod_generator/freezed codegen'i kırma
-      riski var, (b) codegen'siz daha basit bir kalıcılık katmanı yaz (seans başına birkaç kayıt; SQL'e gerek
-      olmayabilir), (c) drift_dev'in analyzer kısıtı gevşeyene kadar bekle. Karar kurucunun.
-      Not: `sqlite3_flutter_libs` native `.so` getiriyor — hangi yol seçilirse seçilsin 16 KB hizalaması
-      `tools/check_so_alignment.py` ile yeniden doğrulanmalı.
+- [x] 2026-09-10 — **Yerel geçmiş** (docs/05 §9, karar D19): seans başına bir JSON dosyası (`sessions/`),
+      Drift değil — gerekçe Decision Log'da. `StoredSession`/`StoredSet` skorları, sayıları ve tekrar bazında
+      tempoyu tutuyor; **landmark hiç yazılmıyor**. `SessionStore` newest-first listeliyor, bozuk bir dosya
+      geçmişin tamamına mal olmuyor. Seans özeti açılır açılmaz kaydediyor (kullanıcı ekranı kapatırsa
+      antrenman kaybolmasın diye) ve **"geçen seansa göre +5"** satırını gösteriyor; ilk seansta bunu söylüyor.
+      6 test.
 - [ ] iOS plugin (docs/10 Prompt 8): MediaPipe Tasks iOS ya da Apple Vision → 33-nokta eşleme; RN'e geçiş karar noktası 3. hafta sonu.
 - [ ] Figma 6 ekran + 5 kişilik kullanılabilirlik testi (docs/06 §10). Küçük bir tasarım borcu: dinlenme
       kartındaki iki buton ("Sonraki set" / "Seansı bitir") hâlâ iki satıra sarıyor — dengeli duruyor ama
