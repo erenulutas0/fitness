@@ -3,18 +3,28 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forma_rules/forma_rules.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../app/widgets/widgets.dart';
 import '../../../core/content/content_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../history/domain/stored_session.dart';
+import '../../history/infrastructure/session_store.dart';
+import '../../training/application/rule_label.dart';
+import '../../training/presentation/camera_view_sheet.dart';
 import '../../workout/infrastructure/pose_engine_provider.dart';
 
-/// Placeholder "Bugün" tab: quick form check + exercise list. Onboarding,
-/// programs and progress arrive in later prompts (docs/10).
+/// The exercise behind "Hızlı form check" (docs/06 §3: one exercise, the one
+/// the whole MVP is built around).
+const quickCheckExerciseId = 'bw_squat';
+
+/// Bugün (docs/06 §3, brief 2-C): the quick form check, and one sentence
+/// about the last session. Today's programme session arrives with programs
+/// (v0.3); until then the screen does not promise one.
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
 
@@ -26,12 +36,6 @@ class TodayScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
-          IconButton(
-            key: const Key('today_progress'),
-            tooltip: 'İlerleme',
-            icon: const Icon(LucideIcons.trendingUp),
-            onPressed: () => unawaited(context.push(Routes.progress)),
-          ),
           // Run the workout on the synthetic engine, so the screens after
           // "a rep was counted" can be reached without doing squats at the
           // phone. Debug only, like the recorder next to it.
@@ -62,98 +66,151 @@ class TodayScreen extends ConsumerWidget {
       body: content.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
-          child: Text('$e', style: const TextStyle(color: FormaColors.warning)),
+          child: Text(
+            '$e',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: FormaColors.warning),
+          ),
         ),
-        data: (bundle) {
-          final exercises = bundle.visible(includeDrafts: true);
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text(
-                l10n.todayTitle,
-                style: Theme.of(context).textTheme.headlineMedium,
+        data: (bundle) => ListView(
+          padding: const EdgeInsets.all(FormaSpacing.page),
+          children: [
+            _Hero(
+              onQuickCheck: () => unawaited(
+                startExercise(context, bundle.exercise(quickCheckExerciseId)!),
               ),
-              const SizedBox(height: 4),
-              Text(l10n.todaySubtitle),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                key: const Key('today_quick_check'),
-                onPressed: () => _start(context, bundle.exercise('bw_squat')!),
-                icon: const Icon(LucideIcons.video),
-                label: Text(l10n.quickFormCheck),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                l10n.exercisesSection,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              for (final e in exercises)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Card(
-                    child: ListTile(
-                      key: Key('exercise_${e.id}'),
-                      title: Text(e.name.text(l10n.localeName)),
-                      subtitle: Text(
-                        e.cameraViews
-                            .map(
-                              (v) => v == CameraView.front
-                                  ? l10n.viewFront
-                                  : l10n.viewSide,
-                            )
-                            .join(' · '),
-                      ),
-                      trailing: e.status == 'draft'
-                          ? Chip(
-                              label: Text(l10n.draftBadge),
-                              visualDensity: VisualDensity.compact,
-                            )
-                          : const Icon(LucideIcons.chevronRight),
-                      onTap: () => _start(context, e),
-                    ),
-                  ),
-                ),
-            ],
-          );
-        },
+            ),
+            const SizedBox(height: FormaSpacing.xxl),
+            SectionTitle(l10n.lastSession),
+            _LastSession(bundle: bundle),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Future<void> _start(BuildContext context, ExerciseDefinition e) async {
+/// The hero card: the one lime button on the screen (brief §1). Radius 24
+/// like a sheet, because it is the screen's headline, not a list row.
+class _Hero extends StatelessWidget {
+  const _Hero({required this.onQuickCheck});
+
+  final VoidCallback onQuickCheck;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    var view = e.cameraViews.first;
-    if (e.cameraViews.length > 1) {
-      final picked = await showModalBottomSheet<CameraView>(
-        context: context,
-        builder: (ctx) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.chooseView,
-                  style: Theme.of(ctx).textTheme.titleLarge,
-                ),
-              ),
-              for (final v in e.cameraViews)
-                ListTile(
-                  key: Key('view_${v.name}'),
-                  title: Text(
-                    v == CameraView.front ? l10n.viewFront : l10n.viewSide,
-                  ),
-                  onTap: () => Navigator.of(ctx).pop(v),
-                ),
-              const SizedBox(height: 8),
-            ],
-          ),
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: FormaColors.surfaceRaised,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(FormaRadius.sheet)),
+        side: BorderSide(color: FormaColors.outline),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(FormaSpacing.xl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.todayTitle, style: text.headlineMedium),
+            const SizedBox(height: FormaSpacing.xs),
+            Text(l10n.todaySubtitle, style: text.bodyMedium),
+            const SizedBox(height: FormaSpacing.xl),
+            FilledButton.icon(
+              key: const Key('today_quick_check'),
+              onPressed: onQuickCheck,
+              icon: const Icon(LucideIcons.video),
+              label: Text(l10n.quickFormCheck),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+/// "Geçen seansta en sık: Dizlerini dışa aç" — the one finding from the last
+/// session (docs/06 §3 "haftanın bulgusu", brief §2: concrete, not a count).
+/// Empty state (docs/06 §7) points at the hero button above rather than
+/// adding a second lime button.
+class _LastSession extends ConsumerWidget {
+  const _LastSession({required this.bundle});
+
+  final ContentBundle bundle;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final history = ref.watch(sessionHistoryProvider);
+    final sessions = history.value;
+    if (sessions == null) return const SizedBox.shrink();
+    if (sessions.isEmpty) {
+      return EmptyState(
+        key: const Key('today_empty'),
+        icon: LucideIcons.activity,
+        message: l10n.todayEmpty,
       );
-      if (picked == null) return;
-      view = picked;
     }
-    if (context.mounted) unawaited(context.push(Routes.hud(e.id, view)));
+    final last = sessions.first;
+    return _LastSessionCard(bundle: bundle, session: last);
+  }
+}
+
+class _LastSessionCard extends StatelessWidget {
+  const _LastSessionCard({required this.bundle, required this.session});
+
+  final ContentBundle bundle;
+  final StoredSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final errors = session.errorCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top = errors.firstOrNull;
+    final exerciseId = session.exercises.firstOrNull ?? quickCheckExerciseId;
+    final sentence = top == null
+        ? l10n.lastSessionClean
+        : l10n.lastSessionTopError(
+            ruleLabel(
+              bundle,
+              exerciseId: exerciseId,
+              ruleId: top.key,
+              locale: l10n.localeName,
+            ),
+          );
+    final date = DateFormat.MMMEd(
+      l10n.localeName,
+    ).format(session.startedAt.toLocal());
+    final score = session.meanScore;
+    return FormaCard(
+      key: const Key('today_last_session'),
+      onTap: () => context.go(Routes.progress),
+      child: Row(
+        children: [
+          ScoreRing(
+            score: score,
+            semanticsLabel: '${l10n.formScore} ${ScoreText.format(score)}',
+          ),
+          const SizedBox(width: FormaSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(sentence, style: text.bodyLarge),
+                const SizedBox(height: FormaSpacing.xs),
+                Text(
+                  '$date · '
+                  '${l10n.setsAndReps(session.sets.length, session.totalReps)}',
+                  style: text.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

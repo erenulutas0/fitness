@@ -7,6 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:forma_mobile/app/app.dart';
 import 'package:forma_mobile/core/content/content_repository.dart';
 import 'package:forma_mobile/core/locale/locale_controller.dart';
+import 'package:forma_mobile/core/profile/profile_controller.dart';
+import 'package:forma_mobile/core/profile/profile_store.dart';
+import 'package:forma_mobile/core/settings/settings_store.dart';
+import 'package:forma_mobile/features/history/infrastructure/session_store.dart';
 import 'package:forma_mobile/features/recorder/application/recorder_controller.dart';
 import 'package:forma_mobile/features/recorder/infrastructure/fixture_store.dart';
 import 'package:forma_mobile/features/workout/infrastructure/pose_engine_provider.dart';
@@ -161,6 +165,18 @@ void main() {
           contentRepositoryProvider.overrideWith((ref) async => content),
           localeControllerProvider.overrideWith(_TurkishLocale.new),
           fixtureStoreProvider.overrideWithValue(store),
+          // The stores point at the scratch directory, and the profile is
+          // "already there" so the router lands on Today, not onboarding.
+          settingsStoreProvider.overrideWithValue(
+            SettingsStore(rootOverride: tempRoot),
+          ),
+          profileStoreProvider.overrideWithValue(
+            ProfileStore(rootOverride: tempRoot),
+          ),
+          sessionStoreProvider.overrideWithValue(
+            SessionStore(rootOverride: tempRoot),
+          ),
+          hasProfileProvider.overrideWith((ref) async => true),
         ],
         child: const FormaApp(),
       ),

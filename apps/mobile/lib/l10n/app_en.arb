@@ -158,5 +158,73 @@
         "type": "int"
       }
     }
-  }
+  },
+  "trainingTitle": "Training",
+  "profileTitle": "Profile",
+  "settingsTitle": "Settings",
+  "legalTitle": "Privacy & Licences",
+  "lastSession": "Last session",
+  "lastSessionTopError": "Most frequent last session: {error}",
+  "@lastSessionTopError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "lastSessionClean": "Last session was clean, no errors",
+  "todayEmpty": "Do your first session and your score will show here",
+  "trainingEmpty": "No exercise fits this equipment",
+  "detectedErrors": "Errors it detects",
+  "noRulesForView": "No rules for this angle yet",
+  "start": "Start",
+  "exerciseNotFound": "Exercise not found",
+  "settingSound": "Sound",
+  "settingSoundHint": "Voice cues; haptics stay on when off",
+  "settingQuiet": "Speak less",
+  "settingQuietHint": "Only the count and critical corrections",
+  "settingOverlay": "Skeleton overlay",
+  "settingOverlayHint": "Joints drawn over the camera view",
+  "settingLanguage": "Language",
+  "languageTr": "Türkçe",
+  "languageEn": "English",
+  "languageSystem": "Device language",
+  "deleteData": "Delete my data",
+  "deleteDataTitle": "Delete your data?",
+  "deleteDataBody": "Settings, profile and session history are removed from this phone. This cannot be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "profileGoal": "Goal",
+  "profileLevel": "Level",
+  "profileEquipment": "Equipment",
+  "profileGoalMuscle": "Muscle",
+  "profileGoalForm": "Form",
+  "profileGoalHealth": "Health",
+  "profileLevelNew": "New",
+  "profileLevelOccasional": "Occasional",
+  "profileLevelRegular": "Regular",
+  "profileEquipmentNone": "None",
+  "profileEquipmentDumbbell": "Dumbbell",
+  "profileEmpty": "No profile yet",
+  "appVersion": "Version {version}",
+  "@appVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyTitle": "Privacy",
+  "privacyCamera": "Camera video never leaves your phone. Pose estimation runs on the device; no frame is stored and nothing is sent to a server.",
+  "privacyStoredTitle": "Kept on this phone",
+  "privacyStoredSettings": "Your settings (settings.json)",
+  "privacyStoredProfile": "Goal, level and equipment (profile.json)",
+  "privacyStoredSessions": "Session summaries: score, rep and error counts (sessions/)",
+  "privacyNotStored": "No video, no joint data, no health data.",
+  "licensesTitle": "Licences",
+  "allLicenses": "All licences",
+  "licenseMediaPipeDesc": "Pose estimation",
+  "licenseCameraXDesc": "Android camera",
+  "licenseFontsDesc": "Typefaces",
+  "licenseLucideDesc": "Icons"
 }
